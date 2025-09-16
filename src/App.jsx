@@ -1,16 +1,18 @@
-import { useState } from 'react'
-
+import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import Navbar from './components/utilities/Navbar';
+import Layout from './components/layout/Layout'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <p>
-        Hello World
-      </p>
-    </>
-  )
+    <Router>
+      <div>
+        <Navbar />
+        <Routes>
+          <Route path = "/" element={<Layout />}> </Route>
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
-export default App
+export default App;
