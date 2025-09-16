@@ -20,7 +20,8 @@ function Navbar() {
         {/* Add an on click here later to go to the top of the page */}
         <Box
           component="img"
-          src="../../public/AbhinavGonthinaLogo.png"
+          src="../../AbhinavGonthinaLogo.png"
+          alt="Abhinav Gonthina Logo"
           sx={{
             height: "5.5vh",
             cursor: "pointer",

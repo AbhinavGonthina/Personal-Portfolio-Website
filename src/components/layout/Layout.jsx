@@ -1,7 +1,10 @@
+import WelcomeSection from "../sections/WelcomeSection";
+
 export default function Layout() {
   return (
     <div>
-      <h1 className="h-[1000vh]">Hello World</h1>
+      <WelcomeSection />
+      <div>Current border of page</div>
     </div>
   );
 }
