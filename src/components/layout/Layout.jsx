@@ -4,7 +4,7 @@ export default function Layout() {
   return (
     <div>
       <WelcomeSection />
-      <div>Current border of page</div>
+      <div className="h-[100vh]">Current border of page</div>
     </div>
   );
 }
