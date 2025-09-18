@@ -19,30 +19,42 @@ export default function WelcomeSection() {
         overflow: "hidden",
       }}
     >
-      <Fade delay={4000} duration={1500} triggerOnce>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "7.5vh",
-            left: "51%",
-            transform: "translateX(-50%)",
+      <Fade delay={3000} duration={1500} triggerOnce>
+        <motion.div
+          animate={{
+            opacity: [1, 0.4, 1],
+          }}
+          transition={{
+            opacity: {
+              duration: 2,
+              repeat: Infinity,
+            },
           }}
         >
-          <Typography
+          <Box
             sx={{
-              fontSize: "1.2em",
-              color: "#ffffff",
-              textAlign: "center",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              fontWeight: 300,
-              textShadow:
-                "0 0 30px rgba(30, 136, 229, 1), 0 0 60px rgba(30, 136, 229, 0.8), 0 0 90px rgba(30, 136, 229, 0.6)",
+              position: "absolute",
+              top: "7.5vh",
+              left: "51%",
+              transform: "translateX(-50%)",
             }}
           >
-            ↓ Scroll Below To Explore More About Me ↓
-          </Typography>
-        </Box>
+            <Typography
+              sx={{
+                fontSize: "1.2em",
+                color: "#ffffff",
+                textAlign: "center",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                fontWeight: 300,
+                textShadow:
+                  "0 0 30px rgba(30, 136, 229, 1), 0 0 60px rgba(30, 136, 229, 0.8), 0 0 90px rgba(30, 136, 229, 0.6)",
+              }}
+            >
+              ↓ Scroll Below To Explore More About Me ↓
+            </Typography>
+          </Box>
+        </motion.div>
       </Fade>
       <Box
         sx={{
