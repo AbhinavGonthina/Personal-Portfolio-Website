@@ -12,7 +12,7 @@ export default function WelcomeSection() {
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        height: "100vh",
+        height: "90vh",
         overflow: "hidden",
       }}
     >
@@ -25,10 +25,10 @@ export default function WelcomeSection() {
         }}
       >
         <Particles
-          className="w-full h-full"
+          className=""
           particleColors={["#103F9D", "#103F9D"]}
-          particleCount={1000}
-          particleSpread={5}
+          particleCount={2000}
+          particleSpread={8}
           speed={0.1}
           particleBaseSize={50}
           moveParticlesOnHover={false}
@@ -63,10 +63,10 @@ export default function WelcomeSection() {
         <Box
           component="img"
           sx={{
-            height: "auto",
-            width: "55vw",
+            maxHeight: "70vh",
+            width: "auto",
             alignContent: "center",
-            paddingTop: "10vh",
+            marginTop: "20vh",
             zIndex: 2,
             position: "relative",
           }}

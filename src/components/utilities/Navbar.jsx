@@ -8,8 +8,11 @@ function Navbar() {
         backgroundColor: "black",
         paddingLeft: "10vh",
         paddingRight: "10vh",
+        height: "10vh",
         borderBottom: "1px solid #042027ff",
         boxShadow: "0 1px 12px rgba(255, 255, 255, 0.1)",
+        display: "flex",
+        justifyContent: "center",
       }}
     >
       <Toolbar
