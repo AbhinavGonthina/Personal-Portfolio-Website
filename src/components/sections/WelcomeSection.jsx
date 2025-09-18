@@ -24,7 +24,7 @@ export default function WelcomeSection() {
           sx={{
             position: "absolute",
             top: "7.5vh",
-            left: "50%",
+            left: "51%",
             transform: "translateX(-50%)",
           }}
         >

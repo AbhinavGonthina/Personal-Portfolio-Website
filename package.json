@@ -16,7 +16,7 @@
     "@mui/material": "^7.3.2",
     "@tailwindcss/vite": "^4.1.13",
     "gsap": "^3.13.0",
-    "motion": "^12.23.14",
+    "motion": "^12.23.15",
     "ogl": "^1.0.11",
     "react": "^19.1.1",
     "react-awesome-reveal": "^4.3.1",
