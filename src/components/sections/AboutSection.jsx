@@ -245,8 +245,8 @@ export default function AboutSection() {
             <Box
               component="video"
               ref={videoRef}
-              src="/videos/AbhinavGonthinaPortfolioVid.mp4"
-              poster="/VideoThumbnail.png"
+              src="/videos/PlaceHolder.mp4"
+              poster="/Placeholder.png"
               onEnded={() => setIsPlaying(false)}
               sx={{
                 width: "30vw",
