@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ReplayIcon from "@mui/icons-material/Replay";
-import { motion } from "framer-motion";
+import CloseIcon from "@mui/icons-material/Close";
+import { motion, AnimatePresence } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -16,8 +17,9 @@ const staggerCol = {
 };
 
 export default function AboutSection() {
-  const videoRef = (useRef < HTMLVideoElement) | (null > null);
+  const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const handlePlayPause = () => {
     if (!videoRef.current) return;
@@ -38,241 +40,396 @@ export default function AboutSection() {
     }
   };
 
+  const handleClose = () => {
+    setShowPopup(true);
+  };
+
   return (
-    <Box
-      sx={{
-        width: "100%",
-        height: "90vh",
+    <motion.div
+      style={{
+        width: "96.25%",
+        height: "100vh",
         color: "white",
         display: "flex",
         flexDirection: "row",
         justifyContent: "center",
         alignItems: "center",
         gap: "10vw",
+        position: "relative",
+        backgroundColor: "#0f0113",
+        border: "2px solid #00d4ff",
+        borderRadius: "16px",
+        overflow: "hidden",
+      }}
+      animate={{
+        boxShadow: [
+          "0 0 10px #00d4ff, inset 0 0 20px rgba(0, 212, 255, 0.1)",
+          "0 0 20px #00d4ff, inset 0 0 40px rgba(0, 212, 255, 0.2)",
+          "0 0 10px #00d4ff, inset 0 0 20px rgba(0, 212, 255, 0.1)",
+        ],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut",
       }}
     >
-      <motion.div
-        variants={staggerCol}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.4 }}
-        style={{ display: "flex", flexDirection: "column", gap: "5vh" }}
+      <IconButton
+        onClick={handleClose}
+        sx={{
+          position: "absolute",
+          top: "24px",
+          right: "24px",
+          zIndex: 3,
+          color: "rgba(255, 255, 255, 0.7)",
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          width: "32px",
+          height: "32px",
+          borderRadius: "4px",
+          transition: "all 0.2s ease",
+          "&:hover": {
+            backgroundColor: "rgba(255, 0, 0, 0.8)",
+            color: "white",
+            transform: "scale(1.1)",
+          },
+        }}
       >
-        <motion.div variants={fadeUp}>
-          <Typography sx={{ fontWeight: "bold", fontSize: "4vw" }}>
-            Who Am I?
-          </Typography>
-        </motion.div>
-        <motion.div variants={fadeUp}>
-          <Box
-            sx={{
-              position: "relative",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
+        <CloseIcon fontSize="small" />
+      </IconButton>
+
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "80px",
+              zIndex: 4,
             }}
           >
             <Box
               sx={{
-                position: "absolute",
-                left: "-20px",
-                top: "0",
-                height: "100%",
-                width: "3px",
-                background: "#00d4ff",
-                boxShadow: "0 0 15px rgba(0, 212, 255, 0.5)",
-              }}
-            />
-            <Typography sx={{ maxWidth: "40vw", fontSize: "1.5vw" }}>
-              My name is{" "}
-              <Box
-                component="span"
-                sx={{
-                  fontWeight: 700,
-                  background:
-                    "linear-gradient(135deg, #00d4ff 0%, #7240d8 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Abhinav Gonthina
-              </Box>
-              , and I'm a software developer who loves building meaningful
-              products through{" "}
-              <Box component="span" sx={{ fontStyle: "italic" }}>
-                elegant designs
-              </Box>{" "}
-              and{" "}
-              <Box component="span" sx={{ fontWeight: "bold" }}>
-                powerful APIs
-              </Box>
-              .
-            </Typography>
-            <Box
-              sx={{
-                maxWidth: "40vw",
-                p: 2,
-                border: "1px solid rgba(255,255,255,0.3)",
-                borderRadius: 1,
-                background: "rgba(255,255,255,0.05)",
+                background: "rgba(15, 15, 25, 0.95)",
+                border: "2px solid #00d4ff",
+                padding: "16px 20px",
+                borderRadius: "12px",
+                boxShadow:
+                  "0 0 20px rgba(0, 212, 255, 0.4), inset 0 0 30px rgba(0, 212, 255, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                minWidth: "180px",
+                backdropFilter: "blur(10px)",
               }}
             >
-              <Typography sx={{ fontSize: "1.5vw" }}>
-                I'm currently looking for a{" "}
-                <Box component="span" sx={{ fontWeight: "bold" }}>
-                  full-time software engineering co-op/internship
-                </Box>{" "}
-                role for{" "}
-                <Box component="span" sx={{ fontWeight: "bold" }}>
-                  Spring/Summer 2026
-                </Box>
-                .
+              <Typography
+                sx={{
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  color: "#fff",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                Nice try 😂
               </Typography>
+              <IconButton
+                onClick={() => setShowPopup(false)}
+                sx={{
+                  color: "#00d4ff",
+                  padding: "4px",
+                  marginLeft: "auto",
+                  backgroundColor: "rgba(0, 212, 255, 0.1)",
+                  transition: "all 0.2s ease",
+                  borderRadius: "4px",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 212, 255, 0.2)",
+                    transform: "scale(1.1)",
+                  },
+                }}
+                size="small"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </Box>
-          </Box>
-        </motion.div>
-        <motion.div variants={fadeUp}>
-          <Box>
-            <Typography sx={{ fontWeight: "bold", mb: 1, fontSize: 20 }}>
-              Education
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "6px",
+          background:
+            "linear-gradient(90deg, transparent, #00d4ff, #00d4ff, transparent)",
+          boxShadow: "0 0 20px #00d4ff, 0 4px 30px rgba(0, 212, 255, 0.5)",
+          borderRadius: "0 0 4px 4px",
+          zIndex: 2,
+        }}
+      />
+
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: "url('/CircuitBoard.svg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "fixed",
+          opacity: 0.1,
+          zIndex: 0,
+        }}
+      />
+
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10vw",
+        }}
+      >
+        <motion.div
+          variants={staggerCol}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.4 }}
+          style={{ display: "flex", flexDirection: "column", gap: "5vh" }}
+        >
+          <motion.div variants={fadeUp}>
+            <Typography sx={{ fontWeight: "bold", fontSize: "4vw" }}>
+              Who Am I?
             </Typography>
+          </motion.div>
+          <motion.div variants={fadeUp}>
             <Box
               sx={{
                 position: "relative",
                 display: "flex",
-                alignItems: "center",
+                flexDirection: "column",
                 gap: 2,
-                width: "45vw",
-                minHeight: "10vh",
-                px: 2,
-                py: 1.5,
-                borderRadius: 2,
-                border: "2px solid rgba(255,255,255,0.35)",
-                background: "rgba(255,255,255,0.04)",
-                boxShadow: "0 0 10px rgba(255,255,255,0.12) inset",
               }}
             >
               <Box
-                component="img"
-                src="../../NortheasternLogo.png"
-                alt="Northeastern University Logo"
-                sx={{ width: "4vw", height: "4vw" }}
+                sx={{
+                  position: "absolute",
+                  left: "-20px",
+                  top: 0,
+                  height: "100%",
+                  width: "3px",
+                  background: "#00d4ff",
+                  boxShadow: "0 0 15px rgba(0, 212, 255, 0.5)",
+                }}
               />
-              <Box sx={{ flex: 1 }}>
+              <Typography sx={{ maxWidth: "40vw", fontSize: "1.5vw" }}>
+                My name is{" "}
                 <Box
+                  component="span"
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 2,
-                    mb: 1,
+                    fontWeight: 700,
+                    background:
+                      "linear-gradient(135deg, #00d4ff 0%, #7240d8 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
                   }}
                 >
-                  <Typography sx={{ fontSize: "1.6vw", fontWeight: 700 }}>
-                    Northeastern University
-                  </Typography>
-                  <Typography sx={{ fontSize: "0.9vw", opacity: 0.8 }}>
-                    Expected Graduation: Aug 2027
-                  </Typography>
+                  Abhinav Gonthina
                 </Box>
+                , and I'm a software developer who loves building meaningful
+                products through{" "}
+                <Box component="span" sx={{ fontStyle: "italic" }}>
+                  elegant designs
+                </Box>{" "}
+                and{" "}
+                <Box component="span" sx={{ fontWeight: "bold" }}>
+                  powerful APIs
+                </Box>
+                .
+              </Typography>
+              <Box
+                sx={{
+                  maxWidth: "40vw",
+                  p: 2,
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  borderRadius: 1,
+                  background: "rgba(255,255,255,0.05)",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <Typography sx={{ fontSize: "1.5vw" }}>
+                  I'm currently looking for a{" "}
+                  <Box component="span" sx={{ fontWeight: "bold" }}>
+                    full-time software engineering co-op/internship
+                  </Box>{" "}
+                  role for{" "}
+                  <Box component="span" sx={{ fontWeight: "bold" }}>
+                    Spring/Summer 2026
+                  </Box>
+                  .
+                </Typography>
+              </Box>
+            </Box>
+          </motion.div>
+          <motion.div variants={fadeUp}>
+            <Box>
+              <Typography sx={{ fontWeight: "bold", mb: 1, fontSize: 20 }}>
+                Education
+              </Typography>
+              <Box
+                sx={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  width: "45vw",
+                  minHeight: "10vh",
+                  px: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  border: "2px solid rgba(255,255,255,0.35)",
+                  background: "rgba(255,255,255,0.04)",
+                  boxShadow: "0 0 10px rgba(255,255,255,0.12) inset",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
                 <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 2,
-                  }}
-                >
-                  <Typography sx={{ fontSize: "1.1vw", opacity: 0.9 }}>
-                    GPA: 4.0/4.0, John Martinson Honors Program
-                  </Typography>
-                  <Button
-                    variant="contained"
+                  component="img"
+                  src="../../NortheasternLogo.png"
+                  alt="Northeastern University Logo"
+                  sx={{ width: "4vw", height: "4vw" }}
+                />
+                <Box sx={{ flex: 1 }}>
+                  <Box
                     sx={{
-                      backgroundColor: "rgba(35, 182, 47, 1)",
-                      color: "#FFFFFF",
-                      borderBottom: "2px solid white",
-                      width: "10vw",
-                      transition: "all 0.33s ease",
-                      "&:hover": { backgroundColor: "#7240d8ff" },
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 2,
+                      mb: 1,
                     }}
                   >
-                    <Typography sx={{ fontSize: "1vw", fontWeight: "bold" }}>
-                      Classes
+                    <Typography sx={{ fontSize: "1.6vw", fontWeight: 700 }}>
+                      Northeastern University
                     </Typography>
-                  </Button>
+                    <Typography sx={{ fontSize: "0.9vw", opacity: 0.8 }}>
+                      Expected Graduation: Aug 2027
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 2,
+                    }}
+                  >
+                    <Typography sx={{ fontSize: "1.1vw", opacity: 0.9 }}>
+                      GPA: 4.0/4.0, John Martinson Honors Program
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      sx={{
+                        backgroundColor: "rgba(35, 182, 47, 1)",
+                        color: "#FFFFFF",
+                        borderBottom: "2px solid white",
+                        width: "10vw",
+                        transition: "all 0.33s ease",
+                        "&:hover": { backgroundColor: "#7240d8ff" },
+                      }}
+                    >
+                      <Typography sx={{ fontSize: "1vw", fontWeight: "bold" }}>
+                        Classes
+                      </Typography>
+                    </Button>
+                  </Box>
                 </Box>
               </Box>
             </Box>
-          </Box>
+          </motion.div>
+          <motion.div variants={fadeUp}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+              <Typography sx={{ fontWeight: 700 }}>Interests:</Typography>
+              {["Food", "YouTube", "Gym", "Puzzles"].map((chip) => (
+                <Box
+                  key={chip}
+                  sx={{
+                    px: 1.2,
+                    py: 0.6,
+                    borderRadius: 999,
+                    border: "1px solid rgba(255,255,255,0.3)",
+                    background: "rgba(255,255,255,0.06)",
+                    fontSize: "0.95vw",
+                    fontWeight: 600,
+                    backdropFilter: "blur(5px)",
+                  }}
+                >
+                  {chip}
+                </Box>
+              ))}
+            </Box>
+          </motion.div>
         </motion.div>
-        <motion.div variants={fadeUp}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
-            <Typography sx={{ fontWeight: 700 }}>Interests:</Typography>
-            {["Food", "YouTube", "Gym", "Puzzles"].map((chip) => (
+        <motion.div
+          variants={staggerCol}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          style={{ display: "flex" }}
+        >
+          <Stack spacing="2vh" alignItems="center">
+            <motion.div variants={fadeUp}>
+              <Typography sx={{ fontWeight: "light", fontSize: "2vw" }}>
+                A Short Introduction:
+              </Typography>
+            </motion.div>
+            <motion.div variants={fadeUp} style={{ width: "100%" }}>
               <Box
-                key={chip}
+                component="video"
+                ref={videoRef}
+                src="/videos/AbhinavGonthinaPortfolioVid.mp4"
+                onEnded={() => setIsPlaying(false)}
                 sx={{
-                  px: 1.2,
-                  py: 0.6,
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  background: "rgba(255,255,255,0.06)",
-                  fontSize: "0.95vw",
-                  fontWeight: 600,
+                  width: "30vw",
+                  height: "auto",
+                  borderRadius: 2,
+                  border: "2px solid white",
+                  boxShadow: "0 0 8px rgba(255,255,255,0.4)",
+                  objectFit: "cover",
                 }}
-              >
-                {chip}
-              </Box>
-            ))}
-          </Box>
+              />
+            </motion.div>
+            <motion.div variants={fadeUp}>
+              <Stack direction="row" spacing={2}>
+                <IconButton onClick={handlePlayPause} sx={{ color: "white" }}>
+                  {isPlaying ? (
+                    <PauseIcon fontSize="large" />
+                  ) : (
+                    <PlayArrowIcon fontSize="large" />
+                  )}
+                </IconButton>
+                <IconButton onClick={handleRestart} sx={{ color: "white" }}>
+                  <ReplayIcon fontSize="large" />
+                </IconButton>
+              </Stack>
+            </motion.div>
+          </Stack>
         </motion.div>
-      </motion.div>
-      <motion.div
-        variants={staggerCol}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.5 }}
-        style={{ display: "flex" }}
-      >
-        <Stack spacing={"2vh"} alignItems="center">
-          <motion.div variants={fadeUp}>
-            <Typography sx={{ fontWeight: "light", fontSize: "2vw" }}>
-              A Short Introduction:
-            </Typography>
-          </motion.div>
-          <motion.div variants={fadeUp} style={{ width: "100%" }}>
-            <Box
-              component="video"
-              ref={videoRef}
-              src="/videos/AbhinavGonthinaPortfolioVid.mp4"
-              onEnded={() => setIsPlaying(false)}
-              sx={{
-                width: "30vw",
-                height: "auto",
-                borderRadius: 2,
-                border: "2px solid white",
-                boxShadow: "0 0 8px rgba(255,255,255,0.4)",
-                objectFit: "cover",
-              }}
-            />
-          </motion.div>
-          <motion.div variants={fadeUp}>
-            <Stack direction="row" spacing={2}>
-              <IconButton onClick={handlePlayPause} sx={{ color: "white" }}>
-                {isPlaying ? (
-                  <PauseIcon fontSize="large" />
-                ) : (
-                  <PlayArrowIcon fontSize="large" />
-                )}
-              </IconButton>
-              <IconButton onClick={handleRestart} sx={{ color: "white" }}>
-                <ReplayIcon fontSize="large" />
-              </IconButton>
-            </Stack>
-          </motion.div>
-        </Stack>
-      </motion.div>
-    </Box>
+      </Box>
+    </motion.div>
   );
 }
