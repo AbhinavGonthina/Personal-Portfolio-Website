@@ -168,36 +168,60 @@ const chipSx = {
   },
 };
 
-const fadeInScale = {
-  hidden: { opacity: 0, scale: 0.8 },
+const fadeInUp = {
+  hidden: {
+    opacity: 0,
+    y: 40,
+  },
   visible: {
     opacity: 1,
-    scale: 1,
-    transition: { duration: 0.6, ease: "easeOut" },
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+    },
   },
 };
 
-const slideInLeft = {
-  hidden: { opacity: 0, x: -60 },
+const fadeInLeft = {
+  hidden: {
+    opacity: 0,
+    x: -40,
+  },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+    },
   },
 };
 
-const slideInRight = {
-  hidden: { opacity: 0, x: 60 },
+const fadeInRight = {
+  hidden: {
+    opacity: 0,
+    x: 40,
+  },
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: {
+      duration: 0.8,
+      ease: "easeOut",
+    },
   },
 };
 
 const staggerContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.15 } },
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3,
+      delayChildren: 0.2,
+    },
+  },
 };
 
 function PillList({ items }) {
@@ -303,6 +327,7 @@ function TiltCard({ children, title }) {
         overflow: "visible",
         transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
         transition: "transform 0.1s ease-out",
+        willChange: "transform",
       }}
     >
       <Typography
@@ -371,73 +396,71 @@ export default function SkillsSection() {
       <ParticleConnectionBackground />
 
       <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={fadeInScale}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "2vw",
-          }}
-        >
-          <Box
-            sx={{
-              width: "30vw",
-              height: "3px",
-              background: "linear-gradient(90deg, transparent, #00d4ff)",
-              borderRadius: "2px",
-              boxShadow: "0 0 10px #00d4ff66",
-            }}
-          />
-
-          <Typography sx={{ fontWeight: "bold", fontSize: "4vw" }}>
-            My Skills
-          </Typography>
-
-          <Box
-            sx={{
-              width: "30vw",
-              height: "3px",
-              background: "linear-gradient(90deg, #00d4ff, transparent)",
-              borderRadius: "2px",
-              boxShadow: "0 0 10px #00d4ff66",
-            }}
-          />
-        </Box>
-      </motion.div>
-
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={slideInLeft}
-        style={{ overflow: "hidden" }}
-      >
-        <LogoLoop
-          className="h-[15vh] flex justify-center items-center"
-          logos={techLogos}
-          speed={80}
-          direction="left"
-          gap={50}
-          logoHeight={60}
-          pauseOnHover
-          scaleOnHover
-          ariaLabel="Technology partners"
-        />
-      </motion.div>
-
-      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{
+          once: true,
+          amount: 0.1,
+          margin: "-100px",
+        }}
       >
-        <Box
-          sx={{
+        {/* Title Section */}
+        <motion.div variants={fadeInUp}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "2vw",
+              mb: 3,
+            }}
+          >
+            <Box
+              sx={{
+                width: "30vw",
+                height: "3px",
+                background: "linear-gradient(90deg, transparent, #00d4ff)",
+                borderRadius: "2px",
+                boxShadow: "0 0 10px #00d4ff66",
+              }}
+            />
+
+            <Typography sx={{ fontWeight: "bold", fontSize: "4vw" }}>
+              My Skills
+            </Typography>
+
+            <Box
+              sx={{
+                width: "30vw",
+                height: "3px",
+                background: "linear-gradient(90deg, #00d4ff, transparent)",
+                borderRadius: "2px",
+                boxShadow: "0 0 10px #00d4ff66",
+              }}
+            />
+          </Box>
+        </motion.div>
+
+        {/* Logo Loop */}
+        <motion.div variants={fadeInUp} style={{ overflow: "hidden" }}>
+          <LogoLoop
+            className="h-[15vh] flex justify-center items-center"
+            logos={techLogos}
+            speed={80}
+            direction="left"
+            gap={50}
+            logoHeight={60}
+            pauseOnHover
+            scaleOnHover
+            ariaLabel="Technology partners"
+          />
+        </motion.div>
+
+        {/* Cards Section */}
+        <motion.div
+          variants={staggerContainer}
+          style={{
             display: "flex",
             flexDirection: "row",
             justifyContent: "center",
@@ -447,7 +470,7 @@ export default function SkillsSection() {
             perspective: "1000px",
           }}
         >
-          <motion.div variants={slideInLeft}>
+          <motion.div variants={fadeInLeft}>
             <TiltCard title="Languages">
               <Box
                 sx={{
@@ -470,7 +493,7 @@ export default function SkillsSection() {
             </TiltCard>
           </motion.div>
 
-          <motion.div variants={fadeInScale}>
+          <motion.div variants={fadeInUp}>
             <TiltCard title="Frameworks / Libraries">
               <Box
                 sx={{
@@ -506,6 +529,7 @@ export default function SkillsSection() {
                         textAlign: "center",
                         overflow: "hidden",
                         wordWrap: "break-word",
+                        willChange: "transform",
                         "&:hover": {
                           backgroundColor: "rgba(0, 212, 255, 0.15)",
                           transform: "scale(1.05)",
@@ -521,7 +545,7 @@ export default function SkillsSection() {
             </TiltCard>
           </motion.div>
 
-          <motion.div variants={slideInRight}>
+          <motion.div variants={fadeInRight}>
             <TiltCard title="Tools / Software">
               <Box
                 sx={{
@@ -535,7 +559,7 @@ export default function SkillsSection() {
               </Box>
             </TiltCard>
           </motion.div>
-        </Box>
+        </motion.div>
       </motion.div>
     </Box>
   );

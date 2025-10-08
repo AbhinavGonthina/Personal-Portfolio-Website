@@ -74,91 +74,6 @@ export default function AboutSection() {
         ease: "easeInOut",
       }}
     >
-      <IconButton
-        onClick={handleClose}
-        sx={{
-          position: "absolute",
-          top: "24px",
-          right: "24px",
-          zIndex: 3,
-          color: "rgba(255, 255, 255, 0.7)",
-          backgroundColor: "rgba(255, 255, 255, 0.1)",
-          width: "32px",
-          height: "32px",
-          borderRadius: "4px",
-          transition: "all 0.2s ease",
-          "&:hover": {
-            backgroundColor: "rgba(255, 0, 0, 0.8)",
-            color: "white",
-            transform: "scale(1.1)",
-          },
-        }}
-      >
-        <CloseIcon fontSize="small" />
-      </IconButton>
-
-      <AnimatePresence>
-        {showPopup && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -10 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: "absolute",
-              top: "20px",
-              right: "80px",
-              zIndex: 4,
-            }}
-          >
-            <Box
-              sx={{
-                background: "rgba(15, 15, 25, 0.95)",
-                border: "2px solid #00d4ff",
-                padding: "16px 20px",
-                borderRadius: "12px",
-                boxShadow:
-                  "0 0 20px rgba(0, 212, 255, 0.4), inset 0 0 30px rgba(0, 212, 255, 0.1)",
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                minWidth: "180px",
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              <Typography
-                sx={{
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  color: "#fff",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                Nice try 😂
-              </Typography>
-              <IconButton
-                onClick={() => setShowPopup(false)}
-                sx={{
-                  color: "#00d4ff",
-                  padding: "4px",
-                  marginLeft: "auto",
-                  backgroundColor: "rgba(0, 212, 255, 0.1)",
-                  transition: "all 0.2s ease",
-                  borderRadius: "4px",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 212, 255, 0.2)",
-                    transform: "scale(1.1)",
-                  },
-                }}
-                size="small"
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </Box>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <Box
         sx={{
           position: "absolute",
@@ -208,7 +123,7 @@ export default function AboutSection() {
           variants={staggerCol}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.4 }}
+          viewport={{ once: true, amount: 0.2 }}
           style={{ display: "flex", flexDirection: "column", gap: "5vh" }}
         >
           <motion.div variants={fadeUp}>

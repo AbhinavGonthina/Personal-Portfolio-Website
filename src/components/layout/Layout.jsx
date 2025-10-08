@@ -3,6 +3,7 @@ import WelcomeSection from "../sections/WelcomeSection";
 import SectionDivider from "../utilities/SectionDivider";
 import SkillsSection from "../sections/SkillsSection";
 import ExperienceSection from "../sections/ExperienceSection";
+import ProjectsSection from "../sections/ProjectsSection";
 
 export default function Layout() {
   return (
@@ -11,6 +12,7 @@ export default function Layout() {
       <AboutSection />
       <SkillsSection />
       <ExperienceSection />
+      <ProjectsSection />
       <div className="h-[100vh]">Current border of page</div>
     </div>
   );
