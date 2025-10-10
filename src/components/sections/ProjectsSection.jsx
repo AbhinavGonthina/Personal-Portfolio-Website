@@ -610,7 +610,7 @@ export default function ProjectsSection() {
       sx={{
         position: "relative",
         width: "100%",
-        minHeight: "100vh",
+        minHeight: "90vh",
         overflow: "hidden",
       }}
     >

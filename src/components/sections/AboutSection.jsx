@@ -45,14 +45,12 @@ export default function AboutSection() {
         width: "100%",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        px: { xs: 2, sm: 3, md: 0 },
         marginBottom: "2vh",
       }}
     >
       <motion.div
         style={{
+          height: "100%",
           width: "80vw",
           maxWidth: "1400px",
           color: "white",
