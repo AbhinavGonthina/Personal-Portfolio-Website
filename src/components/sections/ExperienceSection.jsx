@@ -191,7 +191,7 @@ export default function ExperienceSection() {
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
-              gap: { xs: "4vw", md: "6vw", lg: "8vw" },
+              gap: { xs: "4vw", md: "6vw", lg: "6vw" },
             }}
           >
             <motion.div variants={slideInLeft}>
@@ -200,7 +200,7 @@ export default function ExperienceSection() {
                   border: "2px solid rgba(34, 211, 238, 0.4)",
                   borderRadius: "15px",
                   width: { xs: "25vw", md: "24vw", lg: "22vw" },
-                  maxWidth: "350px",
+                  maxWidth: "500px",
                   height: "50vh",
                   display: "flex",
                   flexDirection: "column",
@@ -302,8 +302,8 @@ export default function ExperienceSection() {
                 sx={{
                   background:
                     "linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 20, 35, 0.95) 100%)",
-                  width: { xs: "40vw", md: "38vw", lg: "36vw" },
-                  maxWidth: "600px",
+                  width: { xs: "40vw", md: "43vw", lg: "46vw" },
+                  maxWidth: "1000px",
                   height: "70vh",
                   borderRadius: "20px",
                   border: "1px solid rgba(34, 211, 238, 0.2)",
