@@ -339,7 +339,7 @@ const TiltCard = memo(function TiltCard({ children, title }) {
       sx={{
         position: "relative",
         height: { xs: "350px", sm: "400px", md: "45vh" },
-        width: { xs: "80vw", sm: "80vw", md: "28vw", lg: "28vw" },
+        width: { xs: "80vw", sm: "80vw", md: "26vw", lg: "26vw" },
         maxWidth: "420px",
         p: "20px",
         border: "2px solid #00d4ff",
