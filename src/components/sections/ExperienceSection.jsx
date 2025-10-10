@@ -126,8 +126,7 @@ export default function ExperienceSection() {
           minHeight: "90vh",
           overflow: "hidden",
           gap: "4vh",
-          mt: "3.5vh",
-          mb: "3.5vh",
+          marginBottom: "7.5vh",
         }}
       >
         <motion.div
@@ -135,19 +134,20 @@ export default function ExperienceSection() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={fadeInUp}
-          style={{ width: "100%" }}
+          style={{ width: "100%", maxWidth: "1400px" }}
         >
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              gap: "2vh",
+              gap: { xs: "3vw", sm: "2vw" },
+              mb: 3,
             }}
           >
             <Box
               sx={{
-                width: "30vw",
+                width: { xs: "20vw", sm: "25vw", md: "30vw" },
                 height: "3px",
                 background: "linear-gradient(90deg, transparent, #00d4ff)",
                 borderRadius: "2px",
@@ -155,13 +155,19 @@ export default function ExperienceSection() {
               }}
             />
 
-            <Typography sx={{ fontWeight: "bold", fontSize: "4vw" }}>
+            <Typography
+              sx={{
+                fontWeight: "bold",
+                fontSize: { xs: "8vw", sm: "6vw", md: "3.5vw" },
+                whiteSpace: "nowrap",
+              }}
+            >
               Experience
             </Typography>
 
             <Box
               sx={{
-                width: "30vw",
+                width: { xs: "20vw", sm: "25vw", md: "30vw" },
                 height: "3px",
                 background: "linear-gradient(90deg, #00d4ff, transparent)",
                 borderRadius: "2px",
@@ -176,7 +182,7 @@ export default function ExperienceSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          style={{ width: "100%" }}
+          style={{ width: "80vw", maxWidth: "1400px" }}
         >
           <Box
             sx={{
@@ -185,7 +191,7 @@ export default function ExperienceSection() {
               flexDirection: "row",
               justifyContent: "center",
               alignItems: "center",
-              gap: "10vw",
+              gap: { xs: "4vw", md: "6vw", lg: "8vw" },
             }}
           >
             <motion.div variants={slideInLeft}>
@@ -193,7 +199,8 @@ export default function ExperienceSection() {
                 sx={{
                   border: "2px solid rgba(34, 211, 238, 0.4)",
                   borderRadius: "15px",
-                  width: "30vw",
+                  width: { xs: "25vw", md: "24vw", lg: "22vw" },
+                  maxWidth: "350px",
                   height: "50vh",
                   display: "flex",
                   flexDirection: "column",
@@ -225,7 +232,7 @@ export default function ExperienceSection() {
                         index !== arr.length - 1
                           ? "1px solid rgba(34, 211, 238, 0.15)"
                           : "none",
-                      padding: "0 2.5vw",
+                      padding: "0 2vw",
                       transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                       position: "relative",
                       background:
@@ -239,7 +246,7 @@ export default function ExperienceSection() {
                       "&:hover": {
                         backgroundColor: "rgba(34, 211, 238, 0.03)",
                         cursor: "pointer",
-                        paddingLeft: "3vw",
+                        paddingLeft: "2.5vw",
                         borderLeft: "3px solid #22d3ee",
                         "& .arrow": {
                           transform: "translateX(8px)",
@@ -255,7 +262,7 @@ export default function ExperienceSection() {
                       className="text"
                       sx={{
                         fontWeight: "500",
-                        fontSize: "2.2vw",
+                        fontSize: { xs: "1.8vw", md: "1.6vw", lg: "1.4vw" },
                         color:
                           selectedExperience === key
                             ? "#22d3ee"
@@ -270,7 +277,7 @@ export default function ExperienceSection() {
                     <Typography
                       className="arrow"
                       sx={{
-                        fontSize: "1.6vw",
+                        fontSize: { xs: "1.4vw", md: "1.2vw", lg: "1vw" },
                         color:
                           selectedExperience === key
                             ? "#22d3ee"
@@ -295,11 +302,12 @@ export default function ExperienceSection() {
                 sx={{
                   background:
                     "linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 20, 35, 0.95) 100%)",
-                  width: "45vw",
+                  width: { xs: "40vw", md: "38vw", lg: "36vw" },
+                  maxWidth: "600px",
                   height: "70vh",
                   borderRadius: "20px",
                   border: "1px solid rgba(34, 211, 238, 0.2)",
-                  padding: "2.5vw",
+                  padding: "2vw",
                   display: "flex",
                   flexDirection: "column",
                   gap: "2vh",
@@ -334,7 +342,7 @@ export default function ExperienceSection() {
                     <Typography
                       sx={{
                         color: "rgba(34, 211, 238, 0.3)",
-                        fontSize: "3vw",
+                        fontSize: { xs: "2.5vw", md: "2vw", lg: "1.8vw" },
                         fontWeight: "300",
                         marginBottom: "1vh",
                       }}
@@ -344,7 +352,7 @@ export default function ExperienceSection() {
                     <Typography
                       sx={{
                         color: "rgba(255, 255, 255, 0.5)",
-                        fontSize: "1.3vw",
+                        fontSize: { xs: "1.1vw", md: "1vw", lg: "0.9vw" },
                         fontWeight: "400",
                         textAlign: "center",
                         maxWidth: "80%",
@@ -356,7 +364,7 @@ export default function ExperienceSection() {
                     <Typography
                       sx={{
                         color: "rgba(34, 211, 238, 0.4)",
-                        fontSize: "0.9vw",
+                        fontSize: { xs: "0.8vw", md: "0.7vw", lg: "0.65vw" },
                         marginTop: "1vh",
                         fontStyle: "italic",
                       }}
@@ -404,7 +412,7 @@ export default function ExperienceSection() {
                       <Typography
                         sx={{
                           color: "#22d3ee",
-                          fontSize: "1.8vw",
+                          fontSize: { xs: "1.5vw", md: "1.4vw", lg: "1.3vw" },
                           fontWeight: "600",
                           marginBottom: "1vh",
                           letterSpacing: "1px",
@@ -415,7 +423,7 @@ export default function ExperienceSection() {
                       <Typography
                         sx={{
                           color: "rgba(255, 255, 255, 0.7)",
-                          fontSize: "1vw",
+                          fontSize: { xs: "0.9vw", md: "0.85vw", lg: "0.8vw" },
                           lineHeight: "1.6",
                           fontFamily: "'Inter', sans-serif",
                         }}
@@ -428,7 +436,7 @@ export default function ExperienceSection() {
                       sx={{
                         flex: 1,
                         display: "flex",
-                        gap: "2vw",
+                        gap: "1.5vw",
                         marginTop: "auto",
                       }}
                     >
@@ -437,14 +445,18 @@ export default function ExperienceSection() {
                           flex: 1,
                           background: "rgba(34, 211, 238, 0.03)",
                           borderRadius: "10px",
-                          padding: "1.5vh 1.5vw",
+                          padding: "1.5vh 1.2vw",
                           border: "1px solid rgba(34, 211, 238, 0.1)",
                         }}
                       >
                         <Typography
                           sx={{
                             color: "rgba(34, 211, 238, 0.8)",
-                            fontSize: "1.1vw",
+                            fontSize: {
+                              xs: "0.95vw",
+                              md: "0.9vw",
+                              lg: "0.85vw",
+                            },
                             fontWeight: "500",
                             marginBottom: "1.5vh",
                             textTransform: "uppercase",
@@ -457,19 +469,23 @@ export default function ExperienceSection() {
                           sx={{
                             display: "flex",
                             flexWrap: "wrap",
-                            gap: "0.5vw",
+                            gap: "0.4vw",
                           }}
                         >
                           {currentExperience.techStack.map((tech) => (
                             <Box
                               key={tech}
                               sx={{
-                                padding: "0.3vh 0.8vw",
+                                padding: "0.3vh 0.6vw",
                                 background: "rgba(34, 211, 238, 0.1)",
                                 border: "1px solid rgba(34, 211, 238, 0.2)",
                                 borderRadius: "5px",
                                 color: "rgba(255, 255, 255, 0.8)",
-                                fontSize: "0.9vw",
+                                fontSize: {
+                                  xs: "0.8vw",
+                                  md: "0.75vw",
+                                  lg: "0.7vw",
+                                },
                                 transition: "all 0.3s ease",
                                 "&:hover": {
                                   background: "rgba(34, 211, 238, 0.2)",
@@ -489,14 +505,18 @@ export default function ExperienceSection() {
                           flex: 1,
                           background: "rgba(168, 85, 247, 0.03)",
                           borderRadius: "10px",
-                          padding: "1.5vh 1.5vw",
+                          padding: "1.5vh 1.2vw",
                           border: "1px solid rgba(168, 85, 247, 0.15)",
                         }}
                       >
                         <Typography
                           sx={{
                             color: "rgba(168, 85, 247, 0.9)",
-                            fontSize: "1.1vw",
+                            fontSize: {
+                              xs: "0.95vw",
+                              md: "0.9vw",
+                              lg: "0.85vw",
+                            },
                             fontWeight: "500",
                             marginBottom: "1.5vh",
                             textTransform: "uppercase",
@@ -518,9 +538,13 @@ export default function ExperienceSection() {
                                 key={index}
                                 sx={{
                                   color: "rgba(255, 255, 255, 0.7)",
-                                  fontSize: "0.9vw",
+                                  fontSize: {
+                                    xs: "0.8vw",
+                                    md: "0.75vw",
+                                    lg: "0.7vw",
+                                  },
                                   lineHeight: "1.4",
-                                  paddingLeft: "0.5vw",
+                                  paddingLeft: "0.4vw",
                                   borderLeft:
                                     "2px solid rgba(168, 85, 247, 0.3)",
                                 }}

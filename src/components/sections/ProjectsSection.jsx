@@ -128,7 +128,10 @@ const projectsData = {
         description:
           "Java game where the player must rotate tiles to connect a power source to all light bulbs on the board.",
         techStack: ["Java (impworld)"],
-        media: { type: "images" },
+        media: {
+          type: "images",
+          images: ["/LightEmAllDemo.png"],
+        },
       },
       "ztype.exe": {
         type: "file",
@@ -321,7 +324,7 @@ const FloatingBg = memo(() => {
         >
           <Box
             sx={{
-              padding: "0.8vh 1.5vh",
+              padding: { xs: "6px 12px", md: "0.8vh 1.5vh" },
               border: "1px solid rgba(0, 212, 255, 0.2)",
               borderRadius: "0.5vh",
               background: "rgba(0, 212, 255, 0.02)",
@@ -329,7 +332,7 @@ const FloatingBg = memo(() => {
           >
             <Typography
               sx={{
-                fontSize: "2.5vh",
+                fontSize: { xs: "14px", md: "2.5vh" },
                 color: "#00d4ff",
                 fontFamily: "Consolas, monospace",
                 whiteSpace: "nowrap",
@@ -369,87 +372,104 @@ const ImageGallery = ({ images }) => {
       />
 
       {/* Navigation Arrows */}
-      <Box
-        onClick={prevImage}
-        sx={{
-          position: "absolute",
-          left: "2vh",
-          top: "50%",
-          transform: "translateY(-50%)",
-          background: "rgba(0, 0, 0, 0.5)",
-          borderRadius: "50%",
-          width: "5vh",
-          height: "5vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          "&:hover": {
-            background: "rgba(0, 0, 0, 0.7)",
-          },
-        }}
-      >
-        <ArrowBackIosIcon
-          sx={{ color: "#fff", fontSize: "2.5vh", marginLeft: "0.8vh" }}
-        />
-      </Box>
+      {images.length > 1 && (
+        <>
+          <Box
+            onClick={prevImage}
+            sx={{
+              position: "absolute",
+              left: { xs: "10px", md: "2vh" },
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "rgba(0, 0, 0, 0.5)",
+              borderRadius: "50%",
+              width: { xs: "36px", md: "5vh" },
+              height: { xs: "36px", md: "5vh" },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              "&:hover": {
+                background: "rgba(0, 0, 0, 0.7)",
+              },
+            }}
+          >
+            <ArrowBackIosIcon
+              sx={{
+                color: "#fff",
+                fontSize: { xs: "18px", md: "2.5vh" },
+                marginLeft: { xs: "6px", md: "0.8vh" },
+              }}
+            />
+          </Box>
 
-      <Box
-        onClick={nextImage}
-        sx={{
-          position: "absolute",
-          right: "2vh",
-          top: "50%",
-          transform: "translateY(-50%)",
-          background: "rgba(0, 0, 0, 0.5)",
-          borderRadius: "50%",
-          width: "5vh",
-          height: "5vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          "&:hover": {
-            background: "rgba(0, 0, 0, 0.7)",
-          },
-        }}
-      >
-        <ArrowForwardIosIcon sx={{ color: "#fff", fontSize: "2.5vh" }} />
-      </Box>
+          <Box
+            onClick={nextImage}
+            sx={{
+              position: "absolute",
+              right: { xs: "10px", md: "2vh" },
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "rgba(0, 0, 0, 0.5)",
+              borderRadius: "50%",
+              width: { xs: "36px", md: "5vh" },
+              height: { xs: "36px", md: "5vh" },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              "&:hover": {
+                background: "rgba(0, 0, 0, 0.7)",
+              },
+            }}
+          >
+            <ArrowForwardIosIcon
+              sx={{
+                color: "#fff",
+                fontSize: { xs: "18px", md: "2.5vh" },
+              }}
+            />
+          </Box>
+        </>
+      )}
 
       {/* Image Indicators */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: "2vh",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          gap: "1vh",
-        }}
-      >
-        {images.map((_, index) => (
-          <Box
-            key={index}
-            onClick={() => setCurrentImage(index)}
-            sx={{
-              width: "1.2vh",
-              height: "1.2vh",
-              borderRadius: "50%",
-              background:
-                index === currentImage ? "#00d4ff" : "rgba(255, 255, 255, 0.5)",
-              cursor: "pointer",
-              transition: "background 0.3s",
-              "&:hover": {
+      {images.length > 1 && (
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: { xs: "10px", md: "2vh" },
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            gap: { xs: "6px", md: "1vh" },
+          }}
+        >
+          {images.map((_, index) => (
+            <Box
+              key={index}
+              onClick={() => setCurrentImage(index)}
+              sx={{
+                width: { xs: "8px", md: "1.2vh" },
+                height: { xs: "8px", md: "1.2vh" },
+                borderRadius: "50%",
                 background:
                   index === currentImage
                     ? "#00d4ff"
-                    : "rgba(255, 255, 255, 0.8)",
-              },
-            }}
-          />
-        ))}
-      </Box>
+                    : "rgba(255, 255, 255, 0.5)",
+                cursor: "pointer",
+                transition: "background 0.3s",
+                "&:hover": {
+                  background:
+                    index === currentImage
+                      ? "#00d4ff"
+                      : "rgba(255, 255, 255, 0.8)",
+                },
+              }}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };
@@ -602,37 +622,44 @@ export default function ProjectsSection() {
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <Box sx={{ width: "100%", paddingTop: "4vh" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: { xs: "3vw", sm: "2vw" },
+            mb: 3,
+          }}
+        >
+          {" "}
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "2vw",
+              width: { xs: "20vw", sm: "25vw", md: "30vw" },
+              height: "3px",
+              background: "linear-gradient(90deg, transparent, #00d4ff)",
+              borderRadius: "2px",
+              boxShadow: "0 0 10px #00d4ff66",
+            }}
+          />{" "}
+          <Typography
+            sx={{
+              fontWeight: "bold",
+              fontSize: { xs: "8vw", sm: "6vw", md: "3.5vw" },
+              whiteSpace: "nowrap",
             }}
           >
-            <Box
-              sx={{
-                width: "30vw",
-                height: "2px",
-                background: "linear-gradient(90deg, transparent, #00d4ff)",
-                opacity: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontWeight: "bold", fontSize: "4vw", color: "#fff" }}
-            >
-              Projects
-            </Typography>
-            <Box
-              sx={{
-                width: "30vw",
-                height: "2px",
-                background: "linear-gradient(90deg, #00d4ff, transparent)",
-                opacity: 0.5,
-              }}
-            />
-          </Box>
+            {" "}
+            Projects{" "}
+          </Typography>{" "}
+          <Box
+            sx={{
+              width: { xs: "20vw", sm: "25vw", md: "30vw" },
+              height: "3px",
+              background: "linear-gradient(90deg, #00d4ff, transparent)",
+              borderRadius: "2px",
+              boxShadow: "0 0 10px #00d4ff66",
+            }}
+          />{" "}
         </Box>
       </motion.div>
 
@@ -645,15 +672,18 @@ export default function ProjectsSection() {
           position: "relative",
           zIndex: 2,
           marginTop: "6vh",
-          padding: "0 8vw",
           paddingBottom: "10vh",
           minHeight: "80vh",
+          display: "flex",
+          justifyContent: "center",
         }}
       >
         <Box
           sx={{
+            width: { xs: "90vw", sm: "85vw", md: "80vw", lg: "75vw" },
+            maxWidth: "1400px",
             background: "rgba(10, 15, 30, 0.9)",
-            borderRadius: "0.8vh",
+            borderRadius: { xs: "8px", md: "0.8vh" },
             overflow: "hidden",
             boxShadow: "0 8px 24px rgba(0, 0, 0, 0.45)",
             border: "1px solid rgba(255, 255, 255, 0.15)",
@@ -664,18 +694,19 @@ export default function ProjectsSection() {
             <Box
               sx={{
                 position: "absolute",
-                top: "1vh",
-                right: "15vh",
+                top: { xs: "8px", md: "1vh" },
+                right: { xs: "10px", md: "15vh" },
                 zIndex: 100,
                 background: "rgba(0, 255, 136, 0.2)",
                 border: "1px solid #00ff88",
-                borderRadius: "0.8vh",
-                padding: "0.8vh 1.5vh",
+                borderRadius: { xs: "6px", md: "0.8vh" },
+                padding: { xs: "6px 10px", md: "0.8vh 1.5vh" },
+                display: { xs: "none", sm: "none", md: "block" },
               }}
             >
               <Typography
                 sx={{
-                  fontSize: "1.6vh",
+                  fontSize: { xs: "12px", sm: "14px", md: "1.6vh" },
                   color: "#00ff88",
                   fontWeight: "bold",
                   fontFamily: "Consolas, monospace",
@@ -689,23 +720,33 @@ export default function ProjectsSection() {
           <Box
             sx={{
               background: "rgba(15, 25, 45, 0.95)",
-              padding: "1.5vh 2.5vh",
+              padding: { xs: "10px 15px", md: "1.5vh 2.5vh" },
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: "1.5vh" }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: "10px", md: "1.5vh" },
+              }}
+            >
               <Box
                 component="img"
                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M0 0h11.5v11.5H0zm12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zm12.5 0H24V24H12.5z'/%3E%3C/svg%3E"
-                sx={{ width: "3vh", height: "3vh", opacity: 0.9 }}
+                sx={{
+                  width: { xs: "20px", md: "3vh" },
+                  height: { xs: "20px", md: "3vh" },
+                  opacity: 0.9,
+                }}
               />
               <Typography
                 sx={{
                   fontFamily: "Consolas, monospace",
-                  fontSize: "2.2vh",
+                  fontSize: { xs: "14px", sm: "16px", md: "2.2vh" },
                   color: "#fff",
                   fontWeight: 500,
                 }}
@@ -717,7 +758,7 @@ export default function ProjectsSection() {
               <Typography
                 onClick={() => setGui(false)}
                 sx={{
-                  fontSize: "1.6vh",
+                  fontSize: { xs: "12px", sm: "14px", md: "1.6vh" },
                   color: "#00d4ff",
                   cursor: "pointer",
                   fontWeight: "500",
@@ -727,18 +768,30 @@ export default function ProjectsSection() {
                 ← Back to Terminal
               </Typography>
             )}
-            <Box sx={{ display: "flex", gap: "1vh", alignItems: "center" }}>
-              <Box sx={{ width: "2vh", height: "0.3vh", background: "#fff" }} />
+            <Box
+              sx={{
+                display: "flex",
+                gap: { xs: "6px", md: "1vh" },
+                alignItems: "center",
+              }}
+            >
               <Box
                 sx={{
-                  width: "1.8vh",
-                  height: "1.8vh",
-                  border: "0.25vh solid #fff",
+                  width: { xs: "14px", md: "2vh" },
+                  height: { xs: "2px", md: "0.3vh" },
+                  background: "#fff",
                 }}
               />
               <Box
                 sx={{
-                  fontSize: "2.5vh",
+                  width: { xs: "12px", md: "1.8vh" },
+                  height: { xs: "12px", md: "1.8vh" },
+                  border: { xs: "2px solid #fff", md: "0.25vh solid #fff" },
+                }}
+              />
+              <Box
+                sx={{
+                  fontSize: { xs: "18px", md: "2.5vh" },
                   color: "#fff",
                   lineHeight: 0.5,
                   cursor: "pointer",
@@ -752,9 +805,11 @@ export default function ProjectsSection() {
           <Box
             ref={terminalRef}
             sx={{
-              padding: "3vh",
-              height: project ? "auto" : "80vh",
-              minHeight: project ? "95vh" : "80vh",
+              padding: { xs: "16px", md: "3vh" },
+              height: project ? "auto" : { xs: "70vh", md: "80vh" },
+              minHeight: project
+                ? { xs: "85vh", md: "95vh" }
+                : { xs: "70vh", md: "80vh" },
               overflowY: project ? "hidden" : "auto",
               fontFamily: "Consolas, 'Courier New', monospace",
               position: "relative",
@@ -765,12 +820,12 @@ export default function ProjectsSection() {
             }}
           >
             {gui && !project ? (
-              <Box sx={{ padding: "2vh" }}>
+              <Box sx={{ padding: { xs: "12px", md: "2vh" } }}>
                 <Typography
                   sx={{
-                    fontSize: "3vh",
+                    fontSize: { xs: "20px", sm: "24px", md: "3vh" },
                     color: "#00d4ff",
-                    marginBottom: "3vh",
+                    marginBottom: { xs: "20px", md: "3vh" },
                     fontWeight: "bold",
                   }}
                 >
@@ -779,8 +834,13 @@ export default function ProjectsSection() {
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(35vh, 1fr))",
-                    gap: "2.5vh",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      sm: "repeat(2, 1fr)",
+                      md: "repeat(auto-fill, minmax(280px, 1fr))",
+                      lg: "repeat(auto-fill, minmax(320px, 1fr))",
+                    },
+                    gap: { xs: "16px", md: "2.5vh" },
                   }}
                 >
                   {allProjects.map(({ name, data, path }, i) => (
@@ -790,8 +850,8 @@ export default function ProjectsSection() {
                       sx={{
                         background: "rgba(0, 212, 255, 0.05)",
                         border: "2px solid rgba(0, 212, 255, 0.2)",
-                        borderRadius: "1vh",
-                        padding: "2vh",
+                        borderRadius: { xs: "8px", md: "1vh" },
+                        padding: { xs: "12px", md: "2vh" },
                         cursor: "pointer",
                         "&:hover": {
                           background: "rgba(0, 212, 255, 0.1)",
@@ -802,9 +862,9 @@ export default function ProjectsSection() {
                       {path && (
                         <Typography
                           sx={{
-                            fontSize: "1.4vh",
+                            fontSize: { xs: "11px", sm: "12px", md: "1.4vh" },
                             color: "#00ff88",
-                            marginBottom: "0.5vh",
+                            marginBottom: { xs: "4px", md: "0.5vh" },
                             opacity: 0.7,
                           }}
                         >
@@ -813,17 +873,17 @@ export default function ProjectsSection() {
                       )}
                       <Typography
                         sx={{
-                          fontSize: "2.2vh",
+                          fontSize: { xs: "16px", sm: "18px", md: "2.2vh" },
                           color: "#00ff88",
                           fontWeight: "600",
-                          marginBottom: "1vh",
+                          marginBottom: { xs: "8px", md: "1vh" },
                         }}
                       >
                         {name}
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: "1.6vh",
+                          fontSize: { xs: "13px", sm: "14px", md: "1.6vh" },
                           color: "rgba(255, 255, 255, 0.7)",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -843,21 +903,25 @@ export default function ProjectsSection() {
                 <Box
                   sx={{
                     display: "flex",
-                    alignItems: "center",
+                    alignItems: { xs: "flex-start", sm: "center" },
                     justifyContent: "space-between",
-                    marginBottom: "2vh",
+                    marginBottom: { xs: "16px", md: "2vh" },
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: { xs: "12px", sm: 0 },
                   }}
                 >
                   <Typography
                     sx={{
-                      fontSize: "3.5vh",
+                      fontSize: { xs: "24px", sm: "28px", md: "3.5vh" },
                       fontWeight: "bold",
                       color: "#00d4ff",
                     }}
                   >
                     {project.title}
                   </Typography>
-                  <Box sx={{ display: "flex", gap: "1.5vh" }}>
+                  <Box
+                    sx={{ display: "flex", gap: { xs: "10px", md: "1.5vh" } }}
+                  >
                     {project.github && (
                       <a
                         href={project.github}
@@ -871,11 +935,11 @@ export default function ProjectsSection() {
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "0.8vh",
-                            padding: "0.8vh 1.5vh",
+                            gap: { xs: "6px", md: "0.8vh" },
+                            padding: { xs: "6px 10px", md: "0.8vh 1.5vh" },
                             background: "rgba(255, 255, 255, 0.1)",
                             border: "1px solid rgba(255, 255, 255, 0.3)",
-                            borderRadius: "0.5vh",
+                            borderRadius: { xs: "4px", md: "0.5vh" },
                             cursor: "pointer",
                             transition: "all 0.3s",
                             "&:hover": {
@@ -885,11 +949,14 @@ export default function ProjectsSection() {
                           }}
                         >
                           <GitHubIcon
-                            sx={{ fontSize: "2.2vh", color: "#fff" }}
+                            sx={{
+                              fontSize: { xs: "18px", md: "2.2vh" },
+                              color: "#fff",
+                            }}
                           />
                           <Typography
                             sx={{
-                              fontSize: "1.6vh",
+                              fontSize: { xs: "13px", sm: "14px", md: "1.6vh" },
                               color: "#fff",
                               fontWeight: "600",
                               fontFamily: "Consolas, monospace",
@@ -917,11 +984,11 @@ export default function ProjectsSection() {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "0.8vh",
-                        padding: "0.8vh 1.5vh",
+                        gap: { xs: "6px", md: "0.8vh" },
+                        padding: { xs: "6px 10px", md: "0.8vh 1.5vh" },
                         background: "rgba(255, 0, 0, 0.1)",
                         border: "1px solid rgba(255, 0, 0, 0.5)",
-                        borderRadius: "0.5vh",
+                        borderRadius: { xs: "4px", md: "0.5vh" },
                         cursor: "pointer",
                         "&:hover": {
                           background: "rgba(255, 0, 0, 0.2)",
@@ -930,11 +997,14 @@ export default function ProjectsSection() {
                       }}
                     >
                       <ArrowBackIcon
-                        sx={{ fontSize: "2.2vh", color: "#ff6666" }}
+                        sx={{
+                          fontSize: { xs: "18px", md: "2.2vh" },
+                          color: "#ff6666",
+                        }}
                       />
                       <Typography
                         sx={{
-                          fontSize: "1.6vh",
+                          fontSize: { xs: "13px", sm: "14px", md: "1.6vh" },
                           color: "#ff6666",
                           fontWeight: "600",
                           fontFamily: "Consolas, monospace",
@@ -947,35 +1017,41 @@ export default function ProjectsSection() {
                 </Box>
                 <Typography
                   sx={{
-                    fontSize: "2vh",
+                    fontSize: { xs: "14px", sm: "16px", md: "2vh" },
                     lineHeight: 1.6,
-                    marginBottom: "2.5vh",
+                    marginBottom: { xs: "16px", md: "2.5vh" },
                     color: "rgba(255, 255, 255, 0.9)",
                   }}
                 >
                   {project.description}
                 </Typography>
-                <Box sx={{ marginBottom: "2.5vh" }}>
+                <Box sx={{ marginBottom: { xs: "16px", md: "2.5vh" } }}>
                   <Typography
                     sx={{
-                      fontSize: "2.5vh",
+                      fontSize: { xs: "18px", sm: "20px", md: "2.5vh" },
                       fontWeight: "600",
-                      marginBottom: "1.5vh",
+                      marginBottom: { xs: "10px", md: "1.5vh" },
                       color: "#00ff88",
                     }}
                   >
                     Tech Stack
                   </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: "1vh" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: { xs: "8px", md: "1vh" },
+                    }}
+                  >
                     {project.techStack.map((tech, i) => (
                       <Box
                         key={i}
                         sx={{
-                          padding: "0.8vh 2vh",
+                          padding: { xs: "6px 12px", md: "0.8vh 2vh" },
                           background: "rgba(0, 212, 255, 0.1)",
                           border: "1px solid rgba(0, 212, 255, 0.3)",
-                          borderRadius: "3vh",
-                          fontSize: "1.8vh",
+                          borderRadius: { xs: "20px", md: "3vh" },
+                          fontSize: { xs: "13px", sm: "14px", md: "1.8vh" },
                           color: "#00d4ff",
                         }}
                       >
@@ -989,15 +1065,16 @@ export default function ProjectsSection() {
                 {project.media.url && project.media.type !== "video" && (
                   <Box
                     sx={{
-                      marginBottom: "2vh",
+                      marginBottom: { xs: "16px", md: "2vh" },
                       display: "flex",
                       alignItems: "center",
-                      gap: "1vh",
+                      gap: { xs: "8px", md: "1vh" },
+                      flexWrap: "wrap",
                     }}
                   >
                     <Typography
                       sx={{
-                        fontSize: "2vh",
+                        fontSize: { xs: "16px", sm: "18px", md: "2vh" },
                         color: "#00ff88",
                         fontWeight: "600",
                       }}
@@ -1032,8 +1109,16 @@ export default function ProjectsSection() {
                           "rgba(0, 212, 255, 0.3)";
                       }}
                     >
-                      {project.media.url}
-                      <OpenInNewIcon sx={{ fontSize: "1.8vh" }} />
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "13px", sm: "14px", md: "1.8vh" },
+                        }}
+                      >
+                        {project.media.url}
+                      </Typography>
+                      <OpenInNewIcon
+                        sx={{ fontSize: { xs: "14px", md: "1.8vh" } }}
+                      />
                     </a>
                   </Box>
                 )}
@@ -1044,11 +1129,11 @@ export default function ProjectsSection() {
                     aspectRatio: "16 / 9",
                     background: "rgba(0, 0, 0, 0.3)",
                     border: "1px solid rgba(0, 212, 255, 0.3)",
-                    borderRadius: "1vh",
+                    borderRadius: { xs: "8px", md: "1vh" },
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginTop: "2vh",
+                    marginTop: { xs: "16px", md: "2vh" },
                     overflow: "hidden",
                   }}
                 >
@@ -1085,7 +1170,7 @@ export default function ProjectsSection() {
                   ) : (
                     <Typography
                       sx={{
-                        fontSize: "2.2vh",
+                        fontSize: { xs: "16px", md: "2.2vh" },
                         color: "rgba(255, 255, 255, 0.5)",
                         textAlign: "center",
                       }}
@@ -1105,26 +1190,44 @@ export default function ProjectsSection() {
             ) : (
               <>
                 {history.map((e, i) => (
-                  <Box key={i} sx={{ marginBottom: "0.8vh" }}>
+                  <Box
+                    key={i}
+                    sx={{ marginBottom: { xs: "6px", md: "0.8vh" } }}
+                  >
                     {e.t === "h" && (
-                      <Typography sx={{ fontSize: "2.2vh", color: "#fff" }}>
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "14px", sm: "16px", md: "2.2vh" },
+                          color: "#fff",
+                        }}
+                      >
                         {e.c}
                       </Typography>
                     )}
                     {e.t === "i" && (
-                      <Typography sx={{ fontSize: "2.2vh", color: "#00d4ff" }}>
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "14px", sm: "16px", md: "2.2vh" },
+                          color: "#00d4ff",
+                        }}
+                      >
                         {e.c}
                       </Typography>
                     )}
                     {e.t === "c" && (
-                      <Typography sx={{ fontSize: "2.2vh", color: "#ffff00" }}>
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "14px", sm: "16px", md: "2.2vh" },
+                          color: "#ffff00",
+                        }}
+                      >
                         {e.c}
                       </Typography>
                     )}
                     {e.t === "o" && (
                       <Typography
                         sx={{
-                          fontSize: "2.2vh",
+                          fontSize: { xs: "14px", sm: "16px", md: "2.2vh" },
                           color: e.c.includes("Error")
                             ? "#ff5555"
                             : e.c.includes(".exe")
@@ -1142,7 +1245,7 @@ export default function ProjectsSection() {
                       <Box sx={{ display: "flex", alignItems: "center" }}>
                         <Typography
                           sx={{
-                            fontSize: "2.2vh",
+                            fontSize: { xs: "14px", sm: "16px", md: "2.2vh" },
                             color: "#fff",
                             whiteSpace: "pre",
                           }}
@@ -1166,7 +1269,8 @@ export default function ProjectsSection() {
                             outline: "none",
                             color: "#fff",
                             fontFamily: "Consolas, monospace",
-                            fontSize: "2.2vh",
+                            fontSize:
+                              window.innerWidth < 768 ? "14px" : "2.2vh",
                             flex: 1,
                             minWidth: 0,
                           }}
