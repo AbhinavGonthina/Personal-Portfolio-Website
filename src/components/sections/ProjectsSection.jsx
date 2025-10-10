@@ -104,7 +104,11 @@ const projectsData = {
         description:
           "Simple game where a user can click w to unpollute the cities shown, with the goal of completely cleaning at least one city.",
         techStack: ["Racket"],
-        media: { type: "video" },
+        media: {
+          type: "video",
+          url: "/videos/BostonCO2Demo.mp4",
+          autoplay: true,
+        },
       },
       "connections.exe": {
         type: "file",
@@ -112,7 +116,11 @@ const projectsData = {
         description:
           "NYTimes Connections game clone in Java where users guess words based on their connections.",
         techStack: ["Java (impworld)"],
-        media: { type: "video" },
+        media: {
+          type: "video",
+          url: "/videos/ConnectionsDemo.mp4",
+          autoplay: true,
+        },
       },
       "lightemall.exe": {
         type: "file",
@@ -121,6 +129,18 @@ const projectsData = {
           "Java game where the player must rotate tiles to connect a power source to all light bulbs on the board.",
         techStack: ["Java (impworld)"],
         media: { type: "images" },
+      },
+      "ztype.exe": {
+        type: "file",
+        title: "ZType - Typing Game Clone",
+        description:
+          "A fast-paced typing game where players defend themselves by typing words to destroy incoming enemies.",
+        techStack: ["Java (impworld)"],
+        media: {
+          type: "video",
+          url: "/videos/ZTypeDemo.mp4",
+          autoplay: true,
+        },
       },
     },
   },
@@ -222,9 +242,10 @@ const orderMap = {
   "cleanboston.exe": 4,
   "connections.exe": 5,
   "lightemall.exe": 6,
-  "quak.exe": 7,
-  "rainfall.exe": 8,
-  "recreon.exe": 9,
+  "ztype.exe": 7,
+  "quak.exe": 8,
+  "rainfall.exe": 9,
+  "recreon.exe": 10,
 };
 
 // Sort projects according to custom order
@@ -964,8 +985,8 @@ export default function ProjectsSection() {
                   </Box>
                 </Box>
 
-                {/* Add clickable link for projects with URLs */}
-                {project.media.url && (
+                {/* Only show clickable link for non-video projects */}
+                {project.media.url && project.media.type !== "video" && (
                   <Box
                     sx={{
                       marginBottom: "2vh",
@@ -1041,6 +1062,23 @@ export default function ProjectsSection() {
                       }}
                       title={project.title}
                     />
+                  ) : project.media.type === "video" && project.media.url ? (
+                    <video
+                      src={project.media.url}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      preload="auto"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
+                      onLoadedData={(e) => {
+                        e.target.play();
+                      }}
+                    />
                   ) : project.media.type === "images" &&
                     project.media.images ? (
                     <ImageGallery images={project.media.images} />
@@ -1055,6 +1093,7 @@ export default function ProjectsSection() {
                       {project.media.type === "iframe" &&
                         "🌐 Website Preview Placeholder"}
                       {project.media.type === "video" &&
+                        !project.media.url &&
                         "🎬 Video Demo Placeholder"}
                       {project.media.type === "images" &&
                         !project.media.images &&
