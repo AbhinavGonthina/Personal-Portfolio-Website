@@ -199,7 +199,7 @@ export default function ExperienceSection() {
                 sx={{
                   border: "2px solid rgba(34, 211, 238, 0.4)",
                   borderRadius: "15px",
-                  width: { xs: "25vw", md: "24vw", lg: "22vw" },
+                  width: { xs: "25vw", md: "25vw", lg: "25vw" },
                   maxWidth: "500px",
                   height: "50vh",
                   display: "flex",
