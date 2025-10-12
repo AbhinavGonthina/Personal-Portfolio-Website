@@ -27,6 +27,7 @@ This project taught me a bit about:
 - CSS Animations in general (keyframes, especially with the connect with me animation at the end)
 - Optimizing React performance with memoization (basically just spamming useMemo haha)
 - Making things responsive across all screen sizes (or I hope at least)
+- Deployment (first time deploying using Github Pages, honestly took me too long figure out)
 
 ## Known Issues
 
