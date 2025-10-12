@@ -32,5 +32,6 @@ This project taught me a bit about:
 ## Known Issues
 
 - Opening Profile too far down on mobile (since there is serach bar and navigation elements on phones)
-- Classes dropdown is causing a considerable amount of lag
-- Projects in the terminal dont show up on mobile (assumably just a problem on xs)
+- Classes dropdown is causing a considerable amount of lag - FIXED 10/12/2025
+- Projects in the terminal dont show up on mobile (assumably just a problem on xs) - FIXED 10/12/2025
+- Video not showing up on mobile
