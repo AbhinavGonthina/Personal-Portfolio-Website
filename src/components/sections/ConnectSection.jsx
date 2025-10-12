@@ -581,23 +581,18 @@ function ConnectSection() {
                 sx={{
                   flex: 1,
                   opacity: 0,
-                  transform: "translateX(20px)",
-                  animation: "slideIn 0.5s ease-out 1.1s forwards",
+                  transform: "translateX(12px)",
+                  animation:
+                    "slideIn 320ms cubic-bezier(.2,.7,.2,1) 500ms forwards",
                   "@keyframes slideIn": {
-                    to: {
-                      opacity: 1,
-                      transform: "translateX(0)",
-                    },
+                    to: { opacity: 1, transform: "translateX(0)" },
                   },
                 }}
               >
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: {
-                      xs: "1fr",
-                      sm: "1fr 1fr",
-                    },
+                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
                     gap: { xs: 1.5, sm: 2, md: 2 },
                     height: "100%",
                   }}
@@ -610,16 +605,16 @@ function ConnectSection() {
                       rel="noopener noreferrer"
                       style={{
                         textDecoration: "none",
-                        opacity: 0,
-                        transform: "scale(0)",
-                        animation: `popIn 0.3s ease-out ${1.2 + index * 0.1}s forwards`,
                         display: "block",
+                        opacity: 0,
+                        transform: "scale(0.96)",
+                        animation: `popIn 240ms cubic-bezier(.2,.7,.2,1) ${560 + index * 80}ms forwards`,
                       }}
                     >
                       <Box
                         sx={{
                           background: "rgba(34, 211, 238, 0.05)",
-                          border: "1px solid rgba(34, 211, 238, 0.2)",
+                          border: "1px solid rgba(34, 211, 238, 0.18)",
                           borderRadius: "12px",
                           padding: {
                             xs: "12px",
@@ -640,20 +635,14 @@ function ConnectSection() {
                             lg: "120px",
                           },
                           transition:
-                            "background 0.2s, border-color 0.2s, box-shadow 0.2s",
-                          transform: "translateZ(0)",
-                          willChange: "auto",
+                            "transform 140ms ease, border-color 140ms ease, background 140ms ease",
                           "&:hover": {
-                            background: "rgba(34, 211, 238, 0.1)",
+                            background: "rgba(34, 211, 238, 0.08)",
                             borderColor: "#22d3ee",
-                            boxShadow: "0 0 20px rgba(34, 211, 238, 0.3)",
-                            transform: "scale(1.05)",
+                            transform: "scale(1.02)",
                           },
                           "@keyframes popIn": {
-                            to: {
-                              opacity: 1,
-                              transform: "scale(1)",
-                            },
+                            to: { opacity: 1, transform: "scale(1)" },
                           },
                         }}
                       >
