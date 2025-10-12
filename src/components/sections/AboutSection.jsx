@@ -581,6 +581,7 @@ function AboutSection() {
                   component="video"
                   ref={videoRef}
                   src="/videos/AbhinavGonthinaPortfolioVid.mp4"
+                  preload="metadata"
                   onEnded={handleVideoEnd}
                   sx={{
                     width: {

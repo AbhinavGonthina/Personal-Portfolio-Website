@@ -12,7 +12,7 @@ export default function WelcomeSection() {
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        height: { xs: "80vh", sm: "90vh" },
+        height: { xs: "70vh", sm: "90vh" },
         overflow: "hidden",
       }}
     >
