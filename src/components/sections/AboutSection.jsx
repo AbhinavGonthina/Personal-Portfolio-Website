@@ -1,10 +1,20 @@
-import { Typography, Box, Stack, IconButton, Button } from "@mui/material";
-import { useRef, useState } from "react";
+import {
+  Typography,
+  Box,
+  Stack,
+  IconButton,
+  Button,
+  Collapse,
+} from "@mui/material";
+import { useRef, useState, memo, useCallback } from "react";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import ReplayIcon from "@mui/icons-material/Replay";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Framer Motion Animations
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -15,11 +25,118 @@ const staggerCol = {
   visible: { transition: { staggerChildren: 0.08 } },
 };
 
-export default function AboutSection() {
+// Current Courses
+const currentClasses = [
+  { name: "Algorithms & Data", code: "CS3000" },
+  { name: "Foundations of Data Science", code: "DS3000" },
+  { name: "Computer Systems", code: "CS3650" },
+];
+
+// Past Courses
+const pastClasses = [
+  { name: "Object Oriented Design", code: "CS3500" },
+  { name: "Introduction to Databases", code: "CS3200" },
+  { name: "Cloud Computing", code: "CS4973" },
+  { name: "Fundamentals of Computer Science 2", code: "CS2510" },
+  { name: "Fundamentals of Computer Science 1", code: "CS2500" },
+  { name: "Foundations of Cybersecurity", code: "CY2550" },
+  { name: "Logic and Computation", code: "CS2800" },
+  { name: "Discrete Structures", code: "CS1800" },
+  { name: "Intro to Mathematical Reasoning", code: "MATH1365" },
+];
+
+// Current Interests (sorry I'm not the most interesting 😭)
+const interests = ["Cooking", "Eating", "YouTube", "Gym", "Puzzles"];
+
+// Memoized course chip component (so we dont re-render all the courses every time)
+const CourseChip = memo(({ course, isCurrent, index }) => (
+  <Box
+    sx={{
+      px: { xs: 1.5, sm: 2 },
+      py: { xs: 0.75, sm: 1 },
+      borderRadius: 1,
+      border: isCurrent
+        ? "1px solid #00d4ff"
+        : "1px solid rgba(255,255,255,0.3)",
+      background: isCurrent
+        ? "rgba(0, 212, 255, 0.1)"
+        : "rgba(255,255,255,0.05)",
+      fontSize: {
+        xs: "0.75rem",
+        sm: "0.85rem",
+        md: "0.9rem",
+      },
+      fontWeight: 500,
+      display: "flex",
+      flexDirection: { xs: "column", sm: "row" },
+      alignItems: "center",
+      gap: { xs: 0.25, sm: 0.5 },
+      textAlign: "center",
+      opacity: isCurrent ? 1 : 0.9,
+      transition: "all 0.2s ease",
+      ...(isCurrent
+        ? {
+            "&:hover": {
+              background: "rgba(0, 212, 255, 0.2)",
+              transform: "translateY(-2px)",
+            },
+          }
+        : {
+            animation: `slideIn 0.3s ease ${index * 0.05}s backwards`,
+            "@keyframes slideIn": {
+              from: {
+                opacity: 0,
+                transform: "translateY(10px)",
+              },
+              to: {
+                opacity: 1,
+                transform: "translateY(0)",
+              },
+            },
+            "&:hover": {
+              background: "rgba(255,255,255,0.1)",
+              transform: "translateY(-2px)",
+              opacity: 1,
+            },
+          }),
+    }}
+  >
+    {/* Box content */}
+    <span>{course.name}</span>
+    <span style={{ opacity: 0.7, fontSize: "0.85em" }}>{course.code}</span>
+  </Box>
+));
+
+CourseChip.displayName = "CourseChip";
+
+// Memoized interest chip component (doesn't really need to be memoized but why not)
+const InterestChip = memo(({ chip }) => (
+  <Box
+    sx={{
+      px: 1.5,
+      py: 0.5,
+      borderRadius: 999,
+      border: "1px solid rgba(255,255,255,0.3)",
+      background: "rgba(255,255,255,0.06)",
+      fontSize: { xs: "0.875rem", md: "0.95rem" },
+      fontWeight: 600,
+      backdropFilter: "blur(5px)",
+    }}
+  >
+    {chip}
+  </Box>
+));
+
+InterestChip.displayName = "InterestChip";
+
+function AboutSection() {
+  // State and refs for video and classes toggling
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showClasses, setShowClasses] = useState(false);
 
-  const handlePlayPause = () => {
+  // Video control handlers
+  const handlePlayPause = useCallback(() => {
     if (!videoRef.current) return;
     if (isPlaying) {
       videoRef.current.pause();
@@ -28,28 +145,38 @@ export default function AboutSection() {
       videoRef.current.play();
       setIsPlaying(true);
     }
-  };
+  }, [isPlaying]);
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.play();
       setIsPlaying(true);
     }
-  };
+  }, []);
+
+  // Toggle Class handler
+  const toggleClasses = useCallback(() => {
+    setShowClasses((prev) => !prev);
+  }, []);
+
+  const handleVideoEnd = useCallback(() => {
+    setIsPlaying(false);
+  }, []);
 
   return (
-    // AboutSection.jsx - Update the main Box wrapper
     <Box
+      id="about-section"
       sx={{
         width: "100%",
         display: "flex",
         justifyContent: "center",
-        marginBottom: "2vh",
+        marginBottom: { xs: "5vh", sm: "5vh", md: "2vh" },
       }}
     >
-      <motion.div
-        style={{
+      {/* Main container with glow effect */}
+      <Box
+        sx={{
           height: "100%",
           width: "80vw",
           maxWidth: "1400px",
@@ -59,20 +186,20 @@ export default function AboutSection() {
           borderRadius: "16px",
           overflow: "hidden",
           position: "relative",
-        }}
-        animate={{
-          boxShadow: [
-            "0 0 10px #00d4ff, inset 0 0 20px rgba(0, 212, 255, 0.1)",
-            "0 0 20px #00d4ff, inset 0 0 40px rgba(0, 212, 255, 0.2)",
-            "0 0 10px #00d4ff, inset 0 0 20px rgba(0, 212, 255, 0.1)",
-          ],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
+          animation: "glow 2s infinite ease-in-out",
+          "@keyframes glow": {
+            "0%, 100%": {
+              boxShadow:
+                "0 0 10px #00d4ff, inset 0 0 20px rgba(0, 212, 255, 0.1)",
+            },
+            "50%": {
+              boxShadow:
+                "0 0 20px #00d4ff, inset 0 0 40px rgba(0, 212, 255, 0.2)",
+            },
+          },
         }}
       >
+        {/* Thicker Top Border */}
         <Box
           sx={{
             position: "absolute",
@@ -88,6 +215,7 @@ export default function AboutSection() {
           }}
         />
 
+        {/* Background Circuit Pattern */}
         <Box
           sx={{
             position: "absolute",
@@ -104,6 +232,7 @@ export default function AboutSection() {
           }}
         />
 
+        {/* Content */}
         <Box
           sx={{
             position: "relative",
@@ -117,6 +246,7 @@ export default function AboutSection() {
             px: { xs: 3, md: 4, lg: 6 },
           }}
         >
+          {/* Left Side - Personal information */}
           <motion.div
             variants={staggerCol}
             initial="hidden"
@@ -125,6 +255,7 @@ export default function AboutSection() {
             style={{ flex: 1, maxWidth: "600px" }}
           >
             <Stack spacing={{ xs: 3, md: 4 }}>
+              {/* Section heading */}
               <motion.div variants={fadeUp}>
                 <Typography
                   sx={{
@@ -141,6 +272,7 @@ export default function AboutSection() {
                 </Typography>
               </motion.div>
 
+              {/* Introduction Text */}
               <motion.div variants={fadeUp}>
                 <Box sx={{ position: "relative", pl: { sm: 3 } }}>
                   <Box
@@ -216,6 +348,7 @@ export default function AboutSection() {
                 </Box>
               </motion.div>
 
+              {/* Education section */}
               <motion.div variants={fadeUp}>
                 <Stack spacing={2}>
                   <Typography
@@ -229,7 +362,7 @@ export default function AboutSection() {
                   <Box
                     sx={{
                       display: "flex",
-                      alignItems: "center",
+                      flexDirection: "column",
                       gap: 2,
                       p: 2,
                       borderRadius: 2,
@@ -237,88 +370,201 @@ export default function AboutSection() {
                       background: "rgba(255,255,255,0.04)",
                       boxShadow: "0 0 10px rgba(255,255,255,0.12) inset",
                       backdropFilter: "blur(10px)",
-                      flexDirection: { xs: "column", sm: "row" },
+                      transition: "all 0.3s ease",
                     }}
                   >
+                    {/* University information */}
                     <Box
-                      component="img"
-                      src="../../NortheasternLogo.png"
-                      alt="Northeastern University Logo"
                       sx={{
-                        width: { xs: 60, md: 80 },
-                        height: { xs: 60, md: 80 },
-                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        flexDirection: { xs: "column", sm: "row" },
                       }}
-                    />
-                    <Box sx={{ flex: 1, width: "100%" }}>
-                      <Stack spacing={1}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: { xs: "flex-start", sm: "center" },
-                            justifyContent: "space-between",
-                            flexDirection: { xs: "column", sm: "row" },
-                            gap: 1,
-                          }}
-                        >
-                          <Typography
+                    >
+                      <Box
+                        component="img"
+                        src="../../NortheasternLogo.png"
+                        alt="Northeastern University Logo"
+                        sx={{
+                          width: { xs: 60, md: 80 },
+                          height: { xs: 60, md: 80 },
+                          flexShrink: 0,
+                        }}
+                      />
+                      <Box sx={{ flex: 1, width: "100%" }}>
+                        <Stack spacing={1}>
+                          <Box
                             sx={{
-                              fontSize: {
-                                xs: "1.1rem",
-                                sm: "1.25rem",
-                                md: "1.4rem",
+                              display: "flex",
+                              alignItems: { xs: "center", sm: "center" },
+                              justifyContent: {
+                                xs: "center",
+                                sm: "space-between",
                               },
-                              fontWeight: 700,
+                              flexDirection: { xs: "column", sm: "row" },
+                              gap: 1,
+                              textAlign: { xs: "center", sm: "left" },
                             }}
                           >
-                            Northeastern University
-                          </Typography>
-                          <Typography
+                            <Typography
+                              sx={{
+                                fontSize: {
+                                  xs: "1.1rem",
+                                  sm: "1.1rem",
+                                  md: "1.1rem",
+                                },
+                                fontWeight: 700,
+                              }}
+                            >
+                              Northeastern University
+                            </Typography>
+                            <Typography
+                              sx={{
+                                fontSize: {
+                                  xs: "0.8rem",
+                                  md: "0.8rem",
+                                  lg: "0.8rem",
+                                },
+                                opacity: 0.8,
+                              }}
+                            >
+                              Expected: Aug 2027
+                            </Typography>
+                          </Box>
+                          <Box
                             sx={{
-                              fontSize: { xs: "0.875rem", md: "0.95rem" },
-                              opacity: 0.8,
+                              display: "flex",
+                              alignItems: { xs: "center", sm: "center" },
+                              justifyContent: {
+                                xs: "center",
+                                sm: "space-between",
+                              },
+                              flexDirection: { xs: "column", sm: "row" },
+                              gap: 1,
+                              textAlign: { xs: "center", sm: "left" },
                             }}
                           >
-                            Expected: Aug 2027
-                          </Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: { xs: "flex-start", sm: "center" },
-                            justifyContent: "space-between",
-                            flexDirection: { xs: "column", sm: "row" },
-                            gap: 1,
-                          }}
-                        >
-                          <Typography
-                            sx={{
-                              fontSize: { xs: "0.875rem", md: "1rem" },
-                              opacity: 0.9,
-                            }}
-                          >
-                            GPA: 4.0/4.0, Honors Program
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            sx={{
-                              backgroundColor: "rgba(35, 182, 47, 1)",
-                              color: "#FFFFFF",
-                              borderBottom: "2px solid white",
-                              transition: "all 0.33s ease",
-                              "&:hover": { backgroundColor: "#7240d8ff" },
-                            }}
-                          >
-                            Classes
-                          </Button>
-                        </Box>
-                      </Stack>
+                            <Typography
+                              sx={{
+                                fontSize: { xs: "0.875rem", md: "1rem" },
+                                opacity: 0.9,
+                              }}
+                            >
+                              GPA: 4.0/4.0, Honors Program
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={toggleClasses}
+                              endIcon={
+                                showClasses ? (
+                                  <ExpandLessIcon />
+                                ) : (
+                                  <ExpandMoreIcon />
+                                )
+                              }
+                              sx={{
+                                backgroundColor: "#ab60ecff",
+                                color: "#FFFFFF",
+                                borderBottom: "2px solid white",
+                                fontWeight: "bold",
+                                transition: "all 0.3s ease",
+                                "&:hover": { backgroundColor: "#C77DFF" },
+                              }}
+                            >
+                              Classes
+                            </Button>
+                          </Box>
+                        </Stack>
+                      </Box>
                     </Box>
+
+                    {/* Expandable Classes section */}
+                    <Collapse in={showClasses} timeout="auto" unmountOnExit>
+                      <Box
+                        sx={{
+                          pt: 2,
+                          borderTop: "1px solid rgba(255,255,255,0.2)",
+                        }}
+                      >
+                        <Stack spacing={3}>
+                          {/* Current courses */}
+                          <Box>
+                            <Typography
+                              sx={{
+                                fontSize: { xs: "0.9rem", md: "1rem" },
+                                fontWeight: 600,
+                                mb: 1.5,
+                                color: "#00d4ff",
+                                textAlign: { xs: "center", sm: "left" },
+                              }}
+                            >
+                              Currently Taking
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 1,
+                                justifyContent: {
+                                  xs: "center",
+                                  sm: "flex-start",
+                                },
+                              }}
+                            >
+                              {currentClasses.map((course) => (
+                                <CourseChip
+                                  key={course.code}
+                                  course={course}
+                                  isCurrent={true}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+
+                          {/* Completed courses */}
+                          <Box>
+                            <Typography
+                              sx={{
+                                fontSize: { xs: "0.9rem", md: "1rem" },
+                                fontWeight: 600,
+                                mb: 1.5,
+                                color: "rgba(255,255,255,0.9)",
+                                textAlign: { xs: "center", sm: "left" },
+                              }}
+                            >
+                              Completed Courses
+                            </Typography>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: 1,
+                                justifyContent: {
+                                  xs: "center",
+                                  sm: "flex-start",
+                                },
+                              }}
+                            >
+                              {pastClasses.map((course, index) => (
+                                <CourseChip
+                                  key={course.code}
+                                  course={course}
+                                  isCurrent={false}
+                                  index={index}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        </Stack>
+                      </Box>
+                    </Collapse>
                   </Box>
                 </Stack>
               </motion.div>
 
+              {/* Interests section */}
               <motion.div variants={fadeUp}>
                 <Box
                   sx={{
@@ -329,28 +575,15 @@ export default function AboutSection() {
                   }}
                 >
                   <Typography sx={{ fontWeight: 700 }}>Interests:</Typography>
-                  {["Food", "YouTube", "Gym", "Puzzles"].map((chip) => (
-                    <Box
-                      key={chip}
-                      sx={{
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: 999,
-                        border: "1px solid rgba(255,255,255,0.3)",
-                        background: "rgba(255,255,255,0.06)",
-                        fontSize: { xs: "0.875rem", md: "0.95rem" },
-                        fontWeight: 600,
-                        backdropFilter: "blur(5px)",
-                      }}
-                    >
-                      {chip}
-                    </Box>
+                  {interests.map((chip) => (
+                    <InterestChip key={chip} chip={chip} />
                   ))}
                 </Box>
               </motion.div>
             </Stack>
           </motion.div>
 
+          {/* Right column - Video Intro */}
           <motion.div
             variants={staggerCol}
             initial="hidden"
@@ -369,18 +602,20 @@ export default function AboutSection() {
                   A Short Introduction:
                 </Typography>
               </motion.div>
+
+              {/* Video Player */}
               <motion.div variants={fadeUp}>
                 <Box
                   component="video"
                   ref={videoRef}
                   src="/videos/AbhinavGonthinaPortfolioVid.mp4"
-                  onEnded={() => setIsPlaying(false)}
+                  onEnded={handleVideoEnd}
                   sx={{
                     width: {
                       xs: "100%",
                       sm: "350px",
                       md: "400px",
-                      lg: "450px",
+                      lg: "425px",
                     },
                     maxWidth: "90vw",
                     height: "auto",
@@ -391,6 +626,8 @@ export default function AboutSection() {
                   }}
                 />
               </motion.div>
+
+              {/* Video Controls */}
               <motion.div variants={fadeUp}>
                 <Stack direction="row" spacing={2}>
                   <IconButton onClick={handlePlayPause} sx={{ color: "white" }}>
@@ -404,7 +641,9 @@ export default function AboutSection() {
             </Stack>
           </motion.div>
         </Box>
-      </motion.div>
+      </Box>
     </Box>
   );
 }
+
+export default memo(AboutSection);

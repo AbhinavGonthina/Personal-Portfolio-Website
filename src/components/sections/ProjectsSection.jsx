@@ -7,7 +7,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
-// Projects data
+// Projects data structure
 const projectsData = {
   "codesign.exe": {
     type: "file",
@@ -219,7 +219,7 @@ const projectsData = {
   },
 };
 
-// Pre-calculate all projects with custom order for GUI
+// Project list ordering
 const getAllProjects = (data, path = "") => {
   const projects = [];
   for (const [name, item] of Object.entries(data)) {
@@ -232,11 +232,9 @@ const getAllProjects = (data, path = "") => {
   return projects;
 };
 
-// Create custom ordered list for GUI display
 const allProjectsUnordered = getAllProjects(projectsData);
 const allProjects = [];
 
-// Custom ordering: move portfolio before cleanboston
 const orderMap = {
   "codesign.exe": 0,
   "roadquest.exe": 1,
@@ -251,7 +249,6 @@ const orderMap = {
   "recreon.exe": 10,
 };
 
-// Sort projects according to custom order
 allProjectsUnordered.sort((a, b) => {
   const orderA = orderMap[a.name] ?? 999;
   const orderB = orderMap[b.name] ?? 999;
@@ -259,7 +256,7 @@ allProjectsUnordered.sort((a, b) => {
 });
 allProjects.push(...allProjectsUnordered);
 
-// Initial command history
+// Terminal initial output
 const initialHistory = [
   { t: "h", c: "Windows PowerShell" },
   { t: "h", c: "Copyright (c) Abhinav Gonthina. All rights reserved." },
@@ -277,7 +274,7 @@ const initialHistory = [
   { t: "p", c: "" },
 ];
 
-// Floating snippets
+// Floating code snippets data
 const snippets = [
   "const server = express();",
   "React.useState(initialValue);",
@@ -287,13 +284,12 @@ const snippets = [
   "const data = await response.json();",
   "export default Component;",
   "mongodb.connect(URL, options);",
-  "axios.get('/api/data').then();",
 ];
 
-// Floating background - completely separate component
+// Floating background animation component
 const FloatingBg = memo(() => {
-  const delays = [0, 8, 14, 2, 16, 10, 4, 12, 6];
-  const speeds = [30, 22, 35, 18, 40, 25, 32, 20, 28];
+  const delays = [0, 8, 14, 2, 16, 10, 4, 12];
+  const speeds = [30, 22, 35, 18, 40, 25, 32, 20];
 
   return (
     <>
@@ -347,7 +343,7 @@ const FloatingBg = memo(() => {
   );
 });
 
-// Image Gallery Component
+// Carousel component for project images
 const ImageGallery = ({ images }) => {
   const [currentImage, setCurrentImage] = useState(0);
 
@@ -371,7 +367,7 @@ const ImageGallery = ({ images }) => {
         }}
       />
 
-      {/* Navigation Arrows */}
+      {/* Navigation Controls */}
       {images.length > 1 && (
         <>
           <Box
@@ -433,7 +429,7 @@ const ImageGallery = ({ images }) => {
         </>
       )}
 
-      {/* Image Indicators */}
+      {/* Image position indicators */}
       {images.length > 1 && (
         <Box
           sx={{
@@ -475,6 +471,7 @@ const ImageGallery = ({ images }) => {
 };
 
 export default function ProjectsSection() {
+  // All terminal state management stuff
   const [history, setHistory] = useState(initialHistory);
   const [cmd, setCmd] = useState("");
   const [path, setPath] = useState("C:\\Users\\Abhinav\\Projects");
@@ -485,8 +482,8 @@ export default function ProjectsSection() {
   const terminalRef = useRef(null);
   const processingRef = useRef(false);
 
+  // Terminal command execution handler
   const execute = (command) => {
-    // Prevent multiple rapid executions
     if (processingRef.current) return;
     processingRef.current = true;
 
@@ -501,7 +498,6 @@ export default function ProjectsSection() {
       setGui(true);
       out = ["Switching to GUI mode..."];
     } else if (base === "ls" && !args) {
-      // Pre-build the ls output as a single array to avoid multiple operations
       const entries = Object.entries(folder);
       out = [
         "",
@@ -554,7 +550,6 @@ export default function ProjectsSection() {
         }
       }
     } else if (base === "clear" || base === "cls") {
-      // Use functional setState to avoid closure issues
       setHistory(() => [...initialHistory]);
       setCmd("");
       requestAnimationFrame(() => {
@@ -578,7 +573,6 @@ export default function ProjectsSection() {
       );
     }
 
-    // Batch all state updates together
     setHistory((prev) => {
       const newHistory = [
         ...prev.slice(0, -1),
@@ -590,7 +584,6 @@ export default function ProjectsSection() {
     });
     setCmd("");
 
-    // Use requestAnimationFrame instead of setTimeout for better performance
     requestAnimationFrame(() => {
       if (terminalRef.current)
         terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
@@ -599,6 +592,7 @@ export default function ProjectsSection() {
     });
   };
 
+  // Handle Enter key press in terminal input
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !processingRef.current) {
       execute(cmd);
@@ -607,6 +601,7 @@ export default function ProjectsSection() {
 
   return (
     <Box
+      id="projects-section"
       sx={{
         position: "relative",
         width: "100%",
@@ -616,6 +611,7 @@ export default function ProjectsSection() {
     >
       <FloatingBg />
 
+      {/* Section title */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -631,7 +627,6 @@ export default function ProjectsSection() {
             mb: 3,
           }}
         >
-          {" "}
           <Box
             sx={{
               width: { xs: "20vw", sm: "25vw", md: "30vw" },
@@ -640,7 +635,7 @@ export default function ProjectsSection() {
               borderRadius: "2px",
               boxShadow: "0 0 10px #00d4ff66",
             }}
-          />{" "}
+          />
           <Typography
             sx={{
               fontWeight: "bold",
@@ -648,9 +643,8 @@ export default function ProjectsSection() {
               whiteSpace: "nowrap",
             }}
           >
-            {" "}
-            Projects{" "}
-          </Typography>{" "}
+            Projects
+          </Typography>
           <Box
             sx={{
               width: { xs: "20vw", sm: "25vw", md: "30vw" },
@@ -659,10 +653,11 @@ export default function ProjectsSection() {
               borderRadius: "2px",
               boxShadow: "0 0 10px #00d4ff66",
             }}
-          />{" "}
+          />
         </Box>
       </motion.div>
 
+      {/* Terminal window container */}
       <motion.div
         initial={{ opacity: 0, y: 60, scale: 0.95 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -690,6 +685,7 @@ export default function ProjectsSection() {
             position: "relative",
           }}
         >
+          {/* GUI mode hint if you dont like the terminal */}
           {!gui && !project && (
             <Box
               sx={{
@@ -717,6 +713,7 @@ export default function ProjectsSection() {
             </Box>
           )}
 
+          {/* Terminal header */}
           <Box
             sx={{
               background: "rgba(15, 25, 45, 0.95)",
@@ -734,6 +731,7 @@ export default function ProjectsSection() {
                 gap: { xs: "10px", md: "1.5vh" },
               }}
             >
+              {/* Terminal icon (got this from Claude, dont know why its src is like this) */}
               <Box
                 component="img"
                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M0 0h11.5v11.5H0zm12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zm12.5 0H24V24H12.5z'/%3E%3C/svg%3E"
@@ -802,6 +800,7 @@ export default function ProjectsSection() {
             </Box>
           </Box>
 
+          {/* Terminal content area */}
           <Box
             ref={terminalRef}
             sx={{
@@ -820,6 +819,7 @@ export default function ProjectsSection() {
             }}
           >
             {gui && !project ? (
+              /* GUI mode project gallery */
               <Box sx={{ padding: { xs: "12px", md: "2vh" } }}>
                 <Typography
                   sx={{
@@ -829,7 +829,7 @@ export default function ProjectsSection() {
                     fontWeight: "bold",
                   }}
                 >
-                  Project Gallery - Click to Open
+                  Project Gallery
                 </Typography>
                 <Box
                   sx={{
@@ -899,7 +899,9 @@ export default function ProjectsSection() {
                 </Box>
               </Box>
             ) : project ? (
+              /* Project detail view */
               <Box sx={{ color: "#fff", height: "100%", overflow: "auto" }}>
+                {/* Project header with actions */}
                 <Box
                   sx={{
                     display: "flex",
@@ -1015,6 +1017,8 @@ export default function ProjectsSection() {
                     </Box>
                   </Box>
                 </Box>
+
+                {/* Project description */}
                 <Typography
                   sx={{
                     fontSize: { xs: "14px", sm: "16px", md: "2vh" },
@@ -1025,6 +1029,8 @@ export default function ProjectsSection() {
                 >
                   {project.description}
                 </Typography>
+
+                {/* Tech stack section */}
                 <Box sx={{ marginBottom: { xs: "16px", md: "2.5vh" } }}>
                   <Typography
                     sx={{
@@ -1061,7 +1067,7 @@ export default function ProjectsSection() {
                   </Box>
                 </Box>
 
-                {/* Only show clickable link for non-video projects */}
+                {/* Live demo link */}
                 {project.media.url && project.media.type !== "video" && (
                   <Box
                     sx={{
@@ -1123,6 +1129,7 @@ export default function ProjectsSection() {
                   </Box>
                 )}
 
+                {/* Media display area */}
                 <Box
                   sx={{
                     width: "100%",
@@ -1188,6 +1195,7 @@ export default function ProjectsSection() {
                 </Box>
               </Box>
             ) : (
+              /* Terminal interface */
               <>
                 {history.map((e, i) => (
                   <Box
@@ -1259,10 +1267,6 @@ export default function ProjectsSection() {
                           value={cmd}
                           onChange={(e) => setCmd(e.target.value)}
                           onKeyDown={handleKeyDown}
-                          onBlur={(e) => {
-                            if (!project && !gui)
-                              setTimeout(() => e.target.focus(), 0);
-                          }}
                           style={{
                             background: "transparent",
                             border: "none",

@@ -1,3 +1,5 @@
+// Note: I memoized everything in here to see if it would better performance as it lags on my end 😅
+
 import {
   Typography,
   Box,
@@ -6,7 +8,7 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { useState, useRef, memo, useCallback } from "react";
+import { useState, useRef, memo, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import LogoLoop from "../react-bits-components/LogoLoop";
 import {
@@ -40,6 +42,7 @@ import {
 } from "react-icons/si";
 import ParticleConnectionBackground from "../ui/ParticleConnectionBackground";
 
+// Technology icons and links data
 const techLogos = [
   {
     node: <SiRacket />,
@@ -111,6 +114,7 @@ const techLogos = [
   { node: <SiVitest />, title: "Vitest", href: "https://vitest.dev/" },
 ];
 
+// Skills categorization
 const LANGUAGES = [
   "JavaScript",
   "TypeScript",
@@ -156,6 +160,7 @@ const TOOLS = [
   "MySQL",
 ];
 
+// Style Configurations for stuff
 const chipSx = {
   color: "#00d4ff",
   borderColor: "#00d4ff",
@@ -168,48 +173,46 @@ const chipSx = {
   },
 };
 
-const fadeInUp = {
-  hidden: {
-    opacity: 0,
-    y: 40,
+const scrollbarSx = {
+  maxHeight: "100%",
+  overflow: "auto",
+  pr: 1,
+  "&::-webkit-scrollbar": { width: "8px" },
+  "&::-webkit-scrollbar-track": {
+    background: "rgba(0,212,255,0.1)",
+    borderRadius: "4px",
   },
+  "&::-webkit-scrollbar-thumb": {
+    background: "#00d4ff",
+    borderRadius: "4px",
+  },
+};
+
+// Framer Motion animations
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.8,
-      ease: "easeOut",
-    },
+    transition: { duration: 0.8, ease: "easeOut" },
   },
 };
 
 const fadeInLeft = {
-  hidden: {
-    opacity: 0,
-    x: -40,
-  },
+  hidden: { opacity: 0, x: -40 },
   visible: {
     opacity: 1,
     x: 0,
-    transition: {
-      duration: 0.8,
-      ease: "easeOut",
-    },
+    transition: { duration: 0.8, ease: "easeOut" },
   },
 };
 
 const fadeInRight = {
-  hidden: {
-    opacity: 0,
-    x: 40,
-  },
+  hidden: { opacity: 0, x: 40 },
   visible: {
     opacity: 1,
     x: 0,
-    transition: {
-      duration: 0.8,
-      ease: "easeOut",
-    },
+    transition: { duration: 0.8, ease: "easeOut" },
   },
 };
 
@@ -217,15 +220,20 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.3,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.3, delayChildren: 0.2 },
   },
 };
 
-// Memoized PillList component
+// Pill list component for tools display
 const PillList = memo(function PillList({ items }) {
+  const chips = useMemo(
+    () =>
+      items.map((label) => (
+        <Chip key={label} label={label} variant="outlined" sx={chipSx} />
+      )),
+    [items]
+  );
+
   return (
     <Box
       sx={{
@@ -233,151 +241,224 @@ const PillList = memo(function PillList({ items }) {
         flexWrap: "wrap",
         gap: 1,
         alignContent: "flex-start",
-        mt: 1,
         width: "100%",
-        height: "100%",
-        overflow: "hidden", // Prevent overflow outside the container
+        height: "auto",
+        minHeight: 0,
       }}
     >
-      {items.map((label) => (
-        <Chip key={label} label={label} variant="outlined" sx={chipSx} />
-      ))}
+      {chips}
     </Box>
   );
 });
 
-// Memoized NumberedList component
+// Numbered list component for languages display
 const NumberedList = memo(function NumberedList({ items }) {
-  return (
-    <List sx={{ mt: 0, p: 0 }}>
-      {items.map((item, index) => (
-        <ListItem
-          key={item}
-          sx={{
-            py: 1.5,
-            px: 2,
-            borderBottom:
-              index < items.length - 1
-                ? "1px solid rgba(0,212,255,0.2)"
-                : "none",
-            transition: "all 0.3s ease",
-          }}
-        >
-          <Typography
+  const listItems = useMemo(
+    () =>
+      items.map((item, index) => {
+        const isLast = index === items.length - 1;
+        const numberStr = String(index + 1).padStart(2, "0");
+
+        return (
+          <ListItem
+            key={item}
             sx={{
-              color: "#00d4ff",
-              fontWeight: 700,
-              fontSize: { xs: "16px", sm: "18px", md: "20px" },
-              mr: 3,
-              minWidth: "30px",
-              textAlign: "center",
+              py: 1.5,
+              px: 2,
+              borderBottom: !isLast ? "1px solid rgba(0,212,255,0.2)" : "none",
+              transition: "all 0.3s ease",
             }}
           >
-            {String(index + 1).padStart(2, "0")}
-          </Typography>
-          <ListItemText
-            primary={item}
-            primaryTypographyProps={{
-              sx: {
-                color: "#ccd6f6",
-                fontSize: { xs: "14px", sm: "16px", md: "18px" },
-                fontWeight: 500,
-                letterSpacing: 0.5,
-                transition: "all 0.3s ease",
-              },
-            }}
-          />
-        </ListItem>
-      ))}
-    </List>
+            <Typography
+              sx={{
+                color: "#00d4ff",
+                fontWeight: 700,
+                fontSize: { xs: "16px", sm: "18px", md: "20px" },
+                mr: 3,
+                minWidth: "30px",
+                textAlign: "center",
+              }}
+            >
+              {numberStr}
+            </Typography>
+            <ListItemText
+              primary={item}
+              primaryTypographyProps={{
+                sx: {
+                  color: "#ccd6f6",
+                  fontSize: { xs: "14px", sm: "16px", md: "18px" },
+                  fontWeight: 500,
+                  letterSpacing: 0.5,
+                  transition: "all 0.3s ease",
+                },
+              }}
+            />
+          </ListItem>
+        );
+      }),
+    [items]
   );
+
+  return <List sx={{ mt: 0, p: 0 }}>{listItems}</List>;
 });
 
-// Optimized TiltCard with throttled mouse movement
+// 3D tilt card component
 const TiltCard = memo(function TiltCard({ children, title }) {
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  // Card states and references
+  const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef(null);
-  const animationFrameRef = useRef(null);
+  const rafRef = useRef(null);
+  const transformRef = useRef({ x: 0, y: 0 });
+  const rectRef = useRef(null);
 
-  const handleMouseMove = useCallback((e) => {
-    // Cancel any pending animation frame
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
+  // Update card transform based on mouse position
+  const updateTransform = useCallback(() => {
+    if (cardRef.current) {
+      const { x, y } = transformRef.current;
+      cardRef.current.style.transform = `perspective(1000px) rotateX(${x}deg) rotateY(${y}deg) translateZ(0)`;
     }
+  }, []);
 
-    // Schedule the tilt update for the next frame
-    animationFrameRef.current = requestAnimationFrame(() => {
-      if (!cardRef.current) return;
+  // Event handlers for mouse interactions
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!isHovered || rafRef.current) return;
 
-      const card = cardRef.current;
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
+      rafRef.current = requestAnimationFrame(() => {
+        if (!cardRef.current) {
+          rafRef.current = null;
+          return;
+        }
 
-      // Reduced rotation range for smoother performance
-      const rotateX = ((y - centerY) / centerY) * -5;
-      const rotateY = ((x - centerX) / centerX) * 5;
+        if (!rectRef.current) {
+          rectRef.current = cardRef.current.getBoundingClientRect();
+        }
 
-      setTilt({ x: rotateX, y: rotateY });
-    });
+        const rect = rectRef.current;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        transformRef.current = {
+          x: ((y - centerY) / centerY) * -5,
+          y: ((x - centerX) / centerX) * 5,
+        };
+
+        updateTransform();
+        rafRef.current = null;
+      });
+    },
+    [isHovered, updateTransform]
+  );
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    rectRef.current = null;
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
+    setIsHovered(false);
+    rectRef.current = null;
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
     }
-    setTilt({ x: 0, y: 0 });
-  }, []);
+    transformRef.current = { x: 0, y: 0 };
+    updateTransform();
+  }, [updateTransform]);
+
+  // Card styling
+  const cardSx = useMemo(
+    () => ({
+      position: "relative",
+      height: { xs: "350px", sm: "400px", md: "45vh" },
+      width: { xs: "80vw", sm: "80vw", md: "26vw", lg: "26vw" },
+      maxWidth: "480px",
+      p: "20px",
+      border: "2px solid #00d4ff",
+      borderRadius: "12px",
+      overflow: "visible",
+      transition: "transform 0.15s cubic-bezier(0.23, 1, 0.32, 1)",
+      willChange: isHovered ? "transform" : "auto",
+      backfaceVisibility: "hidden",
+      transformStyle: "preserve-3d",
+      transform: "translateZ(0)",
+    }),
+    [isHovered]
+  );
+
+  // Title styling
+  const titleSx = useMemo(
+    () => ({
+      position: "absolute",
+      top: -12,
+      left: "50%",
+      transform: "translateX(-50%)",
+      px: 1,
+      py: 0.25,
+      fontSize: { xs: "14px", sm: "15px", md: "17px" },
+      fontWeight: 700,
+      lineHeight: 1,
+      color: "#00d4ff",
+      backgroundColor: "#0f0113",
+      whiteSpace: "nowrap",
+      zIndex: 1,
+    }),
+    []
+  );
 
   return (
     <Box
       ref={cardRef}
       onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      sx={{
-        position: "relative",
-        height: { xs: "350px", sm: "400px", md: "45vh" },
-        width: { xs: "80vw", sm: "80vw", md: "26vw", lg: "26vw" },
-        maxWidth: "480px",
-        p: "20px",
-        border: "2px solid #00d4ff",
-        borderRadius: "12px",
-        overflow: "visible", // Changed from "visible" to "hidden" to contain content
-        transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-        transition: "transform 0.2s cubic-bezier(0.23, 1, 0.32, 1)",
-        willChange: "transform",
-        backfaceVisibility: "hidden",
-        transformStyle: "preserve-3d",
-      }}
+      sx={cardSx}
     >
-      <Typography
-        sx={{
-          position: "absolute",
-          top: -12,
-          left: "50%",
-          transform: "translateX(-50%)",
-          px: 1,
-          py: 0.25,
-          fontSize: { xs: "14px", sm: "15px", md: "17px" },
-          fontWeight: 700,
-          lineHeight: 1,
-          color: "#00d4ff",
-          backgroundColor: "#0f0113",
-          whiteSpace: "nowrap",
-          zIndex: 1,
-        }}
-      >
-        {title}
-      </Typography>
+      <Typography sx={titleSx}>{title}</Typography>
       {children}
     </Box>
   );
 });
 
-// Memoized FrameworkGrid component
+// Grid layout for Frameworks/Libraries specifically
 const FrameworkGrid = memo(function FrameworkGrid({ items }) {
+  const gridItems = useMemo(
+    () =>
+      items.map((item, index) => (
+        <Box
+          key={`${item}-${index}`}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: { xs: "4px", sm: "6px", md: "8px", lg: "10px" },
+            border: "1px solid #00d4ff",
+            borderRadius: "8px",
+            backgroundColor: "rgba(0, 212, 255, 0.05)",
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            fontSize: { xs: "10px", sm: "11px", md: "12px", lg: "13px" },
+            fontWeight: 500,
+            color: "#ccd6f6",
+            textAlign: "center",
+            overflow: "hidden",
+            wordWrap: "break-word",
+            transform: "translateZ(0)",
+            willChange: "transform",
+            "&:hover": {
+              backgroundColor: "rgba(0, 212, 255, 0.15)",
+              transform: "translateZ(0) scale(1.05)",
+              borderColor: "#64ffda",
+            },
+          }}
+        >
+          {item}
+        </Box>
+      )),
+    [items]
+  );
+
   return (
     <Box
       sx={{
@@ -387,117 +468,130 @@ const FrameworkGrid = memo(function FrameworkGrid({ items }) {
         gap: { xs: "6px", sm: "8px", md: "10px", lg: "14px" },
         width: "100%",
         height: "100%",
+        contain: "layout style paint",
       }}
     >
-      {items.map((item, index) => (
-        <Box
-          key={index}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            p: { xs: "4px", sm: "6px", md: "8px", lg: "10px" },
-            border: "1px solid #00d4ff",
-            borderRadius: "8px",
-            backgroundColor: "rgba(0, 212, 255, 0.05)",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            fontSize: {
-              xs: "10px",
-              sm: "11px",
-              md: "12px",
-              lg: "13px",
-            },
-            fontWeight: 500,
-            color: "#ccd6f6",
-            textAlign: "center",
-            overflow: "hidden",
-            wordWrap: "break-word",
-            willChange: "auto",
-            "&:hover": {
-              backgroundColor: "rgba(0, 212, 255, 0.15)",
-              transform: "scale(1.05)",
-              borderColor: "#64ffda",
-            },
-          }}
-        >
-          {item}
-        </Box>
-      ))}
+      {gridItems}
     </Box>
   );
 });
 
-export default function SkillsSection() {
+// Section title with decorative lines (test to see if its faster even though memo isnt needed for a title lol)
+const TitleSection = memo(function TitleSection() {
+  const lineSx = useMemo(
+    () => ({
+      height: "3px",
+      borderRadius: "2px",
+      boxShadow: "0 0 10px #00d4ff66",
+    }),
+    []
+  );
+
   return (
-    // SkillsSection.jsx - Update the main Box wrapper
-    <Box
-      sx={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        width: "100%",
-        minHeight: { xs: "auto", md: "90vh" },
-        overflow: "hidden",
-        gap: "2vh",
-      }}
-    >
+    <motion.div variants={fadeInUp}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: { xs: "3vw", sm: "2vw" },
+          mb: 3,
+        }}
+      >
+        <Box
+          sx={{
+            ...lineSx,
+            width: { xs: "20vw", sm: "25vw", md: "30vw" },
+            background: "linear-gradient(90deg, transparent, #00d4ff)",
+          }}
+        />
+
+        <Typography
+          sx={{
+            fontWeight: "bold",
+            fontSize: { xs: "8vw", sm: "6vw", md: "3.5vw" },
+            whiteSpace: "nowrap",
+          }}
+        >
+          My Skills
+        </Typography>
+
+        <Box
+          sx={{
+            ...lineSx,
+            width: { xs: "20vw", sm: "25vw", md: "30vw" },
+            background: "linear-gradient(90deg, #00d4ff, transparent)",
+          }}
+        />
+      </Box>
+    </motion.div>
+  );
+});
+
+// Main skills section component
+const SkillsSection = memo(function SkillsSection() {
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  const handleAnimationComplete = useCallback(() => {
+    setHasAnimated(true);
+  }, []);
+
+  // Animation start once...
+  const viewportConfig = useMemo(
+    () => ({
+      once: true,
+      amount: 0.1,
+      margin: "-100px",
+    }),
+    []
+  );
+
+  // Main container styling
+  const mainContainerSx = useMemo(
+    () => ({
+      position: "relative",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      width: "100%",
+      minHeight: { xs: "auto", md: "90vh" },
+      overflow: "hidden",
+      gap: "2vh",
+      isolation: "isolate",
+      marginBottom: { xs: "5vh", sm: "5vh", md: "0vh" },
+      contain: "layout",
+    }),
+    []
+  );
+
+  // Cards container styling
+  const cardsContainerSx = useMemo(
+    () => ({
+      display: "flex",
+      flexDirection: { xs: "column", md: "row" },
+      gap: { xs: "3vh", sm: "4vh", md: "2vw" },
+      alignItems: "center",
+      width: { xs: "100%", md: "80vw", lg: "75vw" },
+      maxWidth: "1400px",
+      justifyContent: "center",
+    }),
+    []
+  );
+
+  return (
+    <Box id="skills-section" sx={mainContainerSx}>
       <ParticleConnectionBackground />
 
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
-        viewport={{
-          once: true,
-          amount: 0.1,
-          margin: "-100px",
-        }}
+        viewport={viewportConfig}
+        onAnimationComplete={handleAnimationComplete}
       >
-        {/* Title Section */}
-        <motion.div variants={fadeInUp}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: { xs: "3vw", sm: "2vw" },
-              mb: 3,
-            }}
-          >
-            <Box
-              sx={{
-                width: { xs: "20vw", sm: "25vw", md: "30vw" },
-                height: "3px",
-                background: "linear-gradient(90deg, transparent, #00d4ff)",
-                borderRadius: "2px",
-                boxShadow: "0 0 10px #00d4ff66",
-              }}
-            />
+        <TitleSection />
 
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                fontSize: { xs: "8vw", sm: "6vw", md: "3.5vw" },
-                whiteSpace: "nowrap",
-              }}
-            >
-              My Skills
-            </Typography>
-
-            <Box
-              sx={{
-                width: { xs: "20vw", sm: "25vw", md: "30vw" },
-                height: "3px",
-                background: "linear-gradient(90deg, #00d4ff, transparent)",
-                borderRadius: "2px",
-                boxShadow: "0 0 10px #00d4ff66",
-              }}
-            />
-          </Box>
-        </motion.div>
-
-        {/* Logo Loop - Removed centering styles that could cause reflow */}
+        {/* Logo Loop */}
         <motion.div variants={fadeInUp} style={{ overflow: "hidden" }}>
           <LogoLoop
             className="h-[15vh]"
@@ -506,51 +600,26 @@ export default function SkillsSection() {
             direction="left"
             gap={50}
             logoHeight={60}
-            pauseOnHover={false} // Disabled to prevent reflow on hover
-            scaleOnHover={false} // Disabled to prevent layout shifts
+            pauseOnHover={false}
+            scaleOnHover={false}
             ariaLabel="Technology partners"
           />
         </motion.div>
 
-        {/* Cards Section */}
+        {/* Skills cards grid */}
         <motion.div
           variants={staggerContainer}
           style={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            marginTop: "2vh",
+            marginTop: "1.5vw",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              gap: { xs: "3vh", sm: "4vh", md: "2vw" },
-              alignItems: "center",
-              width: { xs: "100%", md: "80vw", lg: "75vw" },
-              maxWidth: "1400px",
-              justifyContent: "center",
-            }}
-          >
+          <Box sx={cardsContainerSx}>
             <motion.div variants={fadeInLeft}>
               <TiltCard title="Languages">
-                <Box
-                  sx={{
-                    maxHeight: "100%",
-                    overflow: "auto",
-                    pr: 1,
-                    "&::-webkit-scrollbar": { width: "8px" },
-                    "&::-webkit-scrollbar-track": {
-                      background: "rgba(0,212,255,0.1)",
-                      borderRadius: "4px",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      background: "#00d4ff",
-                      borderRadius: "4px",
-                    },
-                  }}
-                >
+                <Box sx={scrollbarSx}>
                   <NumberedList items={LANGUAGES} />
                 </Box>
               </TiltCard>
@@ -572,24 +641,7 @@ export default function SkillsSection() {
 
             <motion.div variants={fadeInRight}>
               <TiltCard title="Tools / Software">
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    height: "100%",
-                    overflow: "auto", // Added scrolling if content overflows
-                    "&::-webkit-scrollbar": { width: "8px" },
-                    "&::-webkit-scrollbar-track": {
-                      background: "rgba(0,212,255,0.1)",
-                      borderRadius: "4px",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      background: "#00d4ff",
-                      borderRadius: "4px",
-                    },
-                  }}
-                >
+                <Box sx={scrollbarSx}>
                   <PillList items={TOOLS} />
                 </Box>
               </TiltCard>
@@ -599,4 +651,6 @@ export default function SkillsSection() {
       </motion.div>
     </Box>
   );
-}
+});
+
+export default SkillsSection;

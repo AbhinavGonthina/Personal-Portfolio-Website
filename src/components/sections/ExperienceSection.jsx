@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { WavyBackground } from "../ui/wavy-background";
 
+// Framer Motion animation variants
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: {
@@ -36,8 +37,10 @@ const staggerContainer = {
 };
 
 export default function ExperienceSection() {
+  // Preset selected experience to Quak Travel
   const [selectedExperience, setSelectedExperience] = useState("quak");
 
+  // Experience data
   const experienceData = {
     quak: {
       title: "Quak Travel",
@@ -112,6 +115,7 @@ export default function ExperienceSection() {
 
   return (
     <WavyBackground
+      id="experience-section"
       containerClassName="w-full h-auto overflow-x-hidden"
       className="w-full"
     >
@@ -126,15 +130,17 @@ export default function ExperienceSection() {
           minHeight: "90vh",
           overflow: "hidden",
           gap: "4vh",
-          marginBottom: "7.5vh",
+          marginBottom: { xs: "4.5vh", sm: "5vh", md: "7.5vh" },
+          zIndex: 1,
         }}
       >
+        {/* Section title */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
           variants={fadeInUp}
-          style={{ width: "100%", maxWidth: "1400px" }}
+          style={{ width: "100%", maxWidth: "1400px", zIndex: 2 }}
         >
           <Box
             sx={{
@@ -177,39 +183,50 @@ export default function ExperienceSection() {
           </Box>
         </motion.div>
 
+        {/* Main content container */}
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
-          style={{ width: "80vw", maxWidth: "1400px" }}
+          style={{
+            width: "80vw",
+            maxWidth: "1400px",
+            position: "relative",
+            zIndex: 2,
+          }}
         >
           <Box
             sx={{
               position: "relative",
               display: "flex",
-              flexDirection: "row",
+              flexDirection: { xs: "column", md: "row" },
               justifyContent: "center",
               alignItems: "center",
               gap: { xs: "4vw", md: "6vw", lg: "6vw" },
             }}
           >
-            <motion.div variants={slideInLeft}>
+            {/* Experience Selector*/}
+            <motion.div variants={slideInLeft} style={{ zIndex: 3 }}>
               <Box
                 sx={{
                   border: "2px solid rgba(34, 211, 238, 0.4)",
                   borderRadius: "15px",
-                  width: { xs: "25vw", md: "25vw", lg: "25vw" },
+                  width: { xs: "80vw", sm: "70vw", md: "25vw", lg: "25vw" },
                   maxWidth: "500px",
-                  height: "50vh",
+                  height: { xs: "30vh", md: "50vh" },
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "stretch",
                   padding: 0,
                   overflow: "hidden",
                   boxShadow: "0 4px 24px rgba(34, 211, 238, 0.1)",
-                  background: "rgba(15, 15, 25, 0.9)",
+                  background: "rgb(15, 15, 25)",
+                  backgroundColor: "rgb(15, 15, 25)",
                   backdropFilter: "blur(20px)",
+                  isolation: "isolate",
+                  position: "relative",
+                  zIndex: 10,
                   transition:
                     "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
                   "&:hover": {
@@ -219,6 +236,7 @@ export default function ExperienceSection() {
                   },
                 }}
               >
+                {/* Experience list items */}
                 {Object.keys(experienceData).map((key, index, arr) => (
                   <Box
                     key={key}
@@ -237,14 +255,14 @@ export default function ExperienceSection() {
                       position: "relative",
                       background:
                         selectedExperience === key
-                          ? "rgba(34, 211, 238, 0.05)"
-                          : "transparent",
+                          ? "rgba(34, 211, 238, 0.08)"
+                          : "rgb(15, 15, 25)",
                       borderLeft:
                         selectedExperience === key
                           ? "3px solid #22d3ee"
                           : "3px solid transparent",
                       "&:hover": {
-                        backgroundColor: "rgba(34, 211, 238, 0.03)",
+                        backgroundColor: "rgba(34, 211, 238, 0.06)",
                         cursor: "pointer",
                         paddingLeft: "2.5vw",
                         borderLeft: "3px solid #22d3ee",
@@ -262,7 +280,12 @@ export default function ExperienceSection() {
                       className="text"
                       sx={{
                         fontWeight: "500",
-                        fontSize: { xs: "1.8vw", md: "1.6vw", lg: "1.4vw" },
+                        fontSize: {
+                          xs: "14px",
+                          sm: "16px",
+                          md: "1.8vw",
+                          lg: "1.8vw",
+                        },
                         color:
                           selectedExperience === key
                             ? "#22d3ee"
@@ -297,23 +320,29 @@ export default function ExperienceSection() {
               </Box>
             </motion.div>
 
-            <motion.div variants={slideInRight}>
+            {/* Experience details */}
+            <motion.div variants={slideInRight} style={{ zIndex: 3 }}>
               <Box
                 sx={{
                   background:
-                    "linear-gradient(135deg, rgba(15, 15, 25, 0.95) 0%, rgba(20, 20, 35, 0.95) 100%)",
-                  width: { xs: "40vw", md: "43vw", lg: "46vw" },
+                    "linear-gradient(135deg, rgb(15, 15, 25) 0%, rgb(20, 20, 35) 100%)",
+                  width: { xs: "80vw", sm: "70vw", md: "43vw", lg: "46vw" },
                   maxWidth: "1000px",
-                  height: "70vh",
+                  height: { xs: "auto", md: "70vh" },
+                  minHeight: { xs: "60vh", md: "70vh" },
+                  maxHeight: { xs: "90vh", md: "70vh" },
+                  overflowY: { xs: "auto" },
                   borderRadius: "20px",
                   border: "1px solid rgba(34, 211, 238, 0.2)",
-                  padding: "2vw",
+                  padding: { xs: "4vw", md: "2vw" },
                   display: "flex",
                   flexDirection: "column",
                   gap: "2vh",
                   boxShadow: "0 10px 40px rgba(0, 0, 0, 0.3)",
                   backdropFilter: "blur(10px)",
                   position: "relative",
+                  isolation: "isolate",
+                  zIndex: 10,
                   overflow: "hidden",
                   transition: "all 0.3s ease",
                   "&::before": {
@@ -329,6 +358,7 @@ export default function ExperienceSection() {
                 }}
               >
                 {!currentExperience ? (
+                  /* Empty state when no experience selected (this should never be the case but just in case) */
                   <Box
                     sx={{
                       height: "100%",
@@ -373,11 +403,14 @@ export default function ExperienceSection() {
                     </Typography>
                   </Box>
                 ) : (
+                  /* Experience details display */
                   <>
+                    {/* Logo section */}
                     <Box
                       sx={{
                         width: "100%",
-                        height: "25%",
+                        height: { xs: "80px", sm: "100px", md: "25%" },
+                        minHeight: "80px",
                         borderRadius: "12px",
                         overflow: "hidden",
                         border: "2px solid rgba(34, 211, 238, 0.5)",
@@ -403,6 +436,7 @@ export default function ExperienceSection() {
                       />
                     </Box>
 
+                    {/* Title and description */}
                     <Box
                       sx={{
                         flex: "0 0 auto",
@@ -412,7 +446,12 @@ export default function ExperienceSection() {
                       <Typography
                         sx={{
                           color: "#22d3ee",
-                          fontSize: { xs: "1.5vw", md: "1.4vw", lg: "1.3vw" },
+                          fontSize: {
+                            xs: "18px",
+                            sm: "20px",
+                            md: "1.5vw",
+                            lg: "1.5vw",
+                          },
                           fontWeight: "600",
                           marginBottom: "1vh",
                           letterSpacing: "1px",
@@ -423,7 +462,12 @@ export default function ExperienceSection() {
                       <Typography
                         sx={{
                           color: "rgba(255, 255, 255, 0.7)",
-                          fontSize: { xs: "0.9vw", md: "0.85vw", lg: "0.8vw" },
+                          fontSize: {
+                            xs: "12px",
+                            sm: "13px",
+                            md: "0.85vw",
+                            lg: "1vw",
+                          },
                           lineHeight: "1.6",
                           fontFamily: "'Inter', sans-serif",
                         }}
@@ -432,6 +476,7 @@ export default function ExperienceSection() {
                       </Typography>
                     </Box>
 
+                    {/* Tech stack and achievements */}
                     <Box
                       sx={{
                         flex: 1,
@@ -440,6 +485,7 @@ export default function ExperienceSection() {
                         marginTop: "auto",
                       }}
                     >
+                      {/* Tech stack card */}
                       <Box
                         sx={{
                           flex: 1,
@@ -453,7 +499,8 @@ export default function ExperienceSection() {
                           sx={{
                             color: "rgba(34, 211, 238, 0.8)",
                             fontSize: {
-                              xs: "0.95vw",
+                              xs: "12px",
+                              sm: "13px",
                               md: "0.9vw",
                               lg: "0.85vw",
                             },
@@ -482,9 +529,10 @@ export default function ExperienceSection() {
                                 borderRadius: "5px",
                                 color: "rgba(255, 255, 255, 0.8)",
                                 fontSize: {
-                                  xs: "0.8vw",
-                                  md: "0.75vw",
-                                  lg: "0.7vw",
+                                  xs: "11px",
+                                  sm: "12px",
+                                  md: "0.9vw",
+                                  lg: "0.9vw",
                                 },
                                 transition: "all 0.3s ease",
                                 "&:hover": {
@@ -500,6 +548,7 @@ export default function ExperienceSection() {
                         </Box>
                       </Box>
 
+                      {/* Achievements card */}
                       <Box
                         sx={{
                           flex: 1,
@@ -513,7 +562,8 @@ export default function ExperienceSection() {
                           sx={{
                             color: "rgba(168, 85, 247, 0.9)",
                             fontSize: {
-                              xs: "0.95vw",
+                              xs: "12px",
+                              sm: "13px",
                               md: "0.9vw",
                               lg: "0.85vw",
                             },
@@ -539,9 +589,10 @@ export default function ExperienceSection() {
                                 sx={{
                                   color: "rgba(255, 255, 255, 0.7)",
                                   fontSize: {
-                                    xs: "0.8vw",
-                                    md: "0.75vw",
-                                    lg: "0.7vw",
+                                    xs: "11px",
+                                    sm: "12px",
+                                    md: "0.9vw",
+                                    lg: "0.9vw",
                                   },
                                   lineHeight: "1.4",
                                   paddingLeft: "0.4vw",

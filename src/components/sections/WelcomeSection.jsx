@@ -1,9 +1,6 @@
-import { Typography } from "@mui/material";
-import { Box } from "@mui/material";
+import { Typography, Box } from "@mui/material";
 import Particles from "../react-bits-components/Particles";
-import { Fade } from "react-awesome-reveal";
-import { Zoom } from "react-awesome-reveal";
-import { Bounce } from "react-awesome-reveal";
+import { Fade, Zoom, Bounce } from "react-awesome-reveal";
 import { motion } from "motion/react";
 
 export default function WelcomeSection() {
@@ -19,16 +16,15 @@ export default function WelcomeSection() {
         overflow: "hidden",
       }}
     >
+      {/* Animated Scroll More Indicator */}
       <Fade delay={3000} duration={1500} triggerOnce>
         <motion.div
           animate={{
             opacity: [1, 0.4, 1],
           }}
           transition={{
-            opacity: {
-              duration: 2,
-              repeat: Infinity,
-            },
+            duration: 2,
+            repeat: Infinity,
           }}
         >
           <Box
@@ -47,8 +43,7 @@ export default function WelcomeSection() {
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
                 fontWeight: 300,
-                textShadow:
-                  "0 0 30px rgba(30, 136, 229, 1), 0 0 60px rgba(30, 136, 229, 0.8), 0 0 90px rgba(30, 136, 229, 0.6)",
+                textShadow: "0 0 30px rgba(30, 136, 229, 0.8)",
               }}
             >
               ↓ Scroll Below To Explore More About Me ↓
@@ -56,6 +51,8 @@ export default function WelcomeSection() {
           </Box>
         </motion.div>
       </Fade>
+
+      {/* Particle background effect (react-bits) */}
       <Box
         sx={{
           position: "absolute",
@@ -65,9 +62,8 @@ export default function WelcomeSection() {
         }}
       >
         <Particles
-          className=""
           particleColors={["#103F9D", "#103F9D"]}
-          particleCount={2000}
+          particleCount={1750}
           particleSpread={8}
           speed={0.1}
           particleBaseSize={50}
@@ -76,6 +72,8 @@ export default function WelcomeSection() {
           disableRotation={false}
         />
       </Box>
+
+      {/* Main Content */}
       <Box
         sx={{
           position: "relative",
@@ -87,12 +85,14 @@ export default function WelcomeSection() {
           zIndex: 1,
         }}
       >
+        {/* Left Floating Text */}
         <Box
           sx={{
             position: "absolute",
             top: "40vh",
             right: "65vw",
             zIndex: 10,
+            display: { xs: "none", md: "block" },
           }}
         >
           <Bounce direction="down" delay={1200} duration={1200} triggerOnce>
@@ -145,6 +145,8 @@ export default function WelcomeSection() {
             </motion.div>
           </Bounce>
         </Box>
+
+        {/* Image of Me */}
         <Zoom direction="up" delay={300} duration={1500} triggerOnce>
           <Box
             component="img"
@@ -156,15 +158,18 @@ export default function WelcomeSection() {
               position: "relative",
             }}
             alt="Opening Profile of Abhinav Gonthina (me)"
-            src="../../../OpeningProfile.png"
+            src="../../../OpeningProfile1.png"
           />
         </Zoom>
+
+        {/* Right Floating Text */}
         <Box
           sx={{
             position: "absolute",
             top: "40vh",
             left: "65vw",
             zIndex: 10,
+            display: { xs: "none", md: "block" },
           }}
         >
           <Bounce
@@ -223,6 +228,8 @@ export default function WelcomeSection() {
             </motion.div>
           </Bounce>
         </Box>
+
+        {/* Earth Image */}
         <Box
           component="img"
           sx={{
