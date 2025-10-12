@@ -1,0 +1,1 @@
+Run npm run build then npm run deploy to deploy once youve pushed all your changes.
