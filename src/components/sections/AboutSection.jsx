@@ -49,7 +49,7 @@ const pastClasses = [
 const interests = ["Cooking", "Eating", "YouTube", "Gym", "Puzzles"];
 
 // Memoized course chip component (so we dont re-render all the courses every time)
-const CourseChip = memo(({ course, isCurrent, index }) => (
+const CourseChip = memo(({ course, isCurrent }) => (
   <Box
     sx={{
       px: { xs: 1.5, sm: 2 },
@@ -73,35 +73,8 @@ const CourseChip = memo(({ course, isCurrent, index }) => (
       gap: { xs: 0.25, sm: 0.5 },
       textAlign: "center",
       opacity: isCurrent ? 1 : 0.9,
-      transition: "all 0.2s ease",
-      ...(isCurrent
-        ? {
-            "&:hover": {
-              background: "rgba(0, 212, 255, 0.2)",
-              transform: "translateY(-2px)",
-            },
-          }
-        : {
-            animation: `slideIn 0.3s ease ${index * 0.05}s backwards`,
-            "@keyframes slideIn": {
-              from: {
-                opacity: 0,
-                transform: "translateY(10px)",
-              },
-              to: {
-                opacity: 1,
-                transform: "translateY(0)",
-              },
-            },
-            "&:hover": {
-              background: "rgba(255,255,255,0.1)",
-              transform: "translateY(-2px)",
-              opacity: 1,
-            },
-          }),
     }}
   >
-    {/* Box content */}
     <span>{course.name}</span>
     <span style={{ opacity: 0.7, fontSize: "0.85em" }}>{course.code}</span>
   </Box>
@@ -481,7 +454,7 @@ function AboutSection() {
                     </Box>
 
                     {/* Expandable Classes section */}
-                    <Collapse in={showClasses} timeout="auto" unmountOnExit>
+                    {showClasses && (
                       <Box
                         sx={{
                           pt: 2,
@@ -523,7 +496,7 @@ function AboutSection() {
                             </Box>
                           </Box>
 
-                          {/* Completed courses */}
+                          {/* Completed courses - No stagger, just simple display */}
                           <Box>
                             <Typography
                               sx={{
@@ -547,19 +520,18 @@ function AboutSection() {
                                 },
                               }}
                             >
-                              {pastClasses.map((course, index) => (
+                              {pastClasses.map((course) => (
                                 <CourseChip
                                   key={course.code}
                                   course={course}
                                   isCurrent={false}
-                                  index={index}
                                 />
                               ))}
                             </Box>
                           </Box>
                         </Stack>
                       </Box>
-                    </Collapse>
+                    )}
                   </Box>
                 </Stack>
               </motion.div>
@@ -612,7 +584,7 @@ function AboutSection() {
                   onEnded={handleVideoEnd}
                   sx={{
                     width: {
-                      xs: "100%",
+                      xs: "200px",
                       sm: "350px",
                       md: "400px",
                       lg: "425px",

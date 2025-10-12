@@ -363,7 +363,7 @@ const ImageGallery = ({ images }) => {
   return (
     <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
       <img
-        src={loadedImages.has(index) ? image : ""}
+        src={images[currentImage]}
         alt={`Screenshot ${currentImage + 1}`}
         style={{
           width: "100%",
