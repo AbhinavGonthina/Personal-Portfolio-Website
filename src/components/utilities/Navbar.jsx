@@ -31,30 +31,23 @@ function Navbar() {
   // Scroll animation to each section on the website
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
-    if (element) {
-      const offset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-    if (mobileOpen) {
-      setMobileOpen(false);
-    }
+    if (!element) return;
+    const offset = 80;
+    const y = element.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: y, behavior: "smooth" });
   };
 
   // Scroll to the top function
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-    if (mobileOpen) {
-      setMobileOpen(false);
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleMobileNavClick = (sectionId) => {
+    const DRAWER_CLOSE_MS = 300;
+    setMobileOpen(false);
+    setTimeout(() => {
+      scrollToSection(sectionId);
+    }, DRAWER_CLOSE_MS);
   };
 
   // Link to open resume in a new tab
@@ -107,24 +100,18 @@ function Navbar() {
         {navItems.map((item) => (
           <ListItem key={item.label} disablePadding>
             <ListItemButton
-              onClick={() => {
-                scrollToSection(item.sectionId);
-                setMobileOpen(false);
-              }}
+              onClick={() => handleMobileNavClick(item.sectionId)}
               sx={{
                 color: "white",
                 "&:hover": {
-                  backgroundColor: "rgba(30, 144, 255, 0.1)",
+                  backgroundColor: "rgba(30,144,255,0.1)",
                   color: "#1E90FF",
                 },
               }}
             >
               <ListItemText
                 primary={item.label}
-                // This is deprecated, not sure what to replace it with though
-                primaryTypographyProps={{
-                  fontWeight: "bold",
-                }}
+                primaryTypographyProps={{ fontWeight: "bold" }}
               />
             </ListItemButton>
           </ListItem>
@@ -154,10 +141,7 @@ function Navbar() {
         <Button
           variant="contained"
           fullWidth
-          onClick={() => {
-            scrollToSection("connect-section");
-            setMobileOpen(false);
-          }}
+          onClick={() => handleMobileNavClick("connect-section")}
           sx={{
             backgroundColor: "#AF3488FF",
             color: "#FFFFFF",
