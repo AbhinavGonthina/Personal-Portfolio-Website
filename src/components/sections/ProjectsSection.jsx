@@ -1,5 +1,5 @@
 import { Typography, Box } from "@mui/material";
-import { useState, useRef, memo } from "react";
+import { useState, useRef, memo, useEffect } from "react";
 import { motion } from "framer-motion";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -346,6 +346,11 @@ const FloatingBg = memo(() => {
 // Carousel component for project images
 const ImageGallery = ({ images }) => {
   const [currentImage, setCurrentImage] = useState(0);
+  const [loadedImages, setLoadedImages] = useState(new Set([0]));
+
+  useEffect(() => {
+    setLoadedImages((prev) => new Set([...prev, currentImage]));
+  }, [currentImage]);
 
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % images.length);
@@ -358,7 +363,7 @@ const ImageGallery = ({ images }) => {
   return (
     <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
       <img
-        src={images[currentImage]}
+        src={loadedImages.has(index) ? image : ""}
         alt={`Screenshot ${currentImage + 1}`}
         style={{
           width: "100%",
@@ -1147,6 +1152,7 @@ export default function ProjectsSection() {
                   {project.media.type === "iframe" && project.media.url ? (
                     <iframe
                       src={project.media.url}
+                      loading="lazy"
                       style={{
                         width: "100%",
                         height: "100%",
@@ -1161,7 +1167,8 @@ export default function ProjectsSection() {
                       loop
                       muted
                       playsInline
-                      preload="auto"
+                      preload="none"
+                      controls
                       style={{
                         width: "100%",
                         height: "100%",
