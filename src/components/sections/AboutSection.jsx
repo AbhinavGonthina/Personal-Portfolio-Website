@@ -582,6 +582,7 @@ function AboutSection() {
                   ref={videoRef}
                   src="/videos/AbhinavGonthinaPortfolioVid.mp4"
                   preload="metadata"
+                  poster="/IntroVideoThumbnail.png"
                   onEnded={handleVideoEnd}
                   sx={{
                     width: {
