@@ -36,4 +36,4 @@ This project taught me a bit about:
 - Projects in the terminal dont show up on mobile (assumably just a problem on xs) - FIXED 10/12/2025
 - Video not showing up on mobile - FIXED
 - On first run through, images havent had enough time to load in yet in the welcome screen (only happens on slower machines?)
-- Right side of cards in Frameworks/libraries is slightly cut off
+- Right side of cards in Frameworks/libraries is slightly cut  - Trying to recreate the bug
