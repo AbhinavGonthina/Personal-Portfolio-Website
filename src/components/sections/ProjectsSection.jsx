@@ -268,7 +268,7 @@ const initialHistory = [
   },
   { t: "i", c: "Type 'cd ..' to go back to parent folder" },
   { t: "i", c: "Type './<file>' to run a file (e.g., ./codesign.exe)" },
-  { t: "i", c: "Type './project-gui.exe' for clickable GUI mode" },
+  { t: "i", c: "Type './gui' for clickable GUI mode" },
   { t: "i", c: "Type 'clear' to clear the terminal" },
   { t: "o", c: "" },
   { t: "p", c: "" },
@@ -499,7 +499,7 @@ export default function ProjectsSection() {
 
     let out = [];
 
-    if (base === "./project-gui.exe" || base === "project-gui.exe") {
+    if (base === "./gui" || base === "gui") {
       setGui(true);
       out = ["Switching to GUI mode..."];
     } else if (base === "ls" && !args) {
@@ -713,7 +713,7 @@ export default function ProjectsSection() {
                   fontFamily: "Consolas, monospace",
                 }}
               >
-                💡 Type './project-gui.exe' for clickable mode
+                💡 Type './gui' for clickable mode
               </Typography>
             </Box>
           )}
