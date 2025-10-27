@@ -468,7 +468,7 @@ const FrameworkGrid = memo(function FrameworkGrid({ items }) {
         gap: { xs: "6px", sm: "8px", md: "10px", lg: "14px" },
         width: "100%",
         height: "100%",
-        contain: "layout style paint",
+        contain: "layout",
       }}
     >
       {gridItems}
