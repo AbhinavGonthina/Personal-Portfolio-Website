@@ -38,7 +38,7 @@ const staggerContainer = {
 
 export default function ExperienceSection() {
   // Preset selected experience to Quak Travel
-  const [selectedExperience, setSelectedExperience] = useState("quak");
+  const [selectedExperience, setSelectedExperience] = useState("philips");
 
   // Experience data
   const experienceData = {
