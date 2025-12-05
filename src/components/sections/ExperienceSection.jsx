@@ -42,6 +42,14 @@ export default function ExperienceSection() {
 
   // Experience data
   const experienceData = {
+    philips: {
+      title: "Philips",
+      logo: "/PhilipsLogo.png",
+      description:
+        "Philips is a health technology company focused on patient monitoring systems. I am an incoming Software Engineering Co-op who will be tasked with developing scalable applications and components for PIIC iX, a $200M patient monitoring platform that connects thousands of devices across major hospitals worldwide.",
+      techStack: ["C#", "Visual Studio", "SQL Server", "Angular"],
+      achievements: ["N/A"],
+    },
     quak: {
       title: "Quak Travel",
       logo: "/QuakTravelLogo.png",
