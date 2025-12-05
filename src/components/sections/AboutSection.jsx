@@ -308,11 +308,11 @@ function AboutSection() {
                       >
                         I'm currently looking for a{" "}
                         <Box component="span" sx={{ fontWeight: "bold" }}>
-                          full-time software engineering co-op/internship
+                          full-time software engineering internship
                         </Box>{" "}
                         role for{" "}
                         <Box component="span" sx={{ fontWeight: "bold" }}>
-                          Spring/Summer 2026
+                          Summer 2026
                         </Box>
                         .
                       </Typography>
