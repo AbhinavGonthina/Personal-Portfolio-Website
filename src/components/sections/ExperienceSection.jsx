@@ -50,6 +50,14 @@ export default function ExperienceSection() {
       techStack: ["C#", "Visual Studio", "SQL Server", "Angular"],
       achievements: ["N/A"],
     },
+    athenahealth: {
+      title: "Athenahealth",
+      logo: "/AthenaLogo.png",
+      description:
+        "Athenahealth is a healthcare technology company building cloud-based software for healthcare providers nationwide. As an incoming software engineering intern, I will work on athenaCollector as part of the frontend frameworks team, building reusable UI components that support revenue-cycle workflows used by healthcare organizations.",
+      techStack: ["React"],
+      achievements: ["N/A"],
+    },
     quak: {
       title: "Quak Travel",
       logo: "/QuakTravelLogo.png",

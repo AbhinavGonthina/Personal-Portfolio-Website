@@ -5,6 +5,7 @@ import {
   IconButton,
   Button,
   Collapse,
+  Tooltip,
 } from "@mui/material";
 import { useRef, useState, memo, useCallback } from "react";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -13,6 +14,7 @@ import ReplayIcon from "@mui/icons-material/Replay";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { motion, AnimatePresence } from "framer-motion";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 
 // Framer Motion Animations
 const fadeUp = {
@@ -26,27 +28,26 @@ const staggerCol = {
 };
 
 // Current Courses
-const currentClasses = [
-  { name: "Algorithms & Data", code: "CS3000" },
-  { name: "Foundations of Data Science", code: "DS3000" },
-  { name: "Computer Systems", code: "CS3650" },
-];
+const currentClasses = [{ name: "I'm on Co-op!", code: "" }];
 
 // Past Courses
 const pastClasses = [
+  { name: "Algorithms & Data", code: "CS3000" },
   { name: "Object Oriented Design", code: "CS3500" },
-  { name: "Introduction to Databases", code: "CS3200" },
   { name: "Cloud Computing", code: "CS4973" },
-  { name: "Fundamentals of Computer Science 2", code: "CS2510" },
-  { name: "Fundamentals of Computer Science 1", code: "CS2500" },
+  { name: "Introduction to Databases", code: "CS3200" },
+  { name: "Computer Systems", code: "CS3650" },
   { name: "Foundations of Cybersecurity", code: "CY2550" },
+  { name: "Foundations of Data Science", code: "DS3000" },
   { name: "Logic and Computation", code: "CS2800" },
   { name: "Discrete Structures", code: "CS1800" },
+  { name: "Fundamentals of Computer Science 2", code: "CS2510" },
+  { name: "Fundamentals of Computer Science 1", code: "CS2500" },
   { name: "Intro to Mathematical Reasoning", code: "MATH1365" },
 ];
 
 // Current Interests (sorry I'm not the most interesting 😭)
-const interests = ["Cooking", "Eating", "YouTube", "Gym", "Puzzles"];
+const interests = ["Foodie", "LeetCode", "YouTube", "Gym", "Puzzles"];
 
 // Memoized course chip component (so we dont re-render all the courses every time)
 const CourseChip = memo(({ course, isCurrent }) => (
@@ -306,13 +307,17 @@ function AboutSection() {
                           lineHeight: 1.6,
                         }}
                       >
-                        I'm currently looking for a{" "}
+                        I'm currently seeking future{" "}
                         <Box component="span" sx={{ fontWeight: "bold" }}>
-                          full-time software engineering internship
+                          software engineering
                         </Box>{" "}
-                        role for{" "}
+                        positions, including{" "}
                         <Box component="span" sx={{ fontWeight: "bold" }}>
-                          Summer 2026
+                          entry-level roles after Spring 2027
+                        </Box>{" "}
+                        or{" "}
+                        <Box component="span" sx={{ fontWeight: "bold" }}>
+                          co-op roles during Spring 2027
                         </Box>
                         .
                       </Typography>
@@ -394,15 +399,35 @@ function AboutSection() {
                             </Typography>
                             <Typography
                               sx={{
-                                fontSize: {
-                                  xs: "0.8rem",
-                                  md: "0.8rem",
-                                  lg: "0.8rem",
-                                },
+                                fontSize: "0.8rem",
                                 opacity: 0.8,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
                               }}
                             >
-                              Expected: Aug 2027
+                              Expected: Apr 2027
+                              <Tooltip
+                                title={
+                                  <>
+                                    If I receive a full-time offer during{" "}
+                                    <b>Fall 2026</b>, I will graduate in{" "}
+                                    <b>Spring 2027</b>. Otherwise, I will
+                                    complete a <b>Spring 2027</b> co-op and
+                                    graduate in <b>Fall 2027</b>.
+                                  </>
+                                }
+                                arrow
+                                placement="top"
+                              >
+                                <HelpOutlineIcon
+                                  sx={{
+                                    fontSize: 14,
+                                    cursor: "help",
+                                    verticalAlign: "middle",
+                                  }}
+                                />
+                              </Tooltip>
                             </Typography>
                           </Box>
                           <Box
