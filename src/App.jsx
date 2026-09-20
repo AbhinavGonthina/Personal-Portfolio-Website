@@ -1,20 +1,26 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Navbar from "./components/utilities/Navbar";
-import Layout from "./components/layout/Layout";
+import { Box } from "@mui/material";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Hero from "./sections/Hero";
+import About from "./sections/About";
+import Skills from "./sections/Skills";
+import Experience from "./sections/Experience";
+import Projects from "./sections/Projects";
+import Connect from "./sections/Connect";
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <div>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            {" "}
-          </Route>
-        </Routes>
-      </div>
-    </Router>
+    <Box>
+      <Navbar />
+      <Box component="main">
+        <Hero />
+        <About />
+        <Skills />
+        <Experience />
+        <Projects />
+        <Connect />
+      </Box>
+      <Footer />
+    </Box>
   );
 }
-
-export default App;

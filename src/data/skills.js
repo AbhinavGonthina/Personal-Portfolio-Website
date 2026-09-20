@@ -1,0 +1,62 @@
+// Four groups — "Cloud & DevOps" is new; the infra work at athenahealth
+// outgrew being buried in a generic "Tools" list.
+export const skillGroups = [
+  {
+    id: "languages",
+    label: "Languages",
+    items: ["JavaScript", "TypeScript", "Python", "Java", "C#", "SQL", "R", "HTML", "CSS"],
+  },
+  {
+    id: "frameworks",
+    label: "Frameworks & Libraries",
+    items: [
+      "React",
+      "Next.js",
+      "React Native",
+      "Node.js",
+      "Express",
+      "Spring Boot",
+      ".NET",
+      "Prisma",
+      "Flask",
+      "Tailwind CSS",
+      "Material UI",
+      "Pandas",
+      "NumPy",
+    ],
+  },
+  {
+    id: "cloud",
+    label: "Cloud & DevOps",
+    items: [
+      "AWS (ECS, EKS, S3, EC2)",
+      "Terraform",
+      "Docker",
+      "Kubernetes",
+      "Jenkins",
+      "Grafana",
+      "Prometheus",
+      "JMeter",
+    ],
+  },
+  {
+    id: "tools",
+    label: "Tools & Data",
+    items: [
+      "Git",
+      "GitHub",
+      "PostgreSQL",
+      "DynamoDB",
+      "Oracle",
+      "MongoDB",
+      "Redis",
+      "MySQL",
+      "SQLite",
+      "Jest",
+      "JUnit",
+      "Vitest",
+      "Postman",
+      "Figma",
+    ],
+  },
+];
