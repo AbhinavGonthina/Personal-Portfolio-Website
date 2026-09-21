@@ -10,6 +10,8 @@ export const experience = [
     start: "Jun 2026",
     end: "Aug 2026",
     logo: "/logos/athenahealth.webp",
+    // Matches the logo art's own background, so the banner is seamless.
+    brand: "#FFFFFF",
     branch: { side: "right", t: 0.94 },
     bullets: [
       "Implemented AWS auto-scaling (ECS tasks + EC2 ASG) via Terraform, cutting EC2 instances from 10 to ~4 and reducing compute costs by ~$5,000/year; confirmed behavior with JMeter load tests at 2,500 concurrent threads.",
@@ -28,6 +30,8 @@ export const experience = [
     start: "Jan 2026",
     end: "May 2026",
     logo: "/logos/philips.webp",
+    // Matches the logo art's own background, so the banner is seamless.
+    brand: "#FFFFFF",
     branch: { side: "left", t: 0.8 },
     bullets: [
       "Developed device management, configuration propagation, physiological data streaming, and network logging features for an SDC-device simulator using React, TypeScript, and C#/.NET, demoing it to 50+ stakeholders.",
@@ -45,6 +49,8 @@ export const experience = [
     start: "Mar 2025",
     end: "Jan 2026",
     logo: "/logos/quak.webp",
+    // Matches the logo art's own background, so the banner is seamless.
+    brand: "#FC3600",
     branch: { side: "right", t: 0.66 },
     bullets: [
       "Architected hotel booking, payment-splitting, and itinerary features with RESTful APIs using Express, Prisma, and TypeScript, delivering a prototype 33% faster than scheduled and helping secure $140K in funding.",
@@ -62,6 +68,8 @@ export const experience = [
     start: "Jan 2025",
     end: "Apr 2026",
     logo: "/logos/ner.webp",
+    // Matches the logo art's own background, so the banner is seamless.
+    brand: "#FFFFFF",
     branch: { side: "left", t: 0.52 },
     bullets: [
       "Engineered a scalable parts-review overview component in FinishLine using React and Material UI, with dynamic status tracking, reviewer progress indicators, and notifications that improved ticket visibility.",
@@ -75,9 +83,11 @@ export const experience = [
     company: "Rainfall Learning",
     role: "Tech Lead — Payments & Internal Tools",
     location: "Boston, MA",
-    start: "2025",
+    start: "Jun 2025",
     end: "Dec 2025",
     logo: "/logos/rainfall.webp",
+    // Matches the logo art's own background, so the banner is seamless.
+    brand: "#17319C",
     branch: { side: "right", t: 0.38 },
     bullets: [
       "Led the Payments and Internal Tools team at a Northeastern student-led e-learning startup, integrating the Stripe API to connect tutors with students.",
@@ -87,13 +97,15 @@ export const experience = [
   },
   {
     id: "khoury",
-    short: "Khoury TA",
-    company: "Khoury College",
+    short: "Khoury",
+    company: "Khoury",
     role: "Teaching Assistant — CS1800",
-    location: "Northeastern University",
-    start: "2025",
+    location: "Boston, MA",
+    start: "Aug 2025",
     end: "Dec 2025",
     logo: "/logos/khoury.webp",
+    // Matches the logo art's own background, so the banner is seamless.
+    brand: "#FFFFFF",
     branch: { side: "left", t: 0.24 },
     bullets: [
       "Teaching Assistant for Discrete Structures (CS1800), supporting a cohort of 500+ students across combinatorics, graph theory, algorithmic efficiency, logic, induction, and proofs.",

@@ -1,268 +1,352 @@
 import { useState } from "react";
-import {
-  Box,
-  Typography,
-  Stack,
-  Chip,
-  ToggleButton,
-  ToggleButtonGroup,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import ParkOutlinedIcon from "@mui/icons-material/ParkOutlined";
-import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Box, Typography, Stack, Chip, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "motion/react";
 import Section from "../components/Section";
 import ExperienceTree from "./ExperienceTree";
-import { palette } from "../theme";
+import { palette, MONO } from "../theme";
 import { experience } from "../data/experience";
 
-function Detail({ exp }) {
+const EASE = [0.22, 1, 0.36, 1];
+// Relative luminance, so the close button stays visible on dark brand banners.
+function isDark(hex) {
+  const v = hex.replace("#", "");
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b < 0.55;
+}
+
+function Detail({ exp, onClose }) {
+  const onDarkBanner = isDark(exp.brand ?? "#FFFFFF");
+
   return (
     <Box
       sx={{
-        p: { xs: 2.5, md: 4 },
-        borderRadius: 3,
-        backgroundColor: palette.surface,
+        borderRadius: "14px",
+        overflow: "hidden",
+        backgroundColor: palette.bg,
         border: `1px solid ${palette.border}`,
       }}
     >
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        alignItems={{ xs: "flex-start", sm: "center" }}
-        justifyContent="space-between"
-        sx={{ mb: 2.5 }}
+      {/* The logos are wide wordmarks, so they run as a banner across the top
+          of the card rather than being squeezed into a small plate. */}
+      <Box
+        sx={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          // Fixed height so the logo can be sized to fill it exactly.
+          height: { xs: 82, md: 100 },
+          px: 0,
+          py: 0,
+          overflow: "hidden",
+          // Each logo's art has a solid background baked in; painting the whole
+          // banner that colour makes the strip read as one edge-to-edge header.
+          backgroundColor: exp.brand ?? "#FFFFFF",
+          borderBottom: `1px solid ${palette.border}`,
+        }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          {/* Wide wordmarks, so this is a landscape plate rather than a square. */}
-          <Box
+        <Box
+          component="img"
+          src={exp.logo}
+          alt={`${exp.company} logo`}
+          loading="lazy"
+          sx={{
+            // Full banner height; the art's own margins keep the wordmark from
+            // touching the edges, and the brand colour fills either side.
+            height: "100%",
+            width: "auto",
+            maxWidth: "100%",
+            objectFit: "contain",
+          }}
+        />
+        {onClose && (
+          <IconButton
+            size="small"
+            onClick={onClose}
+            aria-label="Close details"
             sx={{
-              width: 116,
-              height: 48,
-              borderRadius: 2,
-              flexShrink: 0,
-              backgroundColor: palette.bg,
-              border: `1px solid ${palette.border}`,
-              display: "grid",
-              placeItems: "center",
-              px: 1.25,
+              position: "absolute",
+              top: 8,
+              right: 8,
+              color: onDarkBanner ? "rgba(255,255,255,0.85)" : palette.muted,
+              "&:hover": {
+                backgroundColor: onDarkBanner
+                  ? "rgba(255,255,255,0.14)"
+                  : palette.surfaceAlt,
+              },
             }}
           >
-            <Box
-              component="img"
-              src={exp.logo}
-              alt=""
-              loading="lazy"
-              sx={{ maxWidth: "100%", maxHeight: 28, objectFit: "contain" }}
-            />
-          </Box>
-          <Box>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        )}
+      </Box>
+
+      <Box sx={{ p: { xs: 2.5, md: 3.5 } }}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems={{ xs: "flex-start", sm: "flex-end" }}
+          justifyContent="space-between"
+          sx={{ mb: 2.5 }}
+        >
+          <Box sx={{ minWidth: 0 }}>
             <Typography variant="h3" sx={{ lineHeight: 1.2 }}>
               {exp.company}
             </Typography>
-            <Typography variant="body2" sx={{ color: palette.accent, fontWeight: 600 }}>
+            <Typography
+              variant="body2"
+              sx={{ color: palette.accent, fontWeight: 600 }}
+            >
               {exp.role}
+            </Typography>
+          </Box>
+
+          <Box sx={{ textAlign: { xs: "left", sm: "right" }, flexShrink: 0 }}>
+            <Typography
+              variant="body2"
+              sx={{ fontFamily: MONO, fontSize: "0.8125rem", fontWeight: 600 }}
+            >
+              {exp.start} – {exp.end}
+            </Typography>
+            <Typography variant="body2" sx={{ color: palette.muted }}>
+              {exp.location}
             </Typography>
           </Box>
         </Stack>
 
-        <Box sx={{ textAlign: { xs: "left", sm: "right" }, flexShrink: 0 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            {exp.start} – {exp.end}
-          </Typography>
-          <Typography variant="body2" sx={{ color: palette.muted }}>
-            {exp.location}
-          </Typography>
-        </Box>
-      </Stack>
-
-      <Box component="ul" sx={{ m: 0, pl: 0, listStyle: "none" }}>
-        {exp.bullets.map((b) => (
-          <Box
-            component="li"
-            key={b.slice(0, 40)}
-            sx={{ display: "flex", gap: 1.5, mb: 1.5, alignItems: "flex-start" }}
-          >
+        <Box component="ul" sx={{ m: 0, pl: 0, listStyle: "none" }}>
+          {exp.bullets.map((b) => (
             <Box
-              aria-hidden
+              component="li"
+              key={b.slice(0, 40)}
               sx={{
-                mt: "0.6em",
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                backgroundColor: palette.accent,
-                flexShrink: 0,
+                display: "flex",
+                gap: 1.5,
+                mb: 1.5,
+                alignItems: "flex-start",
               }}
-            />
-            <Typography variant="body2">{b}</Typography>
-          </Box>
-        ))}
-      </Box>
-
-      {exp.tech.length > 0 && (
-        <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.75} sx={{ mt: 2.5 }}>
-          {exp.tech.map((t) => (
-            <Chip
-              key={t}
-              label={t}
-              size="small"
-              sx={{
-                backgroundColor: palette.bg,
-                border: `1px solid ${palette.border}`,
-                fontWeight: 500,
-              }}
-            />
+            >
+              <Box
+                aria-hidden
+                sx={{
+                  mt: "0.6em",
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: palette.accent,
+                  flexShrink: 0,
+                }}
+              />
+              <Typography variant="body2">{b}</Typography>
+            </Box>
           ))}
-        </Stack>
-      )}
+        </Box>
+
+        {exp.tech.length > 0 && (
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            useFlexGap
+            spacing={0.75}
+            sx={{ mt: 2.5 }}
+          >
+            {exp.tech.map((t) => (
+              <Chip
+                key={t}
+                label={t}
+                size="small"
+                sx={{
+                  backgroundColor: palette.surface,
+                  border: `1px solid ${palette.border}`,
+                  fontWeight: 500,
+                }}
+              />
+            ))}
+          </Stack>
+        )}
+      </Box>
     </Box>
   );
 }
 
 export default function Experience() {
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
+  // Nothing is selected until the visitor picks a branch; the tree starts
+  // centred and full width, then shrinks to a side column on selection.
+  const [selected, setSelected] = useState(null);
 
-  // Tree is the default where there's room to read it; the labels inside a
-  // 1100-unit viewBox are unreadable on a phone, so small screens open on the list.
-  const [view, setView] = useState("tree");
-  const [selected, setSelected] = useState(experience[0].id);
-
-  const effectiveView = isDesktop ? view : view === "tree" ? "list" : view;
-  const current = experience.find((e) => e.id === selected) ?? experience[0];
+  const current = experience.find((e) => e.id === selected) ?? null;
+  const toggle = (id) => setSelected((prev) => (prev === id ? null : id));
 
   return (
     <Section
       id="experience"
       eyebrow="Experience"
       title="Where I've worked"
-      intro="Six roles across healthcare tech, travel, education, and motorsport. Click a branch to read more."
+      tinted
+      bounded
+      containerMaxWidth={1280}
     >
-      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={effectiveView}
-          onChange={(_, v) => v && setView(v)}
-          sx={{
-            "& .MuiToggleButton-root": {
-              borderColor: palette.border,
-              color: palette.muted,
-              px: 1.75,
-              gap: 0.75,
-              "&.Mui-selected": {
-                backgroundColor: palette.surface,
-                color: palette.accentDark,
-                "&:hover": { backgroundColor: palette.surfaceAlt },
-              },
-            },
-          }}
-        >
-          <ToggleButton value="tree" disabled={!isDesktop}>
-            <ParkOutlinedIcon sx={{ fontSize: 18 }} /> Tree
-          </ToggleButton>
-          <ToggleButton value="list">
-            <ViewListOutlinedIcon sx={{ fontSize: 18 }} /> List
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </Stack>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: { xs: 2.5, md: 3 },
+        }}
+      >
+        <AnimatePresence mode="wait">
+          {current ? (
+            /* Selected: the tree steps aside for a compact tab row, so the
+               roles stay one click apart and the detail sits right under them. */
+            <Box
+              component={motion.div}
+              key="picked"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: EASE }}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: { xs: 2, md: 2.5 },
+              }}
+            >
+              <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
+                {experience.map((exp) => {
+                  const active = exp.id === current.id;
+                  return (
+                    <Box
+                      component="button"
+                      key={exp.id}
+                      onClick={() => setSelected(exp.id)}
+                      aria-pressed={active}
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                        gap: 0.25,
+                        px: 1.75,
+                        py: 1,
+                        cursor: "pointer",
+                        // Explicit px: sx borderRadius multiplies the theme's
+                        // 12px base, so `2` would render as a 24px pill.
+                        borderRadius: "10px",
+                        textAlign: "left",
+                        fontFamily: "inherit",
+                        border: `1px solid ${active ? palette.accent : palette.border}`,
+                        backgroundColor: active ? palette.accent : palette.bg,
+                        color: active ? "#fff" : palette.text,
+                        transition: "all .2s ease",
+                        "&:hover": {
+                          borderColor: palette.accent,
+                          backgroundColor: active
+                            ? palette.accent
+                            : palette.surfaceAlt,
+                        },
+                      }}
+                    >
+                      {/* Full company name here — the tree uses `short`
+                          because its cards are too narrow for these. */}
+                      <Box
+                        sx={{
+                          fontSize: "0.875rem",
+                          fontWeight: 600,
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {exp.company}
+                      </Box>
+                      <Box
+                        sx={{
+                          fontFamily: MONO,
+                          fontSize: "0.6875rem",
+                          color: active
+                            ? "rgba(255,255,255,0.8)"
+                            : palette.muted,
+                        }}
+                      >
+                        {exp.start} – {exp.end}
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Stack>
 
-      {effectiveView === "tree" ? (
-        <Box>
-          <ExperienceTree selected={selected} onSelect={setSelected} />
-          <Box sx={{ mt: 4 }}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.id}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <Detail exp={current} />
-              </motion.div>
-            </AnimatePresence>
-          </Box>
-        </Box>
-      ) : (
-        <Stack spacing={1.5}>
-          {experience.map((exp) => {
-            const open = selected === exp.id;
-            return (
-              <Box key={exp.id}>
+              <AnimatePresence mode="wait">
                 <Box
-                  component="button"
-                  onClick={() => setSelected(open ? "" : exp.id)}
-                  aria-expanded={open}
+                  component={motion.div}
+                  key={current.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.25, ease: EASE }}
+                >
+                  <Detail exp={current} onClose={() => setSelected(null)} />
+                </Box>
+              </AnimatePresence>
+            </Box>
+          ) : (
+            /* Idle: the full tree. Width is capped against viewport height so
+               the whole branch fits on one screen on shorter displays. */
+            <Box
+              component={motion.div}
+              key="tree"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25, ease: EASE }}
+            >
+              <Box
+                sx={{
+                  width: "100%",
+                  // Tree aspect is 1120:400 (2.8), so capping width caps height.
+                  maxWidth: { lg: "min(100%, calc((100dvh - 340px) * 2.8))" },
+                  mx: "auto",
+                  overflowX: { xs: "auto", lg: "visible" },
+                  overflowY: "hidden",
+                  pb: { xs: 1, lg: 0 },
+                  "&::-webkit-scrollbar": { height: 6 },
+                  "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: palette.border,
+                    borderRadius: 3,
+                  },
+                }}
+              >
+                <Box sx={{ minWidth: { xs: 860, lg: 0 } }}>
+                  <ExperienceTree selected={selected} onSelect={toggle} />
+                </Box>
+              </Box>
+
+              {/* Editorial pill rather than a plain caption */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: { xs: 3, md: 4 },
+                }}
+              >
+                <Box
+                  component="span"
                   sx={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    textAlign: "left",
-                    p: 2,
-                    cursor: "pointer",
-                    borderRadius: 2,
-                    border: `1px solid ${open ? palette.accent : palette.border}`,
-                    backgroundColor: open ? palette.surface : palette.bg,
-                    transition: "border-color .2s ease, background-color .2s ease",
-                    "&:hover": { borderColor: palette.accent },
+                    px: 2,
+                    py: 0.75,
+                    borderRadius: 999,
+                    fontSize: "0.75rem",
+                    fontWeight: 500,
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: "rgba(42,59,42,0.7)",
+                    backgroundColor: "rgba(232,229,220,0.5)",
+                    border: "1px solid rgba(42,59,42,0.1)",
                   }}
                 >
-                  <Box
-                    component="img"
-                    src={exp.logo}
-                    alt=""
-                    loading="lazy"
-                    sx={{ width: 84, maxHeight: 26, objectFit: "contain", flexShrink: 0 }}
-                  />
-                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                    <Typography sx={{ fontWeight: 600, lineHeight: 1.3 }}>{exp.company}</Typography>
-                    <Typography variant="body2" sx={{ color: palette.muted }}>
-                      {exp.role}
-                    </Typography>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: palette.muted,
-                      flexShrink: 0,
-                      display: { xs: "none", sm: "block" },
-                    }}
-                  >
-                    {exp.start} – {exp.end}
-                  </Typography>
-                  <ExpandMoreIcon
-                    sx={{
-                      color: palette.muted,
-                      transform: open ? "rotate(180deg)" : "none",
-                      transition: "transform .2s ease",
-                    }}
-                  />
+                  Select a branch to see the details
                 </Box>
-
-                <AnimatePresence initial={false}>
-                  {open && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ overflow: "hidden" }}
-                    >
-                      <Box sx={{ pt: 1.5 }}>
-                        <Detail exp={exp} />
-                      </Box>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </Box>
-            );
-          })}
-        </Stack>
-      )}
+            </Box>
+          )}
+        </AnimatePresence>
+      </Box>
     </Section>
   );
 }

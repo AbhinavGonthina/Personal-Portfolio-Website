@@ -10,13 +10,15 @@ export default function Skills() {
       id="skills"
       eyebrow="Skills"
       title="What I work with"
-      intro="Grouped by how I actually use them day to day."
-      tinted
     >
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" },
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(4, 1fr)",
+          },
           gap: { xs: 2.5, md: 3 },
         }}
       >
@@ -27,11 +29,15 @@ export default function Skills() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5, delay: gi * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: 0.5,
+              delay: gi * 0.08,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             sx={{
               p: 3,
               borderRadius: 3,
-              backgroundColor: palette.bg,
+              backgroundColor: palette.surface,
               border: `1px solid ${palette.border}`,
               height: "100%",
             }}
@@ -61,7 +67,7 @@ export default function Skills() {
                     fontSize: "0.8125rem",
                     fontWeight: 500,
                     color: palette.text,
-                    backgroundColor: palette.surfaceAlt,
+                    backgroundColor: palette.bg,
                     border: `1px solid ${palette.border}`,
                     transition: "all .18s ease",
                     "&:hover": {

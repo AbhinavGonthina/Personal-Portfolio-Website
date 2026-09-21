@@ -21,7 +21,6 @@ export default function Connect() {
       id="connect"
       eyebrow="Connect"
       title="Let's talk"
-      intro="Always happy to hear about interesting problems, new roles, or anything worth building. The fastest way to reach me is email."
     >
       <Box
         sx={{
@@ -73,7 +72,9 @@ export default function Connect() {
               </Box>
 
               <Stack sx={{ minWidth: 0, flexGrow: 1 }}>
-                <Typography sx={{ fontWeight: 600, color: palette.text }}>{s.name}</Typography>
+                <Typography sx={{ fontWeight: 600, color: palette.text }}>
+                  {s.name}
+                </Typography>
                 <Typography
                   variant="body2"
                   sx={{

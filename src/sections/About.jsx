@@ -2,7 +2,13 @@ import { Box, Typography, Chip, Stack, Divider } from "@mui/material";
 import SchoolIcon from "@mui/icons-material/School";
 import Section from "../components/Section";
 import { palette } from "../theme";
-import { bio, education, currentCourses, pastCourses, interests } from "../data/about";
+import {
+  bio,
+  education,
+  currentCourses,
+  pastCourses,
+  interests,
+} from "../data/about";
 
 function CourseChip({ course, current }) {
   return (
@@ -22,7 +28,10 @@ function CourseChip({ course, current }) {
       <Box component="span" sx={{ color: palette.text, fontWeight: 500 }}>
         {course.name}
       </Box>
-      <Box component="span" sx={{ color: palette.muted, fontSize: "0.8125rem" }}>
+      <Box
+        component="span"
+        sx={{ color: palette.muted, fontSize: "0.8125rem" }}
+      >
         {course.code}
       </Box>
     </Box>
@@ -43,7 +52,11 @@ export default function About() {
         {/* Bio */}
         <Box>
           {bio.map((para) => (
-            <Typography key={para.slice(0, 32)} variant="body1" sx={{ mb: 2.5, maxWidth: 620 }}>
+            <Typography
+              key={para.slice(0, 32)}
+              variant="body1"
+              sx={{ mb: 2.5, maxWidth: 620 }}
+            >
               {para}
             </Typography>
           ))}
@@ -75,7 +88,12 @@ export default function About() {
             border: `1px solid ${palette.border}`,
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2.5 }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            sx={{ mb: 2.5 }}
+          >
             <Box
               component="img"
               src={education.logo}
@@ -115,7 +133,13 @@ export default function About() {
           >
             Currently taking — Fall 2026
           </Typography>
-          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1} sx={{ mb: 3 }}>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            useFlexGap
+            spacing={1}
+            sx={{ mb: 3 }}
+          >
             {currentCourses.map((c) => (
               <CourseChip key={c.code} course={c} current />
             ))}
@@ -153,13 +177,21 @@ export default function About() {
 
 function Row({ label, value, icon }) {
   return (
-    <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+      alignItems="center"
+      spacing={2}
+    >
       <Typography variant="body2" sx={{ color: palette.muted }}>
         {label}
       </Typography>
       <Stack direction="row" spacing={0.5} alignItems="center">
         {icon && <SchoolIcon sx={{ fontSize: 15, color: palette.accent }} />}
-        <Typography variant="body2" sx={{ fontWeight: 600, textAlign: "right" }}>
+        <Typography
+          variant="body2"
+          sx={{ fontWeight: 600, textAlign: "right" }}
+        >
           {value}
         </Typography>
       </Stack>

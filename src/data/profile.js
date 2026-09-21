@@ -6,9 +6,9 @@ export const profile = {
   location: "Boston, MA",
   tagline:
     "CS student at Northeastern building backend systems and the interfaces on top of them. Most recently at athenahealth, where I worked on AWS infrastructure, data pipelines, and observability.",
-  // Set this back to "/profile-portrait.webp" (or a new file) to bring the hero
-  // portrait back — the layout switches to two columns automatically.
-  photo: null,
+  photo: "/headshot.webp",
+  // Four headline technologies, all of them on the résumé.
+  focus: ["AWS", "Terraform", "Spring Boot", "React"],
 };
 
 export const socials = [

@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
-import { Box, Typography, Stack, Chip, Button, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Stack,
+  Chip,
+  Button,
+  IconButton,
+} from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
 import { motion, AnimatePresence } from "motion/react";
@@ -72,7 +79,8 @@ function Card({ project, featured }) {
         overflow: "hidden",
         backgroundColor: palette.bg,
         border: `1px solid ${palette.border}`,
-        transition: "border-color .25s ease, box-shadow .25s ease, transform .25s ease",
+        transition:
+          "border-color .25s ease, box-shadow .25s ease, transform .25s ease",
         "&:hover": {
           borderColor: palette.accent,
           boxShadow: `0 12px 32px ${palette.accent}22`,
@@ -131,7 +139,13 @@ function Card({ project, featured }) {
           {featured ? project.description : project.blurb}
         </Typography>
 
-        <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.75} sx={{ mb: 2 }}>
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          useFlexGap
+          spacing={0.75}
+          sx={{ mb: 2 }}
+        >
           {project.tech.slice(0, featured ? 99 : 5).map((t) => (
             <Box
               key={t}
@@ -150,7 +164,14 @@ function Card({ project, featured }) {
             </Box>
           ))}
           {!featured && project.tech.length > 5 && (
-            <Box sx={{ px: 1, py: 0.25, fontSize: "0.75rem", color: palette.muted }}>
+            <Box
+              sx={{
+                px: 1,
+                py: 0.25,
+                fontSize: "0.75rem",
+                color: palette.muted,
+              }}
+            >
               +{project.tech.length - 5}
             </Box>
           )}
@@ -193,8 +214,11 @@ export default function Projects() {
   const [filter, setFilter] = useState("all");
 
   const visible = useMemo(
-    () => (filter === "all" ? projects : projects.filter((p) => p.category === filter)),
-    [filter]
+    () =>
+      filter === "all"
+        ? projects
+        : projects.filter((p) => p.category === filter),
+    [filter],
   );
 
   return (
@@ -202,10 +226,15 @@ export default function Projects() {
       id="projects"
       eyebrow="Projects"
       title="Things I've built"
-      intro="Side projects, startup work, and a few favourites from coursework."
       tinted
     >
-      <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1} sx={{ mb: 3 }}>
+      <Stack
+        direction="row"
+        flexWrap="wrap"
+        useFlexGap
+        spacing={1}
+        sx={{ mb: 3 }}
+      >
         {categories.map((c) => {
           const active = filter === c.id;
           return (
@@ -226,7 +255,10 @@ export default function Projects() {
                 backgroundColor: active ? palette.accent : palette.bg,
                 border: `1px solid ${active ? palette.accent : palette.border}`,
                 transition: "all .2s ease",
-                "&:hover": { borderColor: palette.accent, color: active ? "#fff" : palette.text },
+                "&:hover": {
+                  borderColor: palette.accent,
+                  color: active ? "#fff" : palette.text,
+                },
               }}
             >
               {c.label}
@@ -238,14 +270,22 @@ export default function Projects() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(3, 1fr)" },
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(3, 1fr)",
+          },
           gap: { xs: 2.5, md: 3 },
           alignItems: "stretch",
         }}
       >
         <AnimatePresence mode="popLayout">
           {visible.map((p) => (
-            <Card key={p.id} project={p} featured={p.featured && filter !== "class"} />
+            <Card
+              key={p.id}
+              project={p}
+              featured={p.featured && filter !== "class"}
+            />
           ))}
         </AnimatePresence>
       </Box>
