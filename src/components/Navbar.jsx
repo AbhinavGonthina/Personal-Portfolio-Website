@@ -17,7 +17,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import { palette } from "../theme";
+import { palette, PAGE_MAX } from "../theme";
 import { NAV_ITEMS } from "../data/nav";
 import { socials } from "../data/profile";
 
@@ -83,7 +83,7 @@ export default function Navbar() {
           transition: "background-color .25s ease",
         }}
       >
-        <Container maxWidth="lg">
+        <Container maxWidth={false} sx={{ maxWidth: PAGE_MAX, mx: "auto" }}>
           {/* Three-column grid keeps the links optically centred regardless of
               how wide the logo and action cluster are. */}
           <Toolbar
@@ -198,7 +198,10 @@ export default function Navbar() {
                     sx={{
                       color: palette.muted,
                       transition: "color .2s ease, transform .2s ease",
-                      "&:hover": { color: palette.accentDark, transform: "translateY(-1px)" },
+                      "&:hover": {
+                        color: palette.accentDark,
+                        transform: "translateY(-1px)",
+                      },
                     }}
                   >
                     <Icon sx={{ fontSize: 20 }} />
@@ -207,9 +210,18 @@ export default function Navbar() {
               })}
               <Box
                 aria-hidden
-                sx={{ width: "1px", height: 20, backgroundColor: palette.border, mx: 1 }}
+                sx={{
+                  width: "1px",
+                  height: 20,
+                  backgroundColor: palette.border,
+                  mx: 1,
+                }}
               />
-              <Button variant="contained" color="primary" onClick={() => go("connect")}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => go("connect")}
+              >
                 Get in touch
               </Button>
             </Box>

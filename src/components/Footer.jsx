@@ -1,14 +1,16 @@
 import { Box, Container, Typography, Link, Stack } from "@mui/material";
-import { palette } from "../theme";
+import { palette, PAGE_MAX } from "../theme";
+import { RULE } from "./Section";
 import { socials } from "../data/profile";
 
 export default function Footer() {
   return (
     <Box
       component="footer"
-      sx={{ borderTop: `1px solid ${palette.border}`, py: 5, mt: 4 }}
+      // Same hairline as the dividers between sections.
+      sx={{ borderTop: `1px solid ${RULE}`, py: 5, mt: 4 }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={false} sx={{ maxWidth: PAGE_MAX, mx: "auto" }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
@@ -16,7 +18,8 @@ export default function Footer() {
           alignItems={{ xs: "flex-start", sm: "center" }}
         >
           <Typography variant="body2" sx={{ color: palette.muted }}>
-            © {new Date().getFullYear()} Abhinav Gonthina — built with React and MUI.
+            © {new Date().getFullYear()} Abhinav Gonthina — built with React
+            and MUI.
           </Typography>
 
           <Stack direction="row" spacing={3}>
@@ -28,7 +31,10 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 underline="none"
                 variant="body2"
-                sx={{ color: palette.muted, "&:hover": { color: palette.accent } }}
+                sx={{
+                  color: palette.muted,
+                  "&:hover": { color: palette.accent },
+                }}
               >
                 {s.name}
               </Link>

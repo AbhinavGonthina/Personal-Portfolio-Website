@@ -1,6 +1,9 @@
 import { Box, Container, Typography } from "@mui/material";
 import { motion } from "motion/react";
-import { palette } from "../theme";
+import { palette, PAGE_MAX } from "../theme";
+
+// The divider between sections, and the one the footer closes on.
+export const RULE = "rgba(42, 59, 42, 0.10)";
 
 /**
  * Every section on the page goes through here: it owns the scroll anchor,
@@ -13,10 +16,8 @@ export default function Section({
   title,
   intro,
   children,
-  maxWidth = "lg",
   tinted = false,
-  disableGutterTop = false,
-  bounded = false,
+  background = null,
   aside = null,
   containerMaxWidth = null,
   decor = null,
@@ -32,22 +33,28 @@ export default function Section({
         // Exactly the sticky navbar's height (64/76 toolbar + 1px border), so a
         // nav click lands the section flush under it with no sliver of gap.
         scrollMarginTop: { xs: 65, md: 77 },
-        // One screen per section. min-height rather than height, so sections
-        // whose content is taller than the viewport still grow to fit.
-        minHeight: { md: "100dvh" },
+        // One screen per section, measured against the space *below* the
+        // sticky navbar rather than the full viewport — a section anchors at
+        // scrollMarginTop, so sizing it to 100dvh would push its last 77px
+        // under the fold. min-height, not height, so a section whose content
+        // outgrows the screen still grows to fit it.
+        minHeight: { md: "calc(100dvh - 77px)" },
         display: "flex",
         flexDirection: "column",
-        // Content starts near the top rather than floating in the middle of
-        // the screen; any slack falls to the bottom of the section.
+        // Content starts at the top gutter rather than floating in the middle.
+        // Centring made the gap above a heading depend on how much content
+        // followed it — 73px on a full section, 162px on a short one — so no
+        // two headings sat at the same height. A fixed top gutter gives every
+        // section the same start; the leftover height falls below the content.
         justifyContent: "flex-start",
-        pt: disableGutterTop ? 0 : { xs: 7, md: 8 },
-        pb: { xs: 8, md: 10 },
-        backgroundColor: tinted ? palette.surface : "transparent",
-        // Hairlines bound the section against its neighbours.
-        ...(bounded && {
-          borderTop: "1px solid rgba(42, 59, 42, 0.10)",
-          borderBottom: "1px solid rgba(42, 59, 42, 0.10)",
-        }),
+        pt: { xs: 5, md: 6 },
+        pb: { xs: 5, md: 6 },
+        backgroundColor:
+          background ?? (tinted ? palette.surface : "transparent"),
+        // Every section carries the divider above it, which puts a hairline
+        // at each boundary without two sections both drawing one into the
+        // same gap. The footer draws the closing line below the last section.
+        borderTop: `1px solid ${RULE}`,
       }}
     >
       {decor && (
@@ -66,15 +73,12 @@ export default function Section({
       )}
 
       <Container
-        maxWidth={containerMaxWidth ? false : maxWidth}
+        maxWidth={false}
         sx={{
           position: "relative",
           zIndex: 1,
-          ...(containerMaxWidth && {
-            maxWidth: { lg: containerMaxWidth },
-            mx: "auto",
-            px: { xs: 3, md: 4 },
-          }),
+          maxWidth: containerMaxWidth ?? PAGE_MAX,
+          mx: "auto",
         }}
       >
         {(eyebrow || title) && (
