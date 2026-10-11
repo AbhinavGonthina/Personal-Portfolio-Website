@@ -13,7 +13,16 @@ const leafBody = (len, wid) =>
   `M 0 0 C ${len * 0.32} ${-wid}, ${len * 0.74} ${-wid * 0.82}, ${len} 0
    C ${len * 0.74} ${wid * 0.82}, ${len * 0.32} ${wid}, 0 0 Z`;
 
-export function Leaf({ x, y, angle, len = 17, wid = 5.6, fill, opacity = 1, vein = true }) {
+export function Leaf({
+  x,
+  y,
+  angle,
+  len = 17,
+  wid = 5.6,
+  fill,
+  opacity = 1,
+  vein = true,
+}) {
   return (
     <g transform={`translate(${x} ${y}) rotate(${angle})`}>
       <path d={leafBody(len, wid)} fill={fill} opacity={opacity} />
@@ -49,7 +58,12 @@ export function LeafSpray({
       viewBox="0 0 200 120"
       aria-hidden="true"
       focusable="false"
-      style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "block",
+        overflow: "visible",
+      }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, delay }}
@@ -65,7 +79,11 @@ export function LeafSpray({
               key={i}
               initial={{ scale: 0.3, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: delay + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: 0.5,
+                delay: delay + i * 0.07,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               style={{ transformOrigin: "100px 110px" }}
             >
               <Leaf
@@ -102,20 +120,30 @@ export function DriftingLeaf({
       viewBox="0 0 60 30"
       aria-hidden="true"
       focusable="false"
-      style={{ width: size * 2, height: size, display: "block", overflow: "visible" }}
+      style={{
+        width: size * 2,
+        height: size,
+        display: "block",
+        overflow: "visible",
+      }}
       initial={{ y: -10, x: 0, rotate: 0, opacity: 0 }}
+      // Four keyframes rather than three, so opacity can plateau: the leaf
+      // fades in over the first tenth of the fall, stays solid for most of the
+      // way down, then fades as it reaches the bottom. The old curve peaked at
+      // the halfway mark and fell away after, which left leaves visible only in
+      // a band across the middle and made the drift look like it stopped.
       animate={{
-        y: [-10, fall * 0.4, fall],
-        x: [0, drift, drift * 0.35],
-        rotate: [0, 130, 265],
-        opacity: [0, opacity, 0],
+        y: [-10, fall * 0.1, fall * 0.82, fall],
+        x: [0, drift * 0.35, drift * 0.1, drift * 0.6],
+        rotate: [0, 44, 210, 300],
+        opacity: [0, opacity, opacity, 0],
       }}
       transition={{
         duration,
         repeat: Infinity,
         delay,
         ease: "linear",
-        times: [0, 0.45, 1],
+        times: [0, 0.1, 0.82, 1],
       }}
     >
       <Leaf x={4} y={15} angle={0} len={46} wid={13} fill={tone} vein={false} />
@@ -126,15 +154,29 @@ export function DriftingLeaf({
 const cubic = (p0, c1, c2, p1, t) => {
   const u = 1 - t;
   return {
-    x: u ** 3 * p0.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t ** 3 * p1.x,
-    y: u ** 3 * p0.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t ** 3 * p1.y,
+    x:
+      u ** 3 * p0.x +
+      3 * u * u * t * c1.x +
+      3 * u * t * t * c2.x +
+      t ** 3 * p1.x,
+    y:
+      u ** 3 * p0.y +
+      3 * u * u * t * c1.y +
+      3 * u * t * t * c2.y +
+      t ** 3 * p1.y,
   };
 };
 
 const cubicAngle = (p0, c1, c2, p1, t) => {
   const u = 1 - t;
-  const dx = 3 * u * u * (c1.x - p0.x) + 6 * u * t * (c2.x - c1.x) + 3 * t * t * (p1.x - c2.x);
-  const dy = 3 * u * u * (c1.y - p0.y) + 6 * u * t * (c2.y - c1.y) + 3 * t * t * (p1.y - c2.y);
+  const dx =
+    3 * u * u * (c1.x - p0.x) +
+    6 * u * t * (c2.x - c1.x) +
+    3 * t * t * (p1.x - c2.x);
+  const dy =
+    3 * u * u * (c1.y - p0.y) +
+    6 * u * t * (c2.y - c1.y) +
+    3 * t * t * (p1.y - c2.y);
   return (Math.atan2(dy, dx) * 180) / Math.PI;
 };
 
@@ -170,26 +212,31 @@ export function ArchDrape({
           { a: -24, drop: 138, swing: 28, leaves: 5, delay: 0.44 },
         ]
       : mode === "frame"
-      ? [
-          { a: -176, drop: 300, swing: -30, leaves: 10, delay: 0.1 },
-          { a: -154, drop: 190, swing: -30, leaves: 6, delay: 0.3 },
-          { a: -4, drop: 320, swing: 32, leaves: 11, delay: 0.18 },
-          { a: -26, drop: 200, swing: 32, leaves: 6, delay: 0.42 },
-        ]
-      : [
-          { a: -158, drop: 250, swing: -26, leaves: 9, delay: 0.25 },
-          { a: -128, drop: 320, swing: -14, leaves: 11, delay: 0.1 },
-          { a: -96, drop: 270, swing: 10, leaves: 10, delay: 0.35 },
-          { a: -62, drop: 340, swing: 20, leaves: 11, delay: 0.18 },
-          { a: -28, drop: 230, swing: 30, leaves: 8, delay: 0.45 },
-        ];
+        ? [
+            { a: -176, drop: 300, swing: -30, leaves: 10, delay: 0.1 },
+            { a: -154, drop: 190, swing: -30, leaves: 6, delay: 0.3 },
+            { a: -4, drop: 320, swing: 32, leaves: 11, delay: 0.18 },
+            { a: -26, drop: 200, swing: 32, leaves: 6, delay: 0.42 },
+          ]
+        : [
+            { a: -158, drop: 250, swing: -26, leaves: 9, delay: 0.25 },
+            { a: -128, drop: 320, swing: -14, leaves: 11, delay: 0.1 },
+            { a: -96, drop: 270, swing: 10, leaves: 10, delay: 0.35 },
+            { a: -62, drop: 340, swing: 20, leaves: 11, delay: 0.18 },
+            { a: -28, drop: 230, swing: 30, leaves: 8, delay: 0.45 },
+          ];
 
   return (
     <svg
       viewBox={`0 0 ${w} ${h}`}
       aria-hidden="true"
       focusable="false"
-      style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "block",
+        overflow: "visible",
+      }}
     >
       {drapes.map((d, i) => {
         const rad = (d.a * Math.PI) / 180;
@@ -276,7 +323,10 @@ export function ArchDrape({
               initial={{ opacity: 0, scale: 0.3 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.45, delay: d.delay + 1.35 }}
-              style={{ transformOrigin: `${p1.x}px ${p1.y}px`, transformBox: "view-box" }}
+              style={{
+                transformOrigin: `${p1.x}px ${p1.y}px`,
+                transformBox: "view-box",
+              }}
             >
               <Leaf
                 x={p1.x}
@@ -317,7 +367,12 @@ const grow = (delay, duration = 0.7) => ({
   transition: { duration, delay, ease: [0.22, 1, 0.36, 1] },
 });
 
-const svgStyle = { width: "100%", height: "100%", display: "block", overflow: "visible" };
+const svgStyle = {
+  width: "100%",
+  height: "100%",
+  display: "block",
+  overflow: "visible",
+};
 
 // Rotating through three greens at varied opacity gives foliage depth — a
 // single flat tone is what made the early vines look like stickers.
@@ -344,7 +399,10 @@ export function Fern({
   sway = 2.2,
 }) {
   const H = 400;
-  const spine = (t) => ({ x: 80 + Math.sin(t * 1.5) * 30, y: H - t * (H - 24) });
+  const spine = (t) => ({
+    x: 80 + Math.sin(t * 1.5) * 30,
+    y: H - t * (H - 24),
+  });
 
   return (
     <motion.svg
@@ -355,12 +413,19 @@ export function Fern({
       animate={{ rotate: [-sway, sway, -sway] }}
       transition={{ duration: 13, repeat: Infinity, ease: "easeInOut", delay }}
     >
-      <motion.g {...grow(delay)} style={{ transformOrigin: "80px 400px" }} opacity={opacity}>
+      <motion.g
+        {...grow(delay)}
+        style={{ transformOrigin: "80px 400px" }}
+        opacity={opacity}
+      >
         <path
-          d={`M ${spine(0).x} ${spine(0).y} ${Array.from({ length: 24 }, (_, i) => {
-            const p = spine((i + 1) / 24);
-            return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-          }).join(" ")}`}
+          d={`M ${spine(0).x} ${spine(0).y} ${Array.from(
+            { length: 24 },
+            (_, i) => {
+              const p = spine((i + 1) / 24);
+              return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+            },
+          ).join(" ")}`}
           fill="none"
           stroke={tone}
           strokeWidth={2.6}
@@ -374,8 +439,24 @@ export function Fern({
           const tilt = -46 - t * 16;
           return (
             <g key={i}>
-              <Leaf x={p.x} y={p.y} angle={180 + tilt} len={len} wid={len * 0.24} fill={tone} vein={false} />
-              <Leaf x={p.x} y={p.y} angle={-tilt} len={len} wid={len * 0.24} fill={tone} vein={false} />
+              <Leaf
+                x={p.x}
+                y={p.y}
+                angle={180 + tilt}
+                len={len}
+                wid={len * 0.24}
+                fill={tone}
+                vein={false}
+              />
+              <Leaf
+                x={p.x}
+                y={p.y}
+                angle={-tilt}
+                len={len}
+                wid={len * 0.24}
+                fill={tone}
+                vein={false}
+              />
             </g>
           );
         })}
@@ -395,7 +476,10 @@ export function Eucalyptus({
   delay = 0,
 }) {
   const H = 340;
-  const stem = (t) => ({ x: 70 + Math.sin(t * 2.1 + 0.4) * 16, y: H - t * (H - 20) });
+  const stem = (t) => ({
+    x: 70 + Math.sin(t * 2.1 + 0.4) * 16,
+    y: H - t * (H - 20),
+  });
 
   return (
     <motion.svg
@@ -406,12 +490,19 @@ export function Eucalyptus({
       animate={{ rotate: [-1.6, 1.6, -1.6] }}
       transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay }}
     >
-      <motion.g {...grow(delay)} style={{ transformOrigin: "70px 340px" }} opacity={opacity}>
+      <motion.g
+        {...grow(delay)}
+        style={{ transformOrigin: "70px 340px" }}
+        opacity={opacity}
+      >
         <path
-          d={`M ${stem(0).x} ${stem(0).y} ${Array.from({ length: 20 }, (_, i) => {
-            const p = stem((i + 1) / 20);
-            return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-          }).join(" ")}`}
+          d={`M ${stem(0).x} ${stem(0).y} ${Array.from(
+            { length: 20 },
+            (_, i) => {
+              const p = stem((i + 1) / 20);
+              return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+            },
+          ).join(" ")}`}
           fill="none"
           stroke={toneAlt}
           strokeWidth={2.4}
@@ -452,7 +543,12 @@ export function Eucalyptus({
  * Split-leaf monstera. The splits are cut with a mask so the shape works on
  * any background colour.
  */
-export function Monstera({ tone = palette.bark, opacity = 0.22, delay = 0, flip = false }) {
+export function Monstera({
+  tone = palette.bark,
+  opacity = 0.22,
+  delay = 0,
+  flip = false,
+}) {
   const id = useId().replace(/:/g, "");
   const CX = 110;
 
@@ -559,7 +655,11 @@ export function Reeds({
               initial={{ scaleY: 0, opacity: 0 }}
               whileInView={{ scaleY: 1, opacity: 1 }}
               viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.65, delay: s.delay, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                duration: 0.65,
+                delay: s.delay,
+                ease: [0.22, 1, 0.36, 1],
+              }}
               style={{ transformOrigin: "100px 278px" }}
             />
           );
@@ -610,22 +710,33 @@ export function VineDivider({
 }) {
   const W = 900;
   const H = 60;
-  const stem = (t) => ({ x: t * W, y: H / 2 + Math.sin(t * Math.PI * 2.2) * 5 });
+  const stem = (t) => ({
+    x: t * W,
+    y: H / 2 + Math.sin(t * Math.PI * 2.2) * 5,
+  });
 
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       aria-hidden="true"
       focusable="false"
-      style={{ width: "100%", height: "100%", display: "block", overflow: "visible" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "block",
+        overflow: "visible",
+      }}
       preserveAspectRatio="none"
     >
       <g opacity={opacity}>
         <motion.path
-          d={`M ${stem(0).x} ${stem(0).y} ${Array.from({ length: 40 }, (_, i) => {
-            const p = stem((i + 1) / 40);
-            return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-          }).join(" ")}`}
+          d={`M ${stem(0).x} ${stem(0).y} ${Array.from(
+            { length: 40 },
+            (_, i) => {
+              const p = stem((i + 1) / 40);
+              return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+            },
+          ).join(" ")}`}
           fill="none"
           stroke={stroke}
           strokeWidth={strokeWidth}
@@ -649,7 +760,10 @@ export function VineDivider({
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.35, delay: 0.25 + t * 0.9 }}
-              style={{ transformOrigin: `${p.x}px ${p.y}px`, transformBox: "view-box" }}
+              style={{
+                transformOrigin: `${p.x}px ${p.y}px`,
+                transformBox: "view-box",
+              }}
             >
               <Leaf
                 x={p.x}
@@ -676,7 +790,10 @@ export function VineDivider({
 export function VerticalVine({ leaves = 16, opacity = 0.9, stroke = 1.5 }) {
   const W = 60;
   const H = 640;
-  const stem = (t) => ({ x: W / 2 + Math.sin(t * Math.PI * 3.1) * 11, y: t * H });
+  const stem = (t) => ({
+    x: W / 2 + Math.sin(t * Math.PI * 3.1) * 11,
+    y: t * H,
+  });
 
   return (
     <svg
@@ -690,10 +807,13 @@ export function VerticalVine({ leaves = 16, opacity = 0.9, stroke = 1.5 }) {
     >
       <g opacity={opacity}>
         <motion.path
-          d={`M ${stem(0).x} ${stem(0).y} ${Array.from({ length: 48 }, (_, i) => {
-            const p = stem((i + 1) / 48);
-            return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-          }).join(" ")}`}
+          d={`M ${stem(0).x} ${stem(0).y} ${Array.from(
+            { length: 48 },
+            (_, i) => {
+              const p = stem((i + 1) / 48);
+              return `L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+            },
+          ).join(" ")}`}
           fill="none"
           stroke="rgba(42, 59, 42, 0.25)"
           strokeWidth={stroke}
@@ -715,7 +835,10 @@ export function VerticalVine({ leaves = 16, opacity = 0.9, stroke = 1.5 }) {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.4, delay: 0.25 + t * 1.2 }}
-              style={{ transformOrigin: `${p.x}px ${p.y}px`, transformBox: "view-box" }}
+              style={{
+                transformOrigin: `${p.x}px ${p.y}px`,
+                transformBox: "view-box",
+              }}
             >
               <Leaf
                 x={p.x}
@@ -745,6 +868,7 @@ export function VerticalVine({ leaves = 16, opacity = 0.9, stroke = 1.5 }) {
 /**
  * `length` stretches the stems in viewBox units, so the canopy can hang lower
  * without enlarging the container — which would scale the leaves up too.
+ *
  * `animate={false}` drops the stagger and fades the whole thing in at once.
  */
 export function Canopy({
@@ -753,7 +877,14 @@ export function Canopy({
   flip = false,
   length = 1,
   animate = true,
+  // A single colour for the whole canopy, stem and all. It overrides the
+  // per-leaf opacity from FOLIAGE too — that variation is what makes an
+  // untoned canopy read as several different greens, which is the opposite
+  // of what a caller asking for one colour wants.
+  tone = null,
 }) {
+  // Flat when toned; the FOLIAGE depth is only for the default palette.
+  const leafOpacity = (f) => (tone ? 1 : f.o);
   const W = 440;
   const H = 320;
 
@@ -820,12 +951,16 @@ export function Canopy({
               <motion.path
                 d={d}
                 fill="none"
-                stroke={palette.olive}
+                stroke={tone ?? palette.olive}
                 strokeWidth={1.9}
                 strokeLinecap="round"
-                opacity={0.8}
+                opacity={tone ? 1 : 0.8}
                 {...stemAnim}
-                transition={{ duration: animate ? 1 : 0, delay: s.delay, ease: "easeOut" }}
+                transition={{
+                  duration: animate ? 1 : 0,
+                  delay: s.delay,
+                  ease: "easeOut",
+                }}
               />
               {Array.from({ length: s.leaves }, (_, k) => {
                 const t = 0.2 + (k / Math.max(1, s.leaves - 1)) * 0.78;
@@ -844,7 +979,10 @@ export function Canopy({
                       duration: animate ? 0.3 : 0,
                       delay: animate ? s.delay + t * 0.95 : 0,
                     }}
-                    style={{ transformOrigin: `${pt.x}px ${pt.y}px`, transformBox: "view-box" }}
+                    style={{
+                      transformOrigin: `${pt.x}px ${pt.y}px`,
+                      transformBox: "view-box",
+                    }}
                   >
                     <Leaf
                       x={pt.x}
@@ -852,8 +990,8 @@ export function Canopy({
                       angle={ang + side * 68}
                       len={24 * sc}
                       wid={8 * sc}
-                      fill={f.fill}
-                      opacity={f.o}
+                      fill={tone ?? f.fill}
+                      opacity={leafOpacity(f)}
                       vein={false}
                     />
                   </motion.g>
@@ -868,8 +1006,14 @@ export function Canopy({
                       viewport: { once: true, amount: 0.15 },
                     }
                   : {})}
-                transition={{ duration: animate ? 0.4 : 0, delay: animate ? s.delay + 1 : 0 }}
-                style={{ transformOrigin: `${p1.x}px ${p1.y}px`, transformBox: "view-box" }}
+                transition={{
+                  duration: animate ? 0.4 : 0,
+                  delay: animate ? s.delay + 1 : 0,
+                }}
+                style={{
+                  transformOrigin: `${p1.x}px ${p1.y}px`,
+                  transformBox: "view-box",
+                }}
               >
                 <Leaf
                   x={p1.x}
@@ -877,8 +1021,8 @@ export function Canopy({
                   angle={cubicAngle(p0, c1, c2, p1, 1) - 8}
                   len={14}
                   wid={4.6}
-                  fill={foliageAt(i + 1).fill}
-                  opacity={foliageAt(i + 1).o}
+                  fill={tone ?? foliageAt(i + 1).fill}
+                  opacity={leafOpacity(foliageAt(i + 1))}
                   vein={false}
                 />
               </motion.g>
