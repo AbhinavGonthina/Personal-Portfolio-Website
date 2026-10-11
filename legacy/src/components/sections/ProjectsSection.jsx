@@ -47,9 +47,9 @@ const projectsData = {
       type: "images",
       url: "https://tinyurl.com/y4f53bd3",
       images: [
-        "/RoadQuestLandingPage.jpg",
-        "/RoadQuestMainPage.jpg",
-        "/RoadQuestQuestPage.jpg",
+        `${import.meta.env.BASE_URL}RoadQuestLandingPage.jpg`,
+        `${import.meta.env.BASE_URL}RoadQuestMainPage.jpg`,
+        `${import.meta.env.BASE_URL}RoadQuestQuestPage.jpg`,
       ],
     },
     github: "https://github.com/AbhinavGonthina/RoadQuest",
@@ -74,7 +74,7 @@ const projectsData = {
     ],
     media: {
       type: "images",
-      images: ["/MacroManageSneakPeek.png"],
+      images: [`${import.meta.env.BASE_URL}MacroManageSneakPeek.png`],
     },
   },
   "portfolio.exe": {
@@ -92,7 +92,7 @@ const projectsData = {
     ],
     media: {
       type: "images",
-      images: ["/PortfolioLandingPage.png"],
+      images: [`${import.meta.env.BASE_URL}PortfolioLandingPage.png`],
     },
   },
   "Class Projects": {
@@ -106,7 +106,7 @@ const projectsData = {
         techStack: ["Racket"],
         media: {
           type: "video",
-          url: "/videos/BostonCO2Demo.mp4",
+          url: `${import.meta.env.BASE_URL}videos/BostonCO2Demo.mp4`,
           autoplay: true,
         },
       },
@@ -118,7 +118,7 @@ const projectsData = {
         techStack: ["Java (impworld)"],
         media: {
           type: "video",
-          url: "/videos/ConnectionsDemo.mp4",
+          url: `${import.meta.env.BASE_URL}videos/ConnectionsDemo.mp4`,
           autoplay: true,
         },
       },
@@ -130,7 +130,7 @@ const projectsData = {
         techStack: ["Java (impworld)"],
         media: {
           type: "images",
-          images: ["/LightEmAllDemo.png"],
+          images: [`${import.meta.env.BASE_URL}LightEmAllDemo.png`],
         },
       },
       "ztype.exe": {
@@ -141,7 +141,7 @@ const projectsData = {
         techStack: ["Java (impworld)"],
         media: {
           type: "video",
-          url: "/videos/ZTypeDemo.mp4",
+          url: `${import.meta.env.BASE_URL}videos/ZTypeDemo.mp4`,
           autoplay: true,
         },
       },
@@ -170,10 +170,10 @@ const projectsData = {
         media: {
           type: "images",
           images: [
-            "/QuakTravelOldLandingPageWebsite.png",
-            "/QuakTravelOldDashboard.png",
-            "/QuakTravelOldExpensesPage.png",
-            "/QuakTravelOldHotelSearch.png",
+            `${import.meta.env.BASE_URL}QuakTravelOldLandingPageWebsite.png`,
+            `${import.meta.env.BASE_URL}QuakTravelOldDashboard.png`,
+            `${import.meta.env.BASE_URL}QuakTravelOldExpensesPage.png`,
+            `${import.meta.env.BASE_URL}QuakTravelOldHotelSearch.png`,
           ],
         },
       },
@@ -212,7 +212,7 @@ const projectsData = {
         ],
         media: {
           type: "images",
-          images: ["/RecreonHomePage.png"],
+          images: [`${import.meta.env.BASE_URL}RecreonHomePage.png`],
         },
       },
     },
@@ -512,26 +512,26 @@ export default function ProjectsSection() {
         "----         -------------          ------  ----",
         ...entries.map(
           ([name, data]) =>
-            `${data.type === "folder" ? "d-----" : "-a----"}       11/15/2024  3:45 PM         ${name}`
+            `${data.type === "folder" ? "d-----" : "-a----"}       11/15/2024  3:45 PM         ${name}`,
         ),
         "",
       ];
     } else if (base.startsWith("./")) {
       const name = base.substring(2);
       const entry = Object.entries(folder).find(
-        ([k]) => k.toLowerCase() === name.toLowerCase()
+        ([k]) => k.toLowerCase() === name.toLowerCase(),
       );
       if (entry && entry[1].type === "file") {
         setProject(entry[1]);
         out = ["Loading project..."];
       } else if (entry && entry[1].type === "folder") {
         out.push(
-          `Error: '${name}' is a folder. Use 'cd ${name}' to navigate into it.`
+          `Error: '${name}' is a folder. Use 'cd ${name}' to navigate into it.`,
         );
       } else {
         out.push(
           `Error: Project '${name}' not found`,
-          "Type 'ls' to see available projects"
+          "Type 'ls' to see available projects",
         );
       }
     } else if (base === "cd") {
@@ -544,7 +544,7 @@ export default function ProjectsSection() {
       } else {
         const entry = Object.entries(folder).find(
           ([k, v]) =>
-            k.toLowerCase() === args.toLowerCase() && v.type === "folder"
+            k.toLowerCase() === args.toLowerCase() && v.type === "folder",
         );
         if (entry) {
           setPath(`${path}\\${entry[0]}`);
@@ -574,7 +574,7 @@ export default function ProjectsSection() {
         "  cd <folder>",
         "  cd ..",
         "  ./<file>",
-        "  clear"
+        "  clear",
       );
     }
 
@@ -983,7 +983,7 @@ export default function ProjectsSection() {
                               ...prev.slice(0, -1),
                               { t: "o", c: "Returned to terminal" },
                               { t: "p", c: "" },
-                            ].slice(-30)
+                            ].slice(-30),
                           );
                           setCmd("");
                         }
