@@ -35,7 +35,22 @@ export const palette = {
   inkMuted: "#6B655E",
 };
 
-export const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+/**
+ * The high-contrast pair the Skills and Experience sections are built on: a
+ * near-black pine against a warm off-white. Kept here rather than redeclared
+ * per section, because "the same green" is the whole point of them.
+ */
+export const PINE = "#2C4032";
+export const CREAM = "#F8F6F0";
+
+export const MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+// The heading face, exported so sections can borrow it for sub-headers
+// without restating the stack.
+export const SERIF = '"Fraunces", Georgia, serif';
+
+// Shared page width. Every Container on the site keys off this, which is what
+// holds the navbar, the hero and every section heading on the same left edge.
+export const PAGE_MAX = 1200;
 
 // Fluid type: scales with the viewport but clamped at both ends, so nothing
 // collapses on a phone or balloons on a 4K monitor. Replaces the old vh sizing.
@@ -51,7 +66,11 @@ const theme = createTheme({
     background: { default: palette.bg, paper: palette.surface },
     // MUI "primary" drives buttons, so it maps to the action colour, not the
     // decorative accent.
-    primary: { main: palette.action, dark: palette.actionDark, contrastText: "#FFFFFF" },
+    primary: {
+      main: palette.action,
+      dark: palette.actionDark,
+      contrastText: "#FFFFFF",
+    },
     text: { primary: palette.text, secondary: palette.muted },
     divider: palette.border,
   },
@@ -91,7 +110,11 @@ const theme = createTheme({
       fontWeight: 600,
       lineHeight: 1.3,
     },
-    subtitle1: { fontSize: fluid(1.0625, 1.25), lineHeight: 1.6, color: palette.bodyStrong },
+    subtitle1: {
+      fontSize: fluid(1.0625, 1.25),
+      lineHeight: 1.6,
+      color: palette.bodyStrong,
+    },
     body1: { fontSize: "1rem", lineHeight: 1.7 },
     body2: { fontSize: "0.9375rem", lineHeight: 1.65 },
     caption: { fontSize: "0.8125rem", letterSpacing: "0.02em" },
@@ -110,14 +133,20 @@ const theme = createTheme({
         'g[role="button"]:focus-visible .focus-ring': { opacity: 1 },
         "@media (prefers-reduced-motion: reduce)": {
           html: { scrollBehavior: "auto" },
-          "*": { animationDuration: "0.01ms !important", transitionDuration: "0.01ms !important" },
+          "*": {
+            animationDuration: "0.01ms !important",
+            transitionDuration: "0.01ms !important",
+          },
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: { borderRadius: 999, paddingInline: 22, paddingBlock: 10 },
-        containedPrimary: { boxShadow: "none", "&:hover": { boxShadow: "none" } },
+        containedPrimary: {
+          boxShadow: "none",
+          "&:hover": { boxShadow: "none" },
+        },
         outlinedPrimary: { borderColor: palette.border, color: palette.text },
       },
     },
