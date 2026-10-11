@@ -21,6 +21,10 @@ export default function Section({
   aside = null,
   containerMaxWidth = null,
   decor = null,
+  // Lets a section's children fill the leftover height instead of leaving it
+  // as dead space below them, so a child can push itself to the floor with
+  // `mt: "auto"`. Off by default: every other section wants its slack below.
+  grow = false,
 }) {
   return (
     <Box
@@ -79,6 +83,11 @@ export default function Section({
           zIndex: 1,
           maxWidth: containerMaxWidth ?? PAGE_MAX,
           mx: "auto",
+          ...(grow && {
+            flexGrow: 1,
+            display: "flex",
+            flexDirection: "column",
+          }),
         }}
       >
         {(eyebrow || title) && (
@@ -144,6 +153,11 @@ export default function Section({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.15 }}
           transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          sx={
+            grow
+              ? { flexGrow: 1, display: "flex", flexDirection: "column" }
+              : undefined
+          }
         >
           {children}
         </Box>
