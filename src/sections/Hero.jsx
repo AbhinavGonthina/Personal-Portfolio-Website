@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { Canopy, LeafMark, Plant, VineDivider } from "../components/Botanical";
 import StoneFrame from "../components/StoneWall";
 import { palette, PAGE_MAX } from "../theme";
-import { profile } from "../data/profile";
+import { profile, RESUME_URL } from "../data/profile";
 // The About section is parked, but its education data still feeds the landing.
 import { education } from "../data/about";
 
@@ -16,9 +16,6 @@ const CREDENTIALS = [
   `GPA ${education.gpa}`,
   education.honors,
 ];
-
-const RESUME_URL =
-  "https://drive.google.com/file/d/1mmaNnu9ERCRxq-6wIewLTS-31G37Ce_p/view?usp=sharing";
 
 const rise = {
   hidden: { opacity: 0, y: 26 },
@@ -309,14 +306,21 @@ export default function Hero() {
               the shoulders are never cropped. */}
           {/* No fade-in of its own: StoneFrame throws the portrait onto the
               wall on load, and a second entrance underneath it would have the
-              picture fading up while it is still in the air. */}
+              picture fading up while it is still in the air.
+
+              On a narrow screen the columns stack, and `order` puts the
+              portrait above the copy rather than below it - it is the first
+              thing worth seeing, and it used to be hidden outright. Smaller
+              there too, so the brickwork it sits in still has room to spill
+              past the frame and fade out. */}
           <Box
             sx={{
               gridColumn: { md: "span 5" },
               justifySelf: { xs: "center", md: "end" },
+              order: { xs: -1, md: 0 },
               width: "100%",
-              maxWidth: 320,
-              display: { xs: "none", md: "block" },
+              maxWidth: { xs: 230, sm: 270, md: 320 },
+              mb: { xs: 2, md: 0 },
             }}
           >
             {/* Portrait set into a weathered stone wall, with ivy rooted in the
