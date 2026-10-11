@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
 import Hero from "./sections/Hero";
 import Experience from "./sections/Experience";
 import Skills from "./sections/Skills";
@@ -19,7 +18,6 @@ export default function App() {
         <Projects />
         <Connect />
       </Box>
-      <Footer />
     </Box>
   );
 }
