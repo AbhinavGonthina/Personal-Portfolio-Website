@@ -42,15 +42,15 @@ const ElectricBorder = ({
 
     const width = Math.max(
       1,
-      Math.round(host.clientWidth || host.getBoundingClientRect().width || 0)
+      Math.round(host.clientWidth || host.getBoundingClientRect().width || 0),
     );
     const height = Math.max(
       1,
-      Math.round(host.clientHeight || host.getBoundingClientRect().height || 0)
+      Math.round(host.clientHeight || host.getBoundingClientRect().height || 0),
     );
 
     const dyAnims = Array.from(
-      svg.querySelectorAll('feOffset > animate[attributeName="dy"]')
+      svg.querySelectorAll('feOffset > animate[attributeName="dy"]'),
     );
     if (dyAnims.length >= 2) {
       dyAnims[0].setAttribute("values", `${height}; 0`);
@@ -58,7 +58,7 @@ const ElectricBorder = ({
     }
 
     const dxAnims = Array.from(
-      svg.querySelectorAll('feOffset > animate[attributeName="dx"]')
+      svg.querySelectorAll('feOffset > animate[attributeName="dx"]'),
     );
     if (dxAnims.length >= 2) {
       dxAnims[0].setAttribute("values", `${width}; 0`);

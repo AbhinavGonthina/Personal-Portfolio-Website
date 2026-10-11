@@ -44,7 +44,7 @@ export default function ExperienceSection() {
   const experienceData = {
     philips: {
       title: "Philips",
-      logo: "/PhilipsLogo.png",
+      logo: `${import.meta.env.BASE_URL}PhilipsLogo.png`,
       description:
         "Philips is a health technology company focused on patient monitoring systems. I am an incoming Software Engineering Co-op who will be tasked with developing scalable applications and components for PIIC iX, a $200M patient monitoring platform that connects thousands of devices across major hospitals worldwide.",
       techStack: ["C#", "Visual Studio", "SQL Server", "Angular"],
@@ -52,7 +52,7 @@ export default function ExperienceSection() {
     },
     athenahealth: {
       title: "Athenahealth",
-      logo: "/AthenaLogo.png",
+      logo: `${import.meta.env.BASE_URL}AthenaLogo.png`,
       description:
         "Athenahealth is a healthcare technology company building cloud-based software for healthcare providers nationwide. As an incoming software engineering intern, I will work on athenaCollector as part of the frontend frameworks team, building reusable UI components that support revenue-cycle workflows used by healthcare organizations.",
       techStack: ["React"],
@@ -60,7 +60,7 @@ export default function ExperienceSection() {
     },
     quak: {
       title: "Quak Travel",
-      logo: "/QuakTravelLogo.png",
+      logo: `${import.meta.env.BASE_URL}QuakTravelLogo.png`,
       description:
         "Quak Travel is a travel-based startup building a central hub for posting and finding trip itineraries. I contribute as a Software Engineer, turning Figma designs into a responsive frontend, architecting key endpoints, and leading database design. Earlier, I worked on building a website with hotel booking, payment splitting, and social media features before the company's rebrand.",
       techStack: [
@@ -78,7 +78,7 @@ export default function ExperienceSection() {
     },
     rainfall: {
       title: "Rainfall Learning",
-      logo: "/RainfallLearningLogo.png",
+      logo: `${import.meta.env.BASE_URL}RainfallLearningLogo.png`,
       description:
         "Rainfall Learning is a Northeastern student-led startup building an affordable, flexible e-learning platform for computer science. As Tech Lead for the Payments/Internal Tools team, I am integrating Stripe API to connect tutors with students. The platform is set to evolve into a B2B2C model, enabling businesses to create their own interactive curricula with our platform.",
       techStack: [
@@ -96,7 +96,7 @@ export default function ExperienceSection() {
     },
     khoury: {
       title: "Khoury TA",
-      logo: "/KhouryLogo.png",
+      logo: `${import.meta.env.BASE_URL}KhouryLogo.png`,
       description:
         "I serve as a Teaching Assistant for the Discrete Structures (CS1800) course at Northeastern's Khoury College of Computer Sciences. In this role, I support a cohort of 500+ students by helping them master topics such as combinatorics, graph theory, algorithmic efficiency, logic, induction, and proofs. ",
       techStack: ["N/A"],
@@ -107,7 +107,7 @@ export default function ExperienceSection() {
     },
     ner: {
       title: "NER",
-      logo: "/NERLogo.png",
+      logo: `${import.meta.env.BASE_URL}NERLogo.png`,
       description:
         "I contribute to Northeastern Electric Racing as a Software Developer, working on FinishLine—our team's internal project management platform. Currently, I'm developing a PDF parsing system that converts competition documents into an easily readable format. Previously, I contributed to a parts overview system with status tracking and notifications to improve ticket visibility.",
       techStack: [
@@ -618,7 +618,7 @@ export default function ExperienceSection() {
                               >
                                 {achievement}
                               </Typography>
-                            )
+                            ),
                           )}
                         </Box>
                       </Box>

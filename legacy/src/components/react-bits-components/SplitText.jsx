@@ -103,7 +103,7 @@ const SplitText = ({
               },
               willChange: "transform, opacity",
               force3D: true,
-            }
+            },
           );
         },
       });
@@ -136,7 +136,7 @@ const SplitText = ({
         onLetterAnimationComplete,
       ],
       scope: ref,
-    }
+    },
   );
 
   const renderTag = () => {

@@ -231,7 +231,7 @@ const PillList = memo(function PillList({ items }) {
       items.map((label) => (
         <Chip key={label} label={label} variant="outlined" sx={chipSx} />
       )),
-    [items]
+    [items],
   );
 
   return (
@@ -296,7 +296,7 @@ const NumberedList = memo(function NumberedList({ items }) {
           </ListItem>
         );
       }),
-    [items]
+    [items],
   );
 
   return <List sx={{ mt: 0, p: 0 }}>{listItems}</List>;
@@ -349,7 +349,7 @@ const TiltCard = memo(function TiltCard({ children, title }) {
         rafRef.current = null;
       });
     },
-    [isHovered, updateTransform]
+    [isHovered, updateTransform],
   );
 
   const handleMouseEnter = useCallback(() => {
@@ -385,7 +385,7 @@ const TiltCard = memo(function TiltCard({ children, title }) {
       transformStyle: "preserve-3d",
       transform: "translateZ(0)",
     }),
-    [isHovered]
+    [isHovered],
   );
 
   // Title styling
@@ -405,7 +405,7 @@ const TiltCard = memo(function TiltCard({ children, title }) {
       whiteSpace: "nowrap",
       zIndex: 1,
     }),
-    []
+    [],
   );
 
   return (
@@ -456,7 +456,7 @@ const FrameworkGrid = memo(function FrameworkGrid({ items }) {
           {item}
         </Box>
       )),
-    [items]
+    [items],
   );
 
   return (
@@ -484,7 +484,7 @@ const TitleSection = memo(function TitleSection() {
       borderRadius: "2px",
       boxShadow: "0 0 10px #00d4ff66",
     }),
-    []
+    [],
   );
 
   return (
@@ -543,7 +543,7 @@ const SkillsSection = memo(function SkillsSection() {
       amount: 0.1,
       margin: "-100px",
     }),
-    []
+    [],
   );
 
   // Main container styling
@@ -561,7 +561,7 @@ const SkillsSection = memo(function SkillsSection() {
       marginBottom: { xs: "5vh", sm: "5vh", md: "0vh" },
       contain: "layout",
     }),
-    []
+    [],
   );
 
   // Cards container styling
@@ -575,7 +575,7 @@ const SkillsSection = memo(function SkillsSection() {
       maxWidth: "1400px",
       justifyContent: "center",
     }),
-    []
+    [],
   );
 
   return (

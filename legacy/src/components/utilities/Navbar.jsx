@@ -54,7 +54,7 @@ function Navbar() {
   const openResume = () => {
     window.open(
       "https://drive.google.com/file/d/1mmaNnu9ERCRxq-6wIewLTS-31G37Ce_p/view?usp=sharing",
-      "_blank"
+      "_blank",
     );
   };
 
@@ -186,7 +186,7 @@ function Navbar() {
           {/* Logo which redirects to top of the screen */}
           <Box
             component="img"
-            src="../../AbhinavGonthinaLogo.png"
+            src={`${import.meta.env.BASE_URL}AbhinavGonthinaLogo.png`}
             alt="Abhinav Gonthina Logo"
             onClick={scrollToTop}
             sx={{

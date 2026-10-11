@@ -78,7 +78,7 @@ const useAnimationLoop = (
   targetVelocity,
   seqWidth,
   isHovered,
-  pauseOnHover
+  pauseOnHover,
 ) => {
   const rafRef = useRef(null);
   const lastTimestampRef = useRef(null);
@@ -194,7 +194,7 @@ const LogoLoop = memo(
     useResizeObserver(
       updateDimensions,
       [containerRef, seqRef],
-      [logos, gap, logoHeight]
+      [logos, gap, logoHeight],
     );
 
     useImageLoader(seqRef, updateDimensions, [logos, gap, logoHeight]);
@@ -204,7 +204,7 @@ const LogoLoop = memo(
       targetVelocity,
       seqWidth,
       isHovered,
-      pauseOnHover
+      pauseOnHover,
     );
 
     const cssVariables = useMemo(
@@ -213,7 +213,7 @@ const LogoLoop = memo(
         "--logoloop-logoHeight": `${logoHeight}px`,
         ...(fadeOutColor && { "--logoloop-fadeColor": fadeOutColor }),
       }),
-      [gap, logoHeight, fadeOutColor]
+      [gap, logoHeight, fadeOutColor],
     );
 
     const rootClasses = useMemo(
@@ -225,9 +225,9 @@ const LogoLoop = memo(
           "[--logoloop-fadeColorAuto:#ffffff]",
           "dark:[--logoloop-fadeColorAuto:#0b0b0b]",
           scaleOnHover && "py-[calc(var(--logoloop-logoHeight)*0.1)]",
-          className
+          className,
         ),
-      [scaleOnHover, className]
+      [scaleOnHover, className],
     );
 
     const handleMouseEnter = useCallback(() => {
@@ -248,7 +248,7 @@ const LogoLoop = memo(
               "inline-flex items-center",
               "motion-reduce:transition-none",
               scaleOnHover &&
-                "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-110"
+                "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-110",
             )}
             aria-hidden={!!item.href && !item.ariaLabel}
           >
@@ -262,7 +262,7 @@ const LogoLoop = memo(
               "[image-rendering:-webkit-optimize-contrast]",
               "motion-reduce:transition-none",
               scaleOnHover &&
-                "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-110"
+                "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-110",
             )}
             src={item.src}
             srcSet={item.srcSet}
@@ -287,7 +287,7 @@ const LogoLoop = memo(
               "inline-flex items-center no-underline rounded",
               "transition-opacity duration-200 ease-linear",
               "hover:opacity-80",
-              "focus-visible:outline focus-visible:outline-current focus-visible:outline-offset-2"
+              "focus-visible:outline focus-visible:outline-current focus-visible:outline-offset-2",
             )}
             href={item.href}
             aria-label={itemAriaLabel || "logo link"}
@@ -304,7 +304,7 @@ const LogoLoop = memo(
           <li
             className={cx(
               "flex-none text-[length:var(--logoloop-logoHeight)] leading-[1]",
-              scaleOnHover && "overflow-visible group/item"
+              scaleOnHover && "overflow-visible group/item",
             )}
             style={{ marginRight: `${gap}px` }}
             key={key}
@@ -314,7 +314,7 @@ const LogoLoop = memo(
           </li>
         );
       },
-      [scaleOnHover, gap]
+      [scaleOnHover, gap],
     );
 
     const logoLists = useMemo(
@@ -328,11 +328,11 @@ const LogoLoop = memo(
             ref={copyIndex === 0 ? seqRef : undefined}
           >
             {logos.map((item, itemIndex) =>
-              renderLogoItem(item, `${copyIndex}-${itemIndex}`)
+              renderLogoItem(item, `${copyIndex}-${itemIndex}`),
             )}
           </ul>
         )),
-      [copyCount, logos, renderLogoItem]
+      [copyCount, logos, renderLogoItem],
     );
 
     const containerStyle = useMemo(
@@ -341,7 +341,7 @@ const LogoLoop = memo(
         ...cssVariables,
         ...style,
       }),
-      [width, cssVariables, style]
+      [width, cssVariables, style],
     );
 
     return (
@@ -361,7 +361,7 @@ const LogoLoop = memo(
               className={cx(
                 "pointer-events-none absolute inset-y-0 left-0 z-[1]",
                 "w-[clamp(24px,8%,120px)]",
-                "bg-[linear-gradient(to_right,var(--logoloop-fadeColor,var(--logoloop-fadeColorAuto))_0%,rgba(0,0,0,0)_100%)]"
+                "bg-[linear-gradient(to_right,var(--logoloop-fadeColor,var(--logoloop-fadeColorAuto))_0%,rgba(0,0,0,0)_100%)]",
               )}
             />
             <div
@@ -369,7 +369,7 @@ const LogoLoop = memo(
               className={cx(
                 "pointer-events-none absolute inset-y-0 right-0 z-[1]",
                 "w-[clamp(24px,8%,120px)]",
-                "bg-[linear-gradient(to_left,var(--logoloop-fadeColor,var(--logoloop-fadeColorAuto))_0%,rgba(0,0,0,0)_100%)]"
+                "bg-[linear-gradient(to_left,var(--logoloop-fadeColor,var(--logoloop-fadeColorAuto))_0%,rgba(0,0,0,0)_100%)]",
               )}
             />
           </>
@@ -378,7 +378,7 @@ const LogoLoop = memo(
         <div
           className={cx(
             "flex w-max will-change-transform select-none",
-            "motion-reduce:transform-none"
+            "motion-reduce:transform-none",
           )}
           ref={trackRef}
         >
@@ -386,7 +386,7 @@ const LogoLoop = memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 LogoLoop.displayName = "LogoLoop";

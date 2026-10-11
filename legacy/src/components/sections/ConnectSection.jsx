@@ -43,7 +43,7 @@ function ConnectSection() {
     if (now - lastTime < 300000) {
       const remainingTime = Math.ceil((300000 - (now - lastTime)) / 60000);
       setSubmitStatus(
-        `Please wait ${remainingTime} more minute(s) before sending another message.`
+        `Please wait ${remainingTime} more minute(s) before sending another message.`,
       );
       return;
     }
@@ -80,7 +80,7 @@ function ConnectSection() {
         e.target.reset?.();
       } else {
         setSubmitStatus(
-          data.message || "Failed to send. Please try again later."
+          data.message || "Failed to send. Please try again later.",
         );
       }
     } catch (err) {
@@ -414,7 +414,8 @@ function ConnectSection() {
               sx={{
                 position: "absolute",
                 inset: 0,
-                backgroundImage: "url('/CircleStripes.png')",
+                backgroundImage:
+                  "url(`${import.meta.env.BASE_URL}CircleStripes.png`)",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
                 backgroundSize: "cover",

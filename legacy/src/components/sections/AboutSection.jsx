@@ -197,7 +197,8 @@ function AboutSection() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundImage: "url('/CircuitBoard.svg')",
+            backgroundImage:
+              "url(`${import.meta.env.BASE_URL}CircuitBoard.svg`)",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -362,7 +363,7 @@ function AboutSection() {
                     >
                       <Box
                         component="img"
-                        src="../../NortheasternLogo.png"
+                        src={`${import.meta.env.BASE_URL}NortheasternLogo.png`}
                         alt="Northeastern University Logo"
                         sx={{
                           width: { xs: 60, md: 80 },
@@ -605,9 +606,9 @@ function AboutSection() {
                 <Box
                   component="video"
                   ref={videoRef}
-                  src="/videos/AbhinavGonthinaPortfolioVid.mp4"
+                  src={`${import.meta.env.BASE_URL}videos/AbhinavGonthinaPortfolioVid.mp4`}
                   preload="metadata"
-                  poster="/IntroVideoThumbnail.png"
+                  poster={`${import.meta.env.BASE_URL}IntroVideoThumbnail.png`}
                   onEnded={handleVideoEnd}
                   sx={{
                     width: {
