@@ -1,38 +1,25 @@
-// Four groups — "Cloud & DevOps" is new; the infra work at athenahealth
-// outgrew being buried in a generic "Tools" list.
+/**
+ * Grouped by the domains a recruiter scans for, not by what kind of thing
+ * each entry is. "Frameworks & Libraries" put Spring Boot and Tailwind in the
+ * same bucket, which tells a reader nothing about what the work was.
+ *
+ * Everything shows at once — there is no held-back tail — so each group's
+ * list is ordered with the high-demand entries first.
+ */
 export const skillGroups = [
   {
     id: "languages",
     label: "Languages",
-    items: ["JavaScript", "TypeScript", "Python", "Java", "C#", "SQL", "R", "HTML", "CSS"],
-  },
-  {
-    id: "frameworks",
-    label: "Frameworks & Libraries",
-    items: [
-      "React",
-      "Next.js",
-      "React Native",
-      "Node.js",
-      "Express",
-      "Spring Boot",
-      ".NET",
-      "Prisma",
-      "Flask",
-      "Tailwind CSS",
-      "Material UI",
-      "Pandas",
-      "NumPy",
-    ],
+    items: ["Python", "Java", "JavaScript", "TypeScript", "C#", "SQL", "R"],
   },
   {
     id: "cloud",
     label: "Cloud & DevOps",
     items: [
       "AWS (ECS, EKS, S3, EC2)",
-      "Terraform",
       "Docker",
       "Kubernetes",
+      "Terraform",
       "Jenkins",
       "Grafana",
       "Prometheus",
@@ -40,23 +27,45 @@ export const skillGroups = [
     ],
   },
   {
-    id: "tools",
-    label: "Tools & Data",
+    id: "backend",
+    label: "Backend",
+    items: ["Spring Boot", ".NET", "Node.js", "Express", "Flask", "Prisma"],
+  },
+  {
+    id: "frontend",
+    label: "Frontend",
     items: [
-      "Git",
-      "GitHub",
+      "React",
+      "Next.js",
+      "React Native",
+      "Tailwind CSS",
+      "Material UI",
+      "HTML",
+      "CSS",
+    ],
+  },
+  {
+    id: "data",
+    label: "Data & Tooling",
+    items: [
       "PostgreSQL",
       "DynamoDB",
-      "Oracle",
-      "MongoDB",
       "Redis",
+      "MongoDB",
       "MySQL",
       "SQLite",
-      "Jest",
-      "JUnit",
-      "Vitest",
+      "Oracle",
+      "Git",
+      "GitHub",
       "Postman",
+      "Jest",
+      "Vitest",
+      "JUnit",
+      "Pandas",
+      "NumPy",
       "Figma",
     ],
   },
 ];
+
+export const totalSkills = skillGroups.reduce((n, g) => n + g.items.length, 0);
