@@ -1,9 +1,11 @@
 import { Box, Chip, Container, Typography, Button, Stack } from "@mui/material";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import NorthEastIcon from "@mui/icons-material/NorthEast";
+import HistoryIcon from "@mui/icons-material/History";
 import { motion } from "motion/react";
 import { Canopy, LeafMark, Plant, VineDivider } from "../components/Botanical";
-import { palette } from "../theme";
+import StoneFrame from "../components/StoneWall";
+import { palette, PAGE_MAX } from "../theme";
 import { profile } from "../data/profile";
 // The About section is parked, but its education data still feeds the landing.
 import { education } from "../data/about";
@@ -44,7 +46,13 @@ export default function Hero() {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        py: { xs: 6, md: 7 },
+        pt: { xs: 6, md: 7 },
+        // The vine rule, not the section edge, is what the eye reads as the
+        // bottom of the hero — so the content centres against the vine's
+        // centre line. That sits 35px up from the section floor (10px offset
+        // plus half its 50px height), and matching it as extra bottom padding
+        // holds the centring at any viewport height.
+        pb: { xs: 6, md: "91px" },
       }}
     >
       {/* Ambient forest vignette in the top-right, so the cream isn't flat */}
@@ -99,11 +107,12 @@ export default function Hero() {
       </Box>
 
       <Container
-        maxWidth="lg"
+        maxWidth={false}
         sx={{
           position: "relative",
           zIndex: 1,
-          maxWidth: { lg: 1152 },
+          maxWidth: PAGE_MAX,
+          mx: "auto",
         }}
       >
         <Box
@@ -115,7 +124,6 @@ export default function Hero() {
             alignItems: "center",
           }}
         >
-
           {/* Copy — 7 of 12 */}
           <Box sx={{ gridColumn: { md: "span 7" } }}>
             <motion.div
@@ -281,82 +289,40 @@ export default function Hero() {
                 >
                   Résumé
                 </Button>
+                {/* A plain anchor, not a router link: the archive is a
+                    separate app served as static files under /legacy, so this
+                    has to be a real navigation. */}
+                <Button
+                  variant="text"
+                  size="large"
+                  endIcon={<HistoryIcon sx={{ fontSize: 18 }} />}
+                  href="/legacy/"
+                  sx={{ color: palette.muted }}
+                >
+                  Legacy site
+                </Button>
               </Stack>
             </motion.div>
           </Box>
 
           {/* Portrait — 5 of 12. Square container matches the square source, so
               the shoulders are never cropped. */}
+          {/* No fade-in of its own: StoneFrame throws the portrait onto the
+              wall on load, and a second entrance underneath it would have the
+              picture fading up while it is still in the air. */}
           <Box
-            component={motion.div}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.7,
-              delay: 0.25,
-              ease: [0.22, 1, 0.36, 1],
-            }}
             sx={{
               gridColumn: { md: "span 5" },
               justifySelf: { xs: "center", md: "end" },
               width: "100%",
-              maxWidth: 300,
+              maxWidth: 320,
               display: { xs: "none", md: "block" },
             }}
           >
-            {/* Straight sage card sitting behind the photo, offset down-right */}
+            {/* Portrait set into a weathered stone wall, with ivy rooted in the
+                mortar joints around it. */}
             <Box sx={{ position: "relative" }}>
-              <Box
-                aria-hidden
-                sx={{
-                  position: "absolute",
-                  inset: -10,
-                  borderRadius: "18px",
-                  backgroundColor: "#D8E0D5",
-                }}
-              />
-
-              {/* Sprigs on opposite corners of the frame */}
-              <Box
-                aria-hidden
-                sx={{
-                  position: "absolute",
-                  top: -16,
-                  right: -14,
-                  zIndex: 2,
-                  opacity: 0.8,
-                  transform: "rotate(24deg)",
-                  pointerEvents: "none",
-                }}
-              >
-                <LeafMark size={26} tone={palette.olive} />
-              </Box>
-              <Box
-                aria-hidden
-                sx={{
-                  position: "absolute",
-                  bottom: -16,
-                  left: -14,
-                  zIndex: 2,
-                  opacity: 0.8,
-                  transform: "rotate(204deg)",
-                  pointerEvents: "none",
-                }}
-              >
-                <LeafMark size={26} tone={palette.olive} />
-              </Box>
-
-              <Box
-                sx={{
-                  position: "relative",
-                  overflow: "hidden",
-                  aspectRatio: "1 / 1",
-                  borderRadius: "16px",
-                  border: "1px solid rgba(42, 59, 42, 0.15)",
-                  backgroundColor: "#FFFFFF",
-                  boxShadow: "0 10px 26px rgba(46, 38, 32, 0.13)",
-                }}
-              >
+              <StoneFrame seed={19} spread={2.1}>
                 {profile.photo && (
                   <Box
                     component="img"
@@ -373,7 +339,7 @@ export default function Hero() {
                     }}
                   />
                 )}
-              </Box>
+              </StoneFrame>
             </Box>
           </Box>
         </Box>
@@ -387,7 +353,15 @@ export default function Hero() {
           position: "absolute",
           left: "50%",
           transform: "translateX(-50%)",
-          bottom: { xs: 20, md: 34 },
+          // Centred in the gap between the buttons and the section floor.
+          // That midpoint moves with viewport height, so it is solved rather
+          // than pinned: with the content block centred by pt/pb, the gap
+          // below it is (H - pt + pb)/2 - gridH/2, and half of that less half
+          // the rule's own height gives
+          //   (100dvh - 76 - 56 + 91)/4 - 445/4 - 25  =  25dvh - 146.5px
+          // The 445 is the content block's height; if that copy grows by a
+          // line, this constant needs revisiting.
+          bottom: { xs: 10, md: "max(10px, calc(25dvh - 146.5px))" },
           zIndex: 1,
           width: "90%",
           maxWidth: 896,
