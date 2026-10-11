@@ -5,7 +5,7 @@ import Section from "../components/Section";
 import MossBackdrop from "../components/MossBackdrop";
 import { Canopy, DriftingLeaf, Leaf, Plant } from "../components/Botanical";
 import { palette, MONO, PINE, CREAM } from "../theme";
-import { experience } from "../data/experience";
+import { experience, EXPERIENCE_GROUPS } from "../data/experience";
 
 /**
  * Built on the same vocabulary as Skills: one pine accent for every edge and
@@ -429,68 +429,116 @@ export default function Experience() {
             gap: { xs: 2, md: 2.5 },
           }}
         >
-          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
-            {experience.map((exp) => {
-              const active = exp.id === current.id;
-              return (
+          {/* Three clusters rather than one row of six. A co-op at a
+              healthcare company, a tech-lead role at a startup and a teaching
+              assistantship are not comparable entries in a flat list, and
+              grouping them says more than the dates do. */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "repeat(3, auto)" },
+              justifyContent: { md: "start" },
+              gap: { xs: 2.5, md: 0 },
+            }}
+          >
+            {EXPERIENCE_GROUPS.map((group, gi) => (
+              <Box
+                key={group.id}
+                sx={{
+                  // A hairline between clusters, never before the first.
+                  pl: { md: gi === 0 ? 0 : 3 },
+                  ml: { md: gi === 0 ? 0 : 3 },
+                  borderLeft: {
+                    md: gi === 0 ? "none" : `1px solid ${PINE}24`,
+                  },
+                }}
+              >
                 <Box
-                  component="button"
-                  key={exp.id}
-                  onClick={() => setSelected(exp.id)}
-                  aria-pressed={active}
                   sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    gap: 0.25,
-                    px: 1.75,
-                    py: 1,
-                    cursor: "pointer",
-                    // Explicit px: sx borderRadius multiplies the theme's
-                    // 12px base, so `2` would render as a 24px pill.
-                    borderRadius: "10px",
-                    textAlign: "left",
-                    fontFamily: "inherit",
-                    // Active is a solid pine plate with cream on it — the same
-                    // contrast as the navbar CTA and the Skills badges.
-                    // Inactive is a sage hairline on near-white.
-                    border: `1px solid ${active ? PINE : palette.sage}`,
-                    backgroundColor: active ? PINE : "rgba(255,255,255,0.8)",
-                    color: active ? CREAM : "#1B2E1E",
-                    transition:
-                      "transform .2s cubic-bezier(.22,1,.36,1), background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease",
-                    "&:hover": {
-                      willChange: "transform",
-                      transform: "translateY(-2px)",
-                      borderColor: PINE,
-                      boxShadow: active
-                        ? `0 8px 18px -10px ${PINE}`
-                        : `0 6px 16px -8px ${PINE}, 0 0 0 4px ${PINE}1A`,
-                    },
+                    mb: 1,
+                    fontFamily: MONO,
+                    fontSize: "0.625rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: PINE,
+                    opacity: 0.7,
                   }}
                 >
-                  <Box
-                    sx={{
-                      fontSize: "0.875rem",
-                      fontWeight: 600,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {exp.company}
-                  </Box>
-                  <Box
-                    sx={{
-                      fontFamily: MONO,
-                      fontSize: "0.6875rem",
-                      color: active ? "rgba(248,246,240,0.78)" : palette.muted,
-                    }}
-                  >
-                    {exp.start} – {exp.end}
-                  </Box>
+                  {group.label}
                 </Box>
-              );
-            })}
-          </Stack>
+
+                <Stack direction="row" flexWrap="wrap" useFlexGap spacing={1}>
+                  {experience
+                    .filter((e) => e.category === group.id)
+                    .map((exp) => {
+                      const active = exp.id === current.id;
+                      return (
+                        <Box
+                          component="button"
+                          key={exp.id}
+                          onClick={() => setSelected(exp.id)}
+                          aria-pressed={active}
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "flex-start",
+                            gap: 0.25,
+                            px: 1.75,
+                            py: 1,
+                            cursor: "pointer",
+                            // Explicit px: sx borderRadius multiplies the
+                            // theme's 12px base, so `2` would be a 24px pill.
+                            borderRadius: "10px",
+                            textAlign: "left",
+                            fontFamily: "inherit",
+                            // Active is a solid pine plate with cream on it —
+                            // the same contrast as the navbar CTA. Inactive is
+                            // a sage hairline on near-white.
+                            border: `1px solid ${active ? PINE : palette.sage}`,
+                            backgroundColor: active
+                              ? PINE
+                              : "rgba(255,255,255,0.8)",
+                            color: active ? CREAM : "#1B2E1E",
+                            transition:
+                              "transform .2s cubic-bezier(.22,1,.36,1), background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease",
+                            "&:hover": {
+                              willChange: "transform",
+                              transform: "translateY(-2px)",
+                              borderColor: PINE,
+                              boxShadow: active
+                                ? `0 8px 18px -10px ${PINE}`
+                                : `0 6px 16px -8px ${PINE}, 0 0 0 4px ${PINE}1A`,
+                            },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              fontSize: "0.875rem",
+                              fontWeight: 600,
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {exp.company}
+                          </Box>
+                          <Box
+                            sx={{
+                              fontFamily: MONO,
+                              fontSize: "0.6875rem",
+                              color: active
+                                ? "rgba(248,246,240,0.78)"
+                                : palette.muted,
+                            }}
+                          >
+                            {exp.start} – {exp.end}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                </Stack>
+              </Box>
+            ))}
+          </Box>
 
           {/* The outgoing card goes `position: absolute` the instant it starts
               leaving, so it is out of flow and the incoming one lays out at

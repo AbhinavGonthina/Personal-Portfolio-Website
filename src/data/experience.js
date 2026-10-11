@@ -1,8 +1,20 @@
+/**
+ * Three kinds of experience, kept apart because they are read differently:
+ * a co-op at a healthcare company, a tech-lead role at a small startup and a
+ * teaching assistantship are not comparable entries in one flat list.
+ */
+export const EXPERIENCE_GROUPS = [
+  { id: "work", label: "Work" },
+  { id: "startup", label: "Startup" },
+  { id: "northeastern", label: "Northeastern" },
+];
+
 // Reverse-chronological. `branch` positions each role on the organic tree:
 // side = which way the branch grows, t = how far up the trunk it attaches (0..1).
 export const experience = [
   {
     id: "athenahealth",
+    category: "work",
     short: "athenahealth",
     company: "athenahealth",
     role: "Software Engineer Intern",
@@ -23,6 +35,7 @@ export const experience = [
   },
   {
     id: "philips",
+    category: "work",
     short: "Philips",
     company: "Philips",
     role: "Software Engineer Co-op",
@@ -42,6 +55,7 @@ export const experience = [
   },
   {
     id: "quak",
+    category: "startup",
     short: "Quak Travel",
     company: "Quak Travel",
     role: "Software Engineer Intern",
@@ -61,6 +75,7 @@ export const experience = [
   },
   {
     id: "ner",
+    category: "northeastern",
     short: "NER",
     company: "Northeastern Electric Racing",
     role: "Software Engineer",
@@ -79,6 +94,7 @@ export const experience = [
   },
   {
     id: "rainfall",
+    category: "startup",
     short: "Rainfall",
     company: "Rainfall Learning",
     role: "Tech Lead — Payments & Internal Tools",
@@ -97,6 +113,7 @@ export const experience = [
   },
   {
     id: "khoury",
+    category: "northeastern",
     short: "Khoury",
     company: "Khoury",
     role: "Teaching Assistant — CS1800",
