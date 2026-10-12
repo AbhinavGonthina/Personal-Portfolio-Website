@@ -18,7 +18,7 @@ export const projects = [
     period: "Aug 2025 – Present",
     tech: ["Next.js", "Spring Boot", "PostgreSQL", "Gemini API", "Bucket4j", "Resend"],
     image: "/projects/ontrack.webp",
-    live: "https://ontrack.abhinavgonthina.me",
+    live: "https://ontrack.abhinavgonthina.dev",
     github: "https://github.com/AbhinavGonthina",
   },
   {
