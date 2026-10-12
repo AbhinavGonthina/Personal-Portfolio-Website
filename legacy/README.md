@@ -1,6 +1,6 @@
 # Legacy portfolio (v1)
 
-This is the original version of abhinavgonthina.me, kept here so the code stays
+This is the original version of abhinavgonthina.dev, kept here so the code stays
 browsable after the 2026 redesign. It is **not** built, linted, or deployed as
 part of the live site — the root project ignores this directory entirely.
 

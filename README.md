@@ -2,7 +2,7 @@
 
 Hi, this is my personal portfolio website where I showcase my work and tell you a bit about myself. I built this to showcase my skills, experience, and projects in a fun way.
 
-https://abhinavgonthina.me
+https://abhinavgonthina.dev
 
 ## What's Inside
 
