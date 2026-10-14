@@ -11,7 +11,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "build:legacy": "cd legacy && vite build --outDir dist",
-    "build:prototype": "vite build --config prototype/vite.config.js"
+    "build:prototype": "cd prototype && vite build --outDir dist"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
