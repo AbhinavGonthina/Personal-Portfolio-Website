@@ -6,7 +6,8 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'legacy']),
+    // Frozen archives. Both are built and served, but neither is maintained.
+  globalIgnores(['dist', 'legacy', 'prototype']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
