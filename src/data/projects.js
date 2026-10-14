@@ -10,13 +10,21 @@ export const projects = [
   {
     id: "ontrack",
     title: "OnTrack",
-    blurb: "Job application tracker that visualizes an entire interview pipeline as a Sankey diagram.",
+    blurb:
+      "Job application tracker that visualizes an entire interview pipeline as a Sankey diagram.",
     description:
       "A job application tracker built for SWE/CS job searches. It derives stage-to-stage conversion from status events with a SQL LAG() window function, scores resumes against job descriptions through the Gemini API (caching by SHA-256 input hash to avoid duplicate calls), and enforces three-tier rate limiting with in-memory Bucket4j token buckets plus PostgreSQL fixed-window counters.",
     category: "personal",
     featured: true,
     period: "Aug 2025 – Present",
-    tech: ["Next.js", "Spring Boot", "PostgreSQL", "Gemini API", "Bucket4j", "Resend"],
+    tech: [
+      "Next.js",
+      "Spring Boot",
+      "PostgreSQL",
+      "Gemini API",
+      "Bucket4j",
+      "Resend",
+    ],
     image: "/projects/ontrack.webp",
     live: "https://ontrack.abhinavgonthina.dev",
     github: "https://github.com/AbhinavGonthina",
@@ -24,7 +32,8 @@ export const projects = [
   {
     id: "codesign",
     title: "CoDesign",
-    blurb: "A Fiverr-inspired platform connecting aspiring developers and designers.",
+    blurb:
+      "A Fiverr-inspired platform connecting aspiring developers and designers.",
     description:
       "CoDesign connects aspiring developers and designers looking to collaborate on the platform. Note: the backend is on a free tier and takes a minute to spin up.",
     category: "personal",
@@ -38,25 +47,48 @@ export const projects = [
   {
     id: "roadquest",
     title: "RoadQuest",
-    blurb: "Gamifying road trips with AI-generated quests. Built in under 24 hours at HackBeanpot 2025.",
+    blurb:
+      "Gamifying road trips with AI-generated quests. Built in under 24 hours at HackBeanpot 2025.",
     description:
       "A game website that uses ChatGPT prompting to generate quests for people to take on during a road trip to their destination. Built in under 24 hours at HackBeanpot 2025.",
     category: "personal",
     period: "HackBeanpot 2025",
-    tech: ["React", "JavaScript", "Flask", "Python", "MongoDB", "Google Maps API", "OpenAI API"],
+    tech: [
+      "React",
+      "JavaScript",
+      "Flask",
+      "Python",
+      "MongoDB",
+      "Google Maps API",
+      "OpenAI API",
+    ],
     image: "/projects/roadquest-1.webp",
-    gallery: ["/projects/roadquest-1.webp", "/projects/roadquest-2.webp", "/projects/roadquest-3.webp"],
+    gallery: [
+      "/projects/roadquest-1.webp",
+      "/projects/roadquest-2.webp",
+      "/projects/roadquest-3.webp",
+    ],
     github: "https://github.com/AbhinavGonthina/RoadQuest",
   },
   {
     id: "quak",
     title: "Quak Travel",
-    blurb: "The world's first itinerary marketplace — buy and sell travel itineraries.",
+    blurb:
+      "The world's first itinerary marketplace — buy and sell travel itineraries.",
     description:
       "An emerging travel startup letting travelers buy and sell itineraries. Previously a travel hub with trip planning and accommodation purchasing. The images show work from before the company's rebrand; current mocks are under NDA.",
     category: "startup",
     period: "Mar 2025 – Jan 2026",
-    tech: ["React Native", "Expo", "TypeScript", "Express", "Prisma", "PostgreSQL", "Stripe", "Plaid"],
+    tech: [
+      "React Native",
+      "Expo",
+      "TypeScript",
+      "Express",
+      "Prisma",
+      "PostgreSQL",
+      "Stripe",
+      "Plaid",
+    ],
     image: "/projects/quak-1.webp",
     gallery: [
       "/projects/quak-1.webp",
@@ -73,7 +105,15 @@ export const projects = [
       "A CS education startup focused on interactive coding lessons and real-time feedback, powered by students for students.",
     category: "startup",
     period: "2025",
-    tech: ["React", "TypeScript", "Express", "Prisma", "PostgreSQL", "Stripe Connect", "Material UI"],
+    tech: [
+      "React",
+      "TypeScript",
+      "Express",
+      "Prisma",
+      "PostgreSQL",
+      "Stripe Connect",
+      "Material UI",
+    ],
     image: "/logos/rainfall.webp",
     imageFit: "contain",
     live: "https://rainfall-learning.com/",
@@ -86,7 +126,14 @@ export const projects = [
       "A platform where users create and join pickup games, chat with other players, and track their stats over time.",
     category: "startup",
     period: "2025",
-    tech: ["React Native", "JavaScript", "Express", "Prisma", "PostgreSQL", "Expo"],
+    tech: [
+      "React Native",
+      "JavaScript",
+      "Express",
+      "Prisma",
+      "PostgreSQL",
+      "Expo",
+    ],
     image: "/projects/recreon.webp",
   },
   {

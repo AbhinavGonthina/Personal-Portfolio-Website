@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/**
+ * Tailwind v4 configures itself from CSS, so the design tokens live here
+ * rather than in a tailwind.config.js. Anything declared under @theme becomes
+ * a utility automatically - `--color-ink-800` gives you `bg-ink-800`,
+ * `text-ink-800`, `border-ink-800`.
+ *
+ * Deliberately a near-neutral dark ramp and one accent. This is a base for a
+ * dark, technical direction; swap the hex values and the whole site moves.
+ */
+@theme {
+  /* Surface ramp, darkest first. Slightly blue-leaning rather than pure grey,
+     which is what stops a dark UI looking muddy. */
+  --color-ink-950: #08090b;
+  --color-ink-900: #0d0f12;
+  --color-ink-850: #121418;
+  --color-ink-800: #17191f;
+  --color-ink-700: #212430;
+  --color-ink-600: #2e323f;
+
+  /* Text */
+  --color-fg: #e8eaed;
+  --color-fg-muted: #9aa0a6;
+  --color-fg-subtle: #6b7280;
+
+  /* One accent. */
+  --color-accent: #6ea8fe;
+  --color-accent-soft: #1e293b;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Anyone who asked the OS to calm animations gets no scroll animation and
+     no transitions, site-wide. Cheaper and more reliable than remembering it
+     per component. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-ink-950 text-fg font-sans antialiased;
+  }
+}
