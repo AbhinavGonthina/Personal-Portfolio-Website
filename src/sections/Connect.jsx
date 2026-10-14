@@ -13,7 +13,7 @@ export default function Connect() {
             {...(s.icon === "email"
               ? {}
               : { target: "_blank", rel: "noopener noreferrer" })}
-            className="rounded-md border border-ink-600 px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="rounded-md border border-ink-600 px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-ink-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             {s.name}
           </a>

@@ -19,23 +19,25 @@
  * dark, technical direction; swap the hex values and the whole site moves.
  */
 @theme {
-  /* Surface ramp, darkest first. Slightly blue-leaning rather than pure grey,
-     which is what stops a dark UI looking muddy. */
-  --color-ink-950: #08090b;
-  --color-ink-900: #0d0f12;
-  --color-ink-850: #121418;
-  --color-ink-800: #17191f;
-  --color-ink-700: #212430;
-  --color-ink-600: #2e323f;
+  /* Surface ramp, darkest first. Neutral greys off true black - no hue, so
+     nothing competes with whatever colour a section introduces. */
+  --color-ink-950: #000000;
+  --color-ink-900: #0a0a0a;
+  --color-ink-850: #101010;
+  --color-ink-800: #161616;
+  --color-ink-700: #242424;
+  --color-ink-600: #343434;
 
   /* Text */
-  --color-fg: #e8eaed;
-  --color-fg-muted: #9aa0a6;
-  --color-fg-subtle: #6b7280;
+  --color-fg: #ffffff;
+  --color-fg-muted: #a1a1aa;
+  --color-fg-subtle: #71717a;
 
-  /* One accent. */
-  --color-accent: #6ea8fe;
-  --color-accent-soft: #1e293b;
+  /* No brand accent on purpose. The site is white on black; colour arrives
+     per-section where it earns its place rather than from one designated
+     secondary that has to work everywhere. `--color-ring` exists only so
+     focus outlines are not invisible, and is deliberately neutral. */
+  --color-ring: #8a8f98;
 
   /* Geist Sans and Geist Mono are a matched pair, drawn for exactly this
      kind of dark technical UI. System fonts stay behind them as a fallback

@@ -36,7 +36,7 @@ export default function Projects() {
                   href={p.live}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline"
+                  className="text-fg hover:underline"
                 >
                   Live
                 </a>
