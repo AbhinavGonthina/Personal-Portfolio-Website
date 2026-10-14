@@ -1,4 +1,3 @@
-import { Box } from "@mui/material";
 import Navbar from "./components/Navbar";
 import Hero from "./sections/Hero";
 import Experience from "./sections/Experience";
@@ -6,18 +5,19 @@ import Skills from "./sections/Skills";
 import Projects from "./sections/Projects";
 import Connect from "./sections/Connect";
 
-// About is parked, not deleted — sections/About.jsx and data/about.js are intact.
+// About has no section of its own; data/about.js still feeds the hero's
+// graduation and GPA line.
 export default function App() {
   return (
-    <Box>
+    <>
       <Navbar />
-      <Box component="main">
+      <main>
         <Hero />
         <Experience />
         <Skills />
         <Projects />
         <Connect />
-      </Box>
-    </Box>
+      </main>
+    </>
   );
 }

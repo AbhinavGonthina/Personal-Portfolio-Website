@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import sirv from "sirv";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -41,6 +42,6 @@ function serveArchives() {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), serveArchives()],
+  plugins: [react(), tailwindcss(), serveArchives()],
   base: "/",
 });
