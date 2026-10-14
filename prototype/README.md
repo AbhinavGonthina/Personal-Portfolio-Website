@@ -10,5 +10,5 @@ envelope and two cards.
 kept here, buildable and viewable at `/prototype/`, because a screenshot in a
 commit message is not the same as being able to click the thing.
 
-Not maintained. It shares the root app's dependencies and has no package.json
-of its own.
+Not maintained. It carries its own `package.json` and `node_modules`, pinned
+to the MUI + Emotion stack the main app no longer uses.
