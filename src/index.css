@@ -1,3 +1,12 @@
+/* Self-hosted rather than pulled from Google Fonts: no third-party DNS and
+   connection on first paint, no FOUT from someone else's CDN, and it works
+   offline in dev. The variable builds are one file per family covering every
+   weight. The package also ships cyrillic, vietnamese and latin-ext files;
+   each @font-face carries a unicode-range, so a browser serving English only
+   ever fetches the two latin files - about 51 kB for both families. The
+   variable packages have no per-subset entrypoint to import instead. */
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
 /**
@@ -28,10 +37,15 @@
   --color-accent: #6ea8fe;
   --color-accent-soft: #1e293b;
 
+  /* Geist Sans and Geist Mono are a matched pair, drawn for exactly this
+     kind of dark technical UI. System fonts stay behind them as a fallback
+     so text is readable before the webfont lands. */
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono:
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
 }
 
 @layer base {
@@ -57,5 +71,17 @@
 
   body {
     @apply bg-ink-950 text-fg font-sans antialiased;
+    /* Tabular numerals, so dates and figures sit in a column instead of
+       shifting as the digits change. Geist ships them; the Google Fonts
+       build of Geist does not, which is part of why this is self-hosted. */
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Headings want proportional figures and tighter tracking. */
+  h1,
+  h2,
+  h3 {
+    font-feature-settings: normal;
+    letter-spacing: -0.02em;
   }
 }
