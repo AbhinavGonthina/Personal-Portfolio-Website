@@ -6,34 +6,41 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const legacyDist = resolve(here, "legacy/dist");
+
+// Archived builds, each served at its own path in dev the same way the
+// production bundle serves them.
+const ARCHIVES = [
+  { route: "/legacy", dir: resolve(here, "legacy/dist") },
+  { route: "/prototype", dir: resolve(here, "prototype/dist") },
+];
 
 /**
- * The archived site is a separate Vite app. In a production build it is built
- * on its own and folded into dist/legacy (see scripts/copy-legacy.mjs), but
- * the dev server knows nothing about it — so "View the old site" would 404
- * locally. This serves legacy/dist at /legacy during dev once it has been
- * built at least once, which is enough to click through and check the link.
+ * Each archive is its own Vite app. In a production build they are built
+ * separately and folded into dist/<name> (see scripts/copy-archives.mjs),
+ * but the dev server knows nothing about them - so the links to them would
+ * 404 locally. This serves each one's dist during dev once it has been built
+ * at least once, which is enough to click through and check.
  */
-function serveLegacy() {
+function serveArchives() {
   return {
-    name: "serve-legacy",
+    name: "serve-archives",
     apply: "serve",
     configureServer(server) {
-      if (!existsSync(legacyDist)) {
-        server.config.logger.warn(
-          '[legacy] legacy/dist not found — /legacy will 404 in dev. Run "npm run build:legacy".',
-        );
-        return;
+      for (const { route, dir } of ARCHIVES) {
+        if (!existsSync(dir)) {
+          server.config.logger.warn(
+            `[archives] ${dir} not found - ${route} will 404 in dev.`,
+          );
+          continue;
+        }
+        server.middlewares.use(route, sirv(dir, { dev: true, single: true }));
       }
-      const serve = sirv(legacyDist, { dev: true, single: true });
-      server.middlewares.use("/legacy", serve);
     },
   };
 }
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), serveLegacy()],
+  plugins: [react(), serveArchives()],
   base: "/",
 });
