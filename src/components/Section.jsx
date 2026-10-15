@@ -9,7 +9,10 @@ import { cn } from "../lib/cn";
  */
 export default function Section({ id, title, className, children }) {
   return (
-    <section id={id} className={cn("scroll-mt-16 py-20", className)}>
+    <section
+      id={id}
+      className={cn("pointer-events-auto scroll-mt-16 py-20", className)}
+    >
       <div className="mx-auto w-full max-w-6xl px-6">
         {title && (
           <div className="mb-8">

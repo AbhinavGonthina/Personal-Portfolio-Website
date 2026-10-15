@@ -6,6 +6,9 @@ export const profile = {
   location: "Boston, MA",
   tagline:
     "CS student at Northeastern building backend systems and the interfaces on top of them. Most recently at athenahealth, where I worked on AWS infrastructure, data pipelines, and observability.",
+  // One line on the landing page saying what is happening right now.
+  // Short enough to read at a glance; update it when it stops being true.
+  currently: "Building OnTrack, and looking for Summer 2027 internships.",
   photo: "/headshot.webp",
   // Four headline technologies, all of them on the résumé.
   focus: ["AWS", "Terraform", "Spring Boot", "React"],
