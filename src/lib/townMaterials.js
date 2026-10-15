@@ -25,6 +25,11 @@ export function useTownMaterials() {
       // The mailboxes sit on their own in the dark at the end of the
       // path, so they are a touch lighter than the rest of the town or
       // the marks on them read as floating.
+      door: new THREE.MeshStandardMaterial({
+        color: "#5b4634",
+        roughness: 0.75,
+        metalness: 0.05,
+      }),
       post: new THREE.MeshStandardMaterial({
         color: "#5a5a68",
         roughness: 0.6,

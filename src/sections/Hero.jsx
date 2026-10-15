@@ -3,17 +3,19 @@ import { motion } from "motion/react";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { profile, RESUME_URL } from "../data/profile";
+import { education } from "../data/about";
 
 /**
- * The far end of the street.
+ * The establishing shot: the whole town in one frame, with nothing on
+ * it but a name.
  *
- * The name and the portrait are not here - they are standing on the
- * pavement in the scene behind this, which is the same canvas the
- * Experience section uses. This section is the copy that has to be
- * selectable, linkable and readable by a crawler, laid over it.
+ * Who I am, what I do and what I am working on used to live here as a
+ * floating block. They have moved onto the hoarding in the scene,
+ * which is the next stop - a sign you walk up to and read, rather than
+ * a caption hanging over the view of the town.
  *
  * Narrow screens and the plain read get the flat layout instead: no
- * canvas is mounted at all, so the name and the photo come back as DOM.
+ * canvas mounts at all, so the photo and the copy come back as DOM.
  */
 
 const EASE = [0.22, 1, 0.36, 1];
@@ -71,93 +73,86 @@ export default function Hero({ ref }) {
 
   const flat = narrow || plain;
 
-  return (
-    <section
-      ref={ref}
-      className="pointer-events-auto relative flex min-h-[94vh] w-full items-start overflow-hidden"
-    >
-      <div className={cnGrid(flat)}>
-        <div>
-          <Rise>
+  // --- phones, and anyone who asked for the plain read ------------------
+  if (flat) {
+    return (
+      <section
+        ref={ref}
+        className="pointer-events-auto relative w-full scroll-mt-16"
+      >
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 py-24 md:grid-cols-[1fr_340px]">
+          <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
               {profile.role} &middot; {profile.location}
             </p>
-          </Rise>
-
-          {/* On a wide screen the name is lettering standing in the
-              scene, so this one is only here to be read by machines. */}
-          <Rise delay={0.08}>
-            <h1
-              className={
-                flat
-                  ? "mt-4 text-5xl font-semibold tracking-tight sm:text-6xl"
-                  : "sr-only"
-              }
-            >
+            <h1 className="mt-4 text-5xl font-semibold tracking-tight sm:text-6xl">
               {profile.name}
             </h1>
-          </Rise>
-
-          <Rise delay={0.16}>
-            <p
-              className={`max-w-xl leading-relaxed text-fg-muted ${flat ? "mt-6" : "mt-4"}`}
-            >
+            <p className="mt-6 max-w-xl leading-relaxed text-fg-muted">
               {profile.tagline}
             </p>
-          </Rise>
-
-          <Rise delay={0.22}>
-            <p className="mt-4 flex items-start gap-2.5 text-sm text-fg-muted">
-              <span
-                aria-hidden
-                className="mt-1.5 size-1.5 shrink-0 animate-pulse rounded-full bg-fg"
-              />
-              <span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
-                  Currently
-                </span>{" "}
-                &mdash; {profile.currently}
-              </span>
+            <p className="mt-5 text-sm text-fg-muted">
+              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
+                Currently
+              </span>{" "}
+              &mdash; {profile.currently}
             </p>
-          </Rise>
-
-          <Rise delay={0.36}>
-            <div className="mt-6">
+            <p className="mt-5 font-mono text-xs tracking-wide text-fg-subtle">
+              Graduating {education.graduation} &middot; GPA {education.gpa}
+            </p>
+            <div className="mt-8">
               <Actions />
             </div>
-          </Rise>
-        </div>
+          </div>
 
-        {flat && (
-          <Rise delay={0.18} className="order-first md:order-none">
-            <TiltCard className="mx-auto w-full max-w-[272px] md:ml-auto md:mr-0">
-              <div className="relative rounded-md border border-white/10 bg-ink-950 p-1 [transform:translateZ(0px)]">
-                <img
-                  src={profile.photo}
-                  alt={`Portrait of ${profile.name}`}
-                  width={820}
-                  height={820}
-                  className="w-full rounded-sm [transform:translateZ(22px)]"
-                />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-1 rounded-sm ring-1 ring-inset ring-white/15 [transform:translateZ(34px)]"
-                />
-              </div>
-            </TiltCard>
-          </Rise>
-        )}
+          <TiltCard className="order-first mx-auto w-full max-w-[272px] md:order-none md:ml-auto md:mr-0">
+            <div className="relative rounded-md border border-white/10 bg-ink-950 p-1 [transform:translateZ(0px)]">
+              <img
+                src={profile.photo}
+                alt={`Portrait of ${profile.name}`}
+                width={820}
+                height={820}
+                className="w-full rounded-sm [transform:translateZ(22px)]"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-1 rounded-sm ring-1 ring-inset ring-white/15 [transform:translateZ(34px)]"
+              />
+            </div>
+          </TiltCard>
+        </div>
+      </section>
+    );
+  }
+
+  // `null` means the media query has not resolved. Render the shell
+  // only, so a phone never briefly mounts a canvas it throws away.
+  if (narrow === null) {
+    return <section ref={ref} className="h-[94vh] min-h-[620px]" />;
+  }
+
+  return (
+    <section
+      ref={ref}
+      className="pointer-events-auto relative flex h-[94vh] min-h-[620px] w-full items-start overflow-hidden"
+    >
+      <div className="relative mx-auto w-full max-w-6xl px-6 pt-20">
+        <Rise>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
+            Welcome
+          </p>
+        </Rise>
+        <Rise delay={0.08}>
+          <h1 className="mt-3 text-6xl font-semibold tracking-tight lg:text-7xl">
+            {profile.name}
+          </h1>
+        </Rise>
+        <Rise delay={0.2}>
+          <div className="mt-8">
+            <Actions />
+          </div>
+        </Rise>
       </div>
     </section>
   );
 }
-
-/**
- * Two columns when the portrait is in the DOM, one when it is in the
- * scene - and narrower in that case, so the copy stays clear of the
- * hoarding standing on the right of the road.
- */
-const cnGrid = (flat) =>
-  flat
-    ? "relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 py-24 md:grid-cols-[1fr_340px]"
-    : "relative mx-auto w-full max-w-6xl px-6 pb-24 pt-14 [&>div]:max-w-lg";

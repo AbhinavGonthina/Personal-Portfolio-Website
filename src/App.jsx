@@ -14,18 +14,29 @@ import Connect from "./sections/Connect";
  * handed their elements, because where the scroll sits between two
  * section tops is where the camera sits between two stops.
  *
- * The order here is the order in `lib/stops.js`. They have to match.
+ * Projects contributes two markers rather than one: the camera holds
+ * still across that section while the screen on the desk changes, so
+ * the list can be scrolled through without the shot moving.
+ *
+ * This order has to match `lib/stops.js`.
  */
 export default function App() {
+  const hero = useRef(null);
+  const about = useRef(null);
+  const experience = useRef(null);
+  const skills = useRef(null);
+  const projects = useRef(null);
+  const projectsHold = useRef(null);
+  const connect = useRef(null);
   const refs = [
-    useRef(null),
-    useRef(null),
-    useRef(null),
-    useRef(null),
-    useRef(null),
-    useRef(null),
+    hero,
+    about,
+    experience,
+    skills,
+    projects,
+    projectsHold,
+    connect,
   ];
-  const [hero, about, experience, skills, projects, connect] = refs;
 
   return (
     <>
@@ -38,7 +49,7 @@ export default function App() {
         <About ref={about} />
         <Experience ref={experience} />
         <Skills ref={skills} />
-        <Projects ref={projects} />
+        <Projects ref={projects} markRef={projectsHold} />
         <Connect ref={connect} />
       </main>
     </>

@@ -3,9 +3,8 @@ import { usePlain } from "../lib/plain";
 import { skillGroups } from "../data/skills";
 
 /**
- * The racks in the workshop. One rack per group in the scene; the
- * actual list lives here, because a label painted on a server is not
- * something anyone should have to read.
+ * The server racks down the left wall of the room, with the same list
+ * on a board hung above them. This is the readable copy of that board.
  */
 export default function Skills({ ref }) {
   const plain = usePlain();

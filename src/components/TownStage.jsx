@@ -1,11 +1,11 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { STOPS } from "../lib/stops";
-import { paintMark, paintScreen } from "../lib/paint";
+import { STOP, STOPS } from "../lib/stops";
+import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
 import { projects } from "../data/projects";
-import { socials } from "../data/profile";
-import { useShown } from "../lib/shown";
+import { profile, socials } from "../data/profile";
+import { skillGroups } from "../data/skills";
 import { cn } from "../lib/cn";
 
 const TownScene = lazy(() => import("../scenes/TownScene"));
@@ -13,11 +13,11 @@ const TownScene = lazy(() => import("../scenes/TownScene"));
 /**
  * The one canvas, fixed behind the page.
  *
- * It is pinned to the viewport rather than parked inside a section
- * because the whole site is one walk through one town: scrolling has to
- * move the camera, not scroll a picture out of frame. Each section on
- * the page is a stop, and where the scroll sits between two section
- * tops is where the camera sits between two stops.
+ * It is pinned to the viewport because the whole site is one walk
+ * through one town: scrolling has to move the camera, not scroll a
+ * picture out of frame. Each section on the page is a stop, and where
+ * the scroll sits between two section tops is where the camera sits
+ * between two stops.
  *
  * Four guards, all of which matter:
  *
@@ -31,10 +31,10 @@ const TownScene = lazy(() => import("../scenes/TownScene"));
 export default function TownStage({ refs }) {
   const plain = usePlain();
   const focused = useFocused();
-  const shown = useShown();
   const [ready, setReady] = useState(false);
   const [live, setLive] = useState(false);
   const [grab, setGrab] = useState(false);
+  const [shot, setShot] = useState(0);
   const [still] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -43,23 +43,21 @@ export default function TownStage({ refs }) {
   const raf = useRef(0);
   const off = !!(plain || still);
 
-  // The marks on the mailboxes, and whatever is on the monitor. Both are
-  // canvas textures, so they are built once and only repainted when the
-  // thing they show changes.
+  // Everything the town has to say is painted into a canvas texture
+  // once and only repainted when what it shows changes.
   const marks = useMemo(
     () => (off ? [] : socials.map((s) => paintMark(s.icon, s.name))),
     [off],
   );
+  const board = useMemo(() => (off ? null : paintBoard(profile)), [off]);
+  const skills = useMemo(() => (off ? null : paintSkills(skillGroups)), [off]);
+  const screen = useMemo(
+    () => (off ? null : paintScreen(projects[shot], shot, projects.length)),
+    [off, shot],
+  );
   useEffect(() => () => marks.forEach((m) => m.dispose()), [marks]);
-
-  const screen = useMemo(() => {
-    if (off) return null;
-    const i = Math.max(
-      0,
-      projects.findIndex((p) => p.id === shown),
-    );
-    return paintScreen(projects[i], i, projects.length);
-  }, [off, shown]);
+  useEffect(() => () => board?.dispose(), [board]);
+  useEffect(() => () => skills?.dispose(), [skills]);
   useEffect(() => () => screen?.dispose(), [screen]);
 
   useEffect(() => {
@@ -70,11 +68,14 @@ export default function TownStage({ refs }) {
       if (els.length < 2) return;
 
       // Where the scroll sits between two section tops is where the
-      // camera sits between two stops. Measured against documented
+      // camera sits between two stops. Measured against document
       // offsets rather than viewport rects, so a sticky navbar or a
       // mid-scroll layout shift cannot wobble the camera.
-      const tops = els.map((el) => el.offsetTop);
+      // Document-relative, not offsetTop: one of these markers lives
+      // inside a positioned section, where offsetTop is measured from
+      // the section rather than from the page.
       const y = window.scrollY;
+      const tops = els.map((el) => el.getBoundingClientRect().top + y);
       let j = 0;
       if (y >= tops[tops.length - 1]) j = tops.length - 1;
       else {
@@ -86,15 +87,30 @@ export default function TownStage({ refs }) {
           }
         }
       }
-      setJourney(Math.min(STOPS.length - 1, j));
+      j = Math.min(STOPS.length - 1, j);
+      setJourney(j);
+
+      // The camera holds still across the Projects section; the screen
+      // is what moves. One scroll of that section walks the whole list.
+      const t = Math.min(
+        1,
+        Math.max(
+          0,
+          (j - STOP.projects) / (STOP["projects-hold"] - STOP.projects),
+        ),
+      );
+      setShot(Math.min(projects.length - 1, Math.floor(t * projects.length)));
 
       const last = els[els.length - 1];
-      const bottom = last.getBoundingClientRect().bottom;
-      setLive(bottom > 40);
-      setReady((r) => r || bottom > -200);
-      // Clickable only where there is something to click: in the middle
-      // of the skyline, and out at the mailboxes.
-      setGrab((j > 1.6 && j < 2.6) || j > 4.5);
+      setLive(last.getBoundingClientRect().bottom > 40);
+      setReady((r) => r || last.getBoundingClientRect().bottom > -200);
+      // Only clickable where there is something to click. The towers
+      // and the mailboxes do their own finer-grained gating; this just
+      // stops the page swallowing pointer events everywhere else.
+      setGrab(
+        (j > STOP.experience - 0.5 && j < STOP.experience + 0.6) ||
+          j > STOP.contact - 0.4,
+      );
     };
     const onScroll = () => {
       if (!raf.current) raf.current = requestAnimationFrame(read);
@@ -132,6 +148,8 @@ export default function TownStage({ refs }) {
             onFocus={setFocused}
             narrow={false}
             screen={screen}
+            skills={skills}
+            board={board}
             marks={marks}
           />
         </Suspense>
