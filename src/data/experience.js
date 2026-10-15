@@ -27,7 +27,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jun 2026",
     end: "Aug 2026",
-    logo: "/logos/athenahealth.webp",
+    logo: "/logos/athenahealth-cut.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "right", t: 0.94 },
@@ -81,7 +81,7 @@ export const experience = [
     location: "Remote",
     start: "Mar 2025",
     end: "Jan 2026",
-    logo: "/logos/quak.webp",
+    logo: "/logos/quak-cut.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FC3600",
     branch: { side: "right", t: 0.66 },
@@ -110,7 +110,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jan 2025",
     end: "Apr 2026",
-    logo: "/logos/ner.webp",
+    logo: "/logos/ner-cut.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.52 },
@@ -137,7 +137,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jun 2025",
     end: "Dec 2025",
-    logo: "/logos/rainfall.webp",
+    logo: "/logos/rainfall-cut.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
@@ -165,7 +165,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Aug 2025",
     end: "Dec 2025",
-    logo: "/logos/khoury.webp",
+    logo: "/logos/khoury-cut.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.24 },

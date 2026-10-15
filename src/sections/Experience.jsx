@@ -108,6 +108,42 @@ function RoleNav({ selected, onSelect, className }) {
 export default function Experience() {
   const [focused, setFocused] = useState(null);
   const labels = useRef(null);
+
+  /**
+   * Where the viewer is looking. A ref, not state: the scene reads it every
+   * frame, and putting it in state would re-render the whole section on
+   * every pointer move.
+   */
+  const look = useRef({ yaw: 0, pitch: 0.12 });
+  const drag = useRef(null);
+  const [turned, setTurned] = useState(false);
+
+  // Radians. Enough to bring either end of the arc to centre frame and
+  // no further - past this you are looking at empty black.
+  const YAW_LIMIT = 0.78;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  const onDown = (e) => {
+    drag.current = { x: e.clientX, y: e.clientY, ...look.current };
+  };
+  const onMove = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    look.current.yaw = clamp(
+      d.yaw - (e.clientX - d.x) * 0.0032,
+      -YAW_LIMIT,
+      YAW_LIMIT,
+    );
+    look.current.pitch = clamp(
+      d.pitch - (e.clientY - d.y) * 0.0022,
+      -0.06,
+      0.5,
+    );
+    if (!turned && Math.abs(e.clientX - d.x) > 24) setTurned(true);
+  };
+  const endDrag = () => {
+    drag.current = null;
+  };
   const [narrow, setNarrow] = useState(null);
 
   useEffect(() => {
@@ -160,7 +196,19 @@ export default function Experience() {
         focused={focused}
         onFocus={setFocused}
         labelHost={labels}
+        look={look}
         narrow={false}
+      />
+
+      {/* Catches the drag. Under the canvas in z-order so clicking a
+          building still works - this only ever sees pointer moves that the
+          scene did not claim. */}
+      <div
+        className="absolute inset-0 z-0 cursor-grab active:cursor-grabbing"
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={endDrag}
+        onPointerLeave={endDrag}
       />
 
       <div
@@ -193,9 +241,22 @@ export default function Experience() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.4, ease: EASE }}
-            className="pointer-events-none absolute inset-x-0 bottom-10 z-10 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle"
+            className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex flex-col items-center gap-2 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle"
           >
-            Click a building to read about the experience
+            <span>Click a building to read about the experience</span>
+            {/* From the street you cannot see the whole block at once, so
+                say plainly that there is more either side. Disappears the
+                moment they actually turn. */}
+            <span
+              className={cn(
+                "flex items-center gap-2 transition-opacity duration-500",
+                turned ? "opacity-0" : "opacity-100",
+              )}
+            >
+              <span aria-hidden>&larr;</span>
+              Drag to look around
+              <span aria-hidden>&rarr;</span>
+            </span>
           </motion.p>
         )}
       </AnimatePresence>
