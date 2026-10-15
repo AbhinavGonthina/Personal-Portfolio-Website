@@ -60,9 +60,9 @@ const DEG = Math.PI / 180;
  * arranged by where they should sit in front of the viewer.
  */
 const ARC = [
-  { id: "startup", centre: -52, step: 16 },
+  { id: "startup", centre: -47, step: 15 },
   { id: "work", centre: 0, step: 19 },
-  { id: "northeastern", centre: 52, step: 12 },
+  { id: "northeastern", centre: 47, step: 10.5 },
 ];
 
 /**
@@ -71,9 +71,9 @@ const ARC = [
  * out-tower a two-year role.
  */
 const KIND = {
-  work: { h: [6.6, 8.8], w: 1.05, d: 1.05 },
-  startup: { h: [3.0, 4.1], w: 2.1, d: 1.7 },
-  northeastern: { h: [2.3, 3.4], w: 1.25, d: 1.25 },
+  work: { h: [6.6, 8.8], w: 1.95, d: 1.95 },
+  startup: { h: [3.0, 4.1], w: 2.4, d: 2.0 },
+  northeastern: { h: [2.3, 3.4], w: 1.55, d: 1.55 },
 };
 
 function useLayout() {
@@ -390,8 +390,8 @@ function Labels({ host, layout, hidden }) {
 
 const LOOK = { x: 0, y: 3, z: -2 };
 // Half the width and height the overview has to contain, in world units.
-const ARC_HALF_W = 12.5;
-const ARC_HALF_H = 7.6;
+const ARC_HALF_W = 12.2;
+const ARC_HALF_H = 6.4;
 
 function Rig({ target, narrow }) {
   useFrame((state, delta) => {
@@ -431,11 +431,14 @@ function Rig({ target, narrow }) {
       // and were being clipped off the top of the frame.
       const forWidth = distFor(ARC_HALF_W);
       const forHeight = ARC_HALF_H / Math.tan(halfFov);
-      pz = Math.max(14, Math.max(forWidth, forHeight) - 4);
+      // The subtraction is how far in front of the arc's centre the outer
+      // buildings sit; pulling in further than that is what puts the viewer
+      // among them rather than looking down on the whole block.
+      pz = Math.max(11, Math.max(forWidth, forHeight) - 8);
       px = p.x * 1.2 + Math.sin(t * 0.11) * 1.1;
-      py = 7 + p.y * 0.5 + Math.sin(t * 0.077) * 0.5;
+      py = 4.1 + p.y * 0.4 + Math.sin(t * 0.077) * 0.35;
       lx = Math.sin(t * 0.063) * 0.5;
-      ly = 4.6;
+      ly = 5.2;
       lz = -2;
     }
 
