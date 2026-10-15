@@ -272,12 +272,21 @@ function Rig({ target, narrow }) {
         ly = -0.4;
         lz = 0;
       } else {
-        px = target.x + 4.3;
-        py = h * 0.58;
         pz = 13.5;
-        lx = target.x + 3.4;
+        py = h * 0.58;
         ly = h * 0.5;
         lz = 0;
+        // The sideways offset has to be derived from how wide the camera
+        // actually sees at this distance, not hard-coded in world units. A
+        // fixed offset puts the building a third of the way across a 1440px
+        // screen and dead centre on an ultrawide, which is where the text
+        // ended up sitting on top of it.
+        const halfW =
+          pz *
+          Math.tan((state.camera.fov * Math.PI) / 360) *
+          state.camera.aspect;
+        px = target.x + halfW * 0.5;
+        lx = target.x + halfW * 0.42;
       }
     } else {
       // The overview drifts with the pointer; the focused shot does not,
