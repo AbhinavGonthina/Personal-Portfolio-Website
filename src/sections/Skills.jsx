@@ -4,7 +4,7 @@ import { skillGroups } from "../data/skills";
 /** One block per domain, every skill shown. Nothing is behind a toggle. */
 export default function Skills() {
   return (
-    <Section id="skills" title="What I work with">
+    <Section id="skills" title="Skills">
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {skillGroups.map((group) => (
           <div key={group.id}>
