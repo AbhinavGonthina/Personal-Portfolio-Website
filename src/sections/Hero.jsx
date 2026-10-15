@@ -3,7 +3,6 @@ import { motion } from "motion/react";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { profile, RESUME_URL } from "../data/profile";
-import { education } from "../data/about";
 
 /**
  * The far end of the street.
@@ -101,14 +100,14 @@ export default function Hero({ ref }) {
 
           <Rise delay={0.16}>
             <p
-              className={`max-w-xl leading-relaxed text-fg-muted ${flat ? "mt-6" : "mt-5"}`}
+              className={`max-w-xl leading-relaxed text-fg-muted ${flat ? "mt-6" : "mt-4"}`}
             >
               {profile.tagline}
             </p>
           </Rise>
 
           <Rise delay={0.22}>
-            <p className="mt-5 flex items-start gap-2.5 text-sm text-fg-muted">
+            <p className="mt-4 flex items-start gap-2.5 text-sm text-fg-muted">
               <span
                 aria-hidden
                 className="mt-1.5 size-1.5 shrink-0 animate-pulse rounded-full bg-fg"
@@ -122,15 +121,8 @@ export default function Hero({ ref }) {
             </p>
           </Rise>
 
-          <Rise delay={0.28}>
-            <p className="mt-5 font-mono text-xs tracking-wide text-fg-subtle">
-              Graduating {education.graduation} &middot; GPA {education.gpa}{" "}
-              &middot; {education.honors}
-            </p>
-          </Rise>
-
           <Rise delay={0.36}>
-            <div className="mt-8">
+            <div className="mt-6">
               <Actions />
             </div>
           </Rise>
@@ -168,4 +160,4 @@ export default function Hero({ ref }) {
 const cnGrid = (flat) =>
   flat
     ? "relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 py-24 md:grid-cols-[1fr_340px]"
-    : "relative mx-auto w-full max-w-6xl px-6 pb-24 pt-28 [&>div]:max-w-lg";
+    : "relative mx-auto w-full max-w-6xl px-6 pb-24 pt-14 [&>div]:max-w-lg";

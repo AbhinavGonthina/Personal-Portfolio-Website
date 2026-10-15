@@ -1,5 +1,15 @@
 import * as THREE from "three";
-import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import {
+  ball,
+  box,
+  cone,
+  cyl,
+  HALF,
+  merge,
+  place,
+  polyline,
+  ring,
+} from "./geo";
 
 /**
  * The roof emblems, built as geometry rather than as components.
@@ -18,36 +28,6 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 // `?? ` and not a default parameter: callers pass an explicit null to
 // skip a rotation while still supplying a scale, and a default only
 // fires on undefined.
-const V = (a) => new THREE.Vector3(...(a ?? [0, 0, 0]));
-const E = (a) => new THREE.Euler(...(a ?? [0, 0, 0]));
-
-/** Places one primitive. Mutates and returns it; it is about to be merged. */
-function at(geo, pos, rot, scale = 1) {
-  const s = typeof scale === "number" ? [scale, scale, scale] : scale;
-  geo.applyMatrix4(
-    new THREE.Matrix4().compose(
-      V(pos),
-      new THREE.Quaternion().setFromEuler(E(rot)),
-      V(s),
-    ),
-  );
-  return geo;
-}
-
-const box = (w, h, d, pos, rot, scale) =>
-  at(new THREE.BoxGeometry(w, h, d), pos, rot, scale);
-const cyl = (rt, rb, h, seg, pos, rot, scale) =>
-  at(new THREE.CylinderGeometry(rt, rb, h, seg), pos, rot, scale);
-const cone = (r, h, seg, pos, rot, scale) =>
-  at(new THREE.ConeGeometry(r, h, seg), pos, rot, scale);
-const ball = (r, pos, rot, scale) =>
-  at(new THREE.SphereGeometry(r, 14, 10), pos, rot, scale);
-const ring = (r, t, pos, rot, scale) =>
-  at(new THREE.TorusGeometry(r, t, 8, 24), pos, rot, scale);
-
-const merge = (parts) => mergeGeometries(parts.filter(Boolean), false);
-
-const HALF = Math.PI / 2;
 
 /* ------------------------------------------------------------------ */
 
@@ -124,36 +104,6 @@ function cloud() {
   ].map(([x, y]) => box(0.018, 0.11, 0.018, [x, Y + y - 0.2, 0]));
 
   return { base: merge(base), fall: merge(drops), fallSpan: 0.38 };
-}
-
-/** A run of boxes following a polyline, for drawing a trace. */
-function polyline(points, thickness) {
-  const out = [];
-  for (let i = 0; i < points.length - 1; i++) {
-    const [x1, y1] = points[i];
-    const [x2, y2] = points[i + 1];
-    out.push(
-      box(
-        Math.hypot(x2 - x1, y2 - y1) + thickness * 0.5,
-        thickness,
-        thickness * 0.5,
-        [(x1 + x2) / 2, (y1 + y2) / 2, 0],
-        [0, 0, Math.atan2(y2 - y1, x2 - x1)],
-      ),
-    );
-  }
-  return out;
-}
-
-/** Moves a finished set of parts into place as a group. */
-function place(parts, pos, rot) {
-  const m = new THREE.Matrix4().compose(
-    V(pos),
-    new THREE.Quaternion().setFromEuler(E(rot)),
-    V([1, 1, 1]),
-  );
-  parts.forEach((g) => g.applyMatrix4(m));
-  return parts;
 }
 
 /**
@@ -408,33 +358,55 @@ function palm() {
   return { base: merge(base), lit: merge(lit) };
 }
 
-/** A husky's head: muzzle, ruffs, pricked ears, collar. */
+/**
+ * A husky's head.
+ *
+ * The dark and lit materials are used as the dog's own markings rather
+ * than as highlights: the skull, ears and crown are the base, and the
+ * mask, muzzle, brow spots and ruffs are the bright one. Done the other
+ * way it was a uniformly dark lump with glowing edges, which read as "an
+ * animal, probably" instead of as a dog.
+ */
 function husky() {
   const base = [];
   const lit = [];
 
-  base.push(ball(0.28, [0, 0.03, 0], null, [1, 0.94, 0.9]));
-  base.push(ball(0.17, [-0.21, -0.02, 0.02], null, [0.75, 1.1, 0.9]));
-  base.push(ball(0.17, [0.21, -0.02, 0.02], null, [0.75, 1.1, 0.9]));
+  // Skull and the dark cap over it.
+  base.push(ball(0.3, [0, 0.04, 0], null, [1, 0.95, 0.92]));
+  base.push(ball(0.26, [0, 0.12, -0.05], null, [1, 0.85, 0.9]));
 
-  base.push(cone(0.115, 0.26, 12, [0, -0.07, 0.25], [HALF + 0.12, 0, 0]));
-  base.push(ball(0.085, [0, -0.09, 0.2], null, [1, 0.8, 1]));
+  // The white mask: a wedge down the middle of the face, cheeks either
+  // side, and the muzzle in front.
+  lit.push(ball(0.13, [0, 0.07, 0.2], null, [0.72, 1.5, 0.75]));
+  for (const side of [-1, 1]) {
+    lit.push(ball(0.15, [side * 0.2, -0.05, 0.05], null, [0.78, 1.05, 0.95]));
+    // Brow spot, the mark that makes a husky read as a husky.
+    lit.push(ball(0.055, [side * 0.1, 0.14, 0.21], null, [1.2, 0.85, 0.6]));
+  }
+  lit.push(cone(0.115, 0.3, 12, [0, -0.08, 0.27], [HALF + 0.14, 0, 0]));
+  lit.push(ball(0.095, [0, -0.1, 0.22], null, [1, 0.8, 1]));
 
+  // Nose, eyes, mouth.
+  base.push(ball(0.05, [0, -0.055, 0.41], null, [1.15, 0.85, 0.85]));
+  for (const side of [-1, 1]) {
+    base.push(ball(0.042, [side * 0.115, 0.035, 0.235], null, [1, 1.15, 0.8]));
+  }
+  base.push(box(0.16, 0.014, 0.02, [0, -0.15, 0.32]));
+
+  // Ears: dark outside, bright inside.
   for (const side of [-1, 1]) {
     base.push(
-      cone(0.095, 0.25, 7, [side * 0.17, 0.27, -0.02], [-0.12, 0, side * 0.26]),
+      cone(0.1, 0.27, 7, [side * 0.18, 0.29, -0.02], [-0.14, 0, side * 0.26]),
     );
     lit.push(
-      cone(0.05, 0.17, 6, [side * 0.17, 0.27, 0.025], [-0.12, 0, side * 0.26]),
+      cone(0.05, 0.17, 6, [side * 0.18, 0.29, 0.03], [-0.14, 0, side * 0.26]),
     );
-    lit.push(ball(0.034, [side * 0.1, 0.02, 0.21]));
-    lit.push(ball(0.012, [side * 0.088, 0.045, 0.235]));
   }
 
-  lit.push(ball(0.042, [0, -0.045, 0.37], null, [1.1, 0.85, 0.9]));
-  base.push(box(0.17, 0.012, 0.02, [0, -0.135, 0.3]));
-  base.push(ring(0.235, 0.028, [0, -0.26, -0.01], [HALF - 0.1, 0, 0]));
-  lit.push(ball(0.035, [0, -0.3, 0.2]));
+  // Ruff and collar.
+  base.push(ball(0.3, [0, -0.28, -0.02], null, [1.05, 0.42, 0.95]));
+  lit.push(ring(0.235, 0.03, [0, -0.25, 0], [HALF - 0.1, 0, 0]));
+  lit.push(ball(0.04, [0, -0.3, 0.21]));
 
   return { base: merge(base), lit: merge(lit) };
 }

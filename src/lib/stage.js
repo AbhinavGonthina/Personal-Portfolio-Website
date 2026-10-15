@@ -10,13 +10,16 @@ import { useSyncExternalStore } from "react";
  * the camera is read by neither - threading that through App would make
  * three components share state that none of them owns.
  *
- * `progress` is deliberately a plain value with its own subscriber list
- * rather than part of the React store: the scene reads it every frame
- * and must never cause a render.
+ * `journey` is deliberately a plain value with no subscribers at all:
+ * the scene reads it every frame and must never cause a render. It is
+ * the camera's position along the page, measured in stops - 0 at the
+ * landing shot, 1 at the hoarding, 2 in the middle of the skyline, and
+ * so on, with the fraction between two whole numbers being how far the
+ * camera has walked from one to the next.
  */
 const focusSubs = new Set();
 let focused = null;
-let progress = 0;
+let journey = 0;
 
 const subscribe = (fn) => {
   focusSubs.add(fn);
@@ -36,8 +39,7 @@ export const useFocused = () =>
     () => null,
   );
 
-/** 0 at the top of the hero, 1 once the skyline fills the viewport. */
-export const setProgress = (v) => {
-  progress = v;
+export const setJourney = (v) => {
+  journey = v;
 };
-export const getProgress = () => progress;
+export const getJourney = () => journey;

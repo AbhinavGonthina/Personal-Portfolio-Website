@@ -3,8 +3,10 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
-import { profile } from "../data/profile";
-import { getProgress } from "../lib/stage";
+import { getJourney } from "../lib/stage";
+import { STOPS } from "../lib/stops";
+import { useTownMaterials } from "../lib/townMaterials";
+import { Billboard, Dressing, House, Mailboxes, Study, Workshop } from "./town";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -869,135 +871,65 @@ function Distant() {
   );
 }
 
+const ease = (p) => p * p * (3 - 2 * p);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
+const A = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
+const B = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
+
 /**
- * The landing end of the street: the name standing on the pavement and
- * the portrait up on a hoarding beside it.
+ * Resolves one stop into a camera position and a point to look at.
  *
- * Both fade out as the camera walks past them, because it does walk
- * past them - they sit between the viewer's first position and the arc,
- * and watching a nameplate slide through the camera is not the effect.
+ * A `frame` stop is the interesting one: the object's own facing normal
+ * gives the approach, and the push that clears the right half of the
+ * viewport for the copy runs along the camera's right rather than the
+ * world's X - so the shot holds whatever direction the thing happens to
+ * face, and the offset is derived from how wide the camera actually
+ * sees at that distance rather than guessed in world units.
  */
-const HERO_Z = 12.2;
-const NAME_H = 0.66;
-const BOARD = 2.05;
+function resolve(stop, out, cam, pointer, t) {
+  if (stop.free) {
+    const [px, py, pz] = stop.free.pos;
+    const [lx, ly, lz] = stop.free.look;
+    out.px = px;
+    out.py = py;
+    out.pz = pz;
+    out.lx = lx;
+    out.ly = ly;
+    out.lz = lz;
+    return out;
+  }
 
-function Approach() {
-  const mats = useRef([]);
-  const lines = useMemo(() => {
-    const [first, ...rest] = profile.name.toUpperCase().split(" ");
-    return [first, rest.join(" ")].map((t) => makeTextTexture(t));
-  }, []);
-  useEffect(() => () => lines.forEach((l) => l.tex.dispose()), [lines]);
-  const photo = useLoader(THREE.TextureLoader, profile.photo);
+  if (stop.street) {
+    const yaw = pointer.x * 0.62 + Math.sin(t * 0.07) * 0.03;
+    const pitch = 0.17 + pointer.y * 0.1 + Math.sin(t * 0.05) * 0.012;
+    out.px = Math.sin(yaw) * 1.1;
+    out.py = 1.8 + Math.sin(t * 0.09) * 0.06;
+    out.pz = 3.6;
+    out.lx = out.px + Math.sin(yaw) * 14;
+    out.ly = out.py + Math.tan(pitch) * 14;
+    out.lz = out.pz - Math.cos(yaw) * 14;
+    return out;
+  }
 
-  useFrame((_, delta) => {
-    const k = 1 - Math.exp(-6 * delta);
-    // Gone by the time the skyline fills the frame.
-    const want = 1 - Math.min(1, Math.max(0, (getProgress() - 0.18) / 0.4));
-    for (const m of mats.current) {
-      if (m) m.opacity += (want * (m.userData.full ?? 1) - m.opacity) * k;
-    }
-  });
+  const { at, yaw, dist } = stop.frame;
+  const nx = Math.sin(yaw);
+  const nz = Math.cos(yaw);
+  const rx = Math.cos(yaw);
+  const rz = -Math.sin(yaw);
+  const halfW = Math.tan((cam.fov * DEG) / 2) * dist * cam.aspect;
 
-  mats.current.length = 0;
-  const keep =
-    (full = 1) =>
-    (m) => {
-      if (!m) return;
-      m.userData.full = full;
-      mats.current.push(m);
-    };
-
-  const half = BOARD / 2;
-  const mid = 1.45 + half;
-
-  return (
-    <>
-      <group position={[-4.6, 0, HERO_Z]} rotation={[0, 0.16, 0]}>
-        {lines.map((l, i) => (
-          <group key={i} position={[0, NAME_H * (1.58 - i) * 1.16, 0]}>
-            <ExtrudedText
-              tex={l.tex}
-              aspect={l.aspect}
-              height={NAME_H}
-              depth={0.3}
-              layers={14}
-              matRef={keep()}
-            />
-          </group>
-        ))}
-      </group>
-
-      <group position={[5.5, 0, HERO_Z - 2.2]} rotation={[0, -0.24, 0]}>
-        {[-1, 1].map((side) => (
-          <mesh key={side} position={[side * (half - 0.26), 0.72, 0]}>
-            <boxGeometry args={[0.12, 1.45, 0.12]} />
-            <meshBasicMaterial
-              ref={keep(0.85)}
-              color="#15151d"
-              transparent
-              opacity={0.85}
-            />
-          </mesh>
-        ))}
-        <mesh position={[0, mid, -0.06]}>
-          <boxGeometry args={[BOARD + 0.16, BOARD + 0.16, 0.12]} />
-          <meshBasicMaterial
-            ref={keep(0.9)}
-            color="#0b0b12"
-            transparent
-            opacity={0.9}
-          />
-        </mesh>
-        <mesh position={[0, mid, 0.012]}>
-          <planeGeometry args={[BOARD, BOARD]} />
-          <meshBasicMaterial
-            ref={keep()}
-            map={photo}
-            transparent
-            toneMapped={false}
-          />
-        </mesh>
-        {/* Four bars, not a wireframe plane: a wireframe draws the
-            quad's diagonal too, which put a line straight across the
-            photo. */}
-        {[
-          [0, half + 0.06, BOARD + 0.14, 0.055],
-          [0, -half - 0.06, BOARD + 0.14, 0.055],
-        ].map(([dx, dy, bw, bh], i) => (
-          <mesh key={`h${i}`} position={[dx, mid + dy, 0.03]}>
-            <boxGeometry args={[bw, bh, 0.055]} />
-            <meshBasicMaterial
-              ref={keep(0.75)}
-              color="#aab4e0"
-              transparent
-              opacity={0.75}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
-        {[-1, 1].map((side) => (
-          <mesh key={`v${side}`} position={[side * (half + 0.06), mid, 0.03]}>
-            <boxGeometry args={[0.055, BOARD + 0.14, 0.055]} />
-            <meshBasicMaterial
-              ref={keep(0.75)}
-              color="#aab4e0"
-              transparent
-              opacity={0.75}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
-      </group>
-    </>
-  );
+  out.px = at[0] + nx * dist + rx * halfW * 0.46;
+  out.pz = at[2] + nz * dist + rz * halfW * 0.46;
+  out.py = at[1] + 0.25;
+  out.lx = at[0] + rx * halfW * 0.4;
+  out.lz = at[2] + rz * halfW * 0.4;
+  out.ly = at[1];
+  return out;
 }
 
 const LOOK = { x: 0, y: 3, z: -2 };
-
-/** Where the camera stands at the landing end of the road. */
-const HERO_STOP = { y: 2.0, z: 20.5 };
-const ease = (p) => p * p * (3 - 2 * p);
 
 function Rig({ target, narrow }) {
   useFrame((state, delta) => {
@@ -1007,46 +939,44 @@ function Rig({ target, narrow }) {
     const t = state.clock.elapsedTime;
 
     if (!target) {
-      // Standing on the street inside the arc, looking up. Buildings run
-      // past the edges of the frame on purpose - turning your head to find
-      // the rest of them is the point, so the camera does not retreat until
-      // everything fits.
-      // Follows the cursor rather than needing a drag: the pointer steers
-      // where you are looking, the same feel as before, just from the
-      // pavement instead of above the block.
-      // Scroll walks the camera up the road. At p=0 you are at the far
-      // end looking at the city; at p=1 you are standing inside the arc.
-      // Everything in between is the same shot moving, which is the
-      // whole point of one canvas spanning both sections.
-      const p = ease(getProgress());
+      // Scroll walks the camera from one stop to the next. Everything
+      // between two stops is the same shot moving, which is the whole
+      // point of one canvas spanning the page.
+      const j = Math.min(STOPS.length - 1.0001, Math.max(0, getJourney()));
+      const i = Math.floor(j);
+      const f = ease(j - i);
+      const a = STOPS[i];
+      const b = STOPS[Math.min(STOPS.length - 1, i + 1)];
+      resolve(a, A, cam, state.pointer, t);
+      resolve(b, B, cam, state.pointer, t);
 
-      // The cursor steers less from a distance than it does up close -
-      // at the far end a big swing would throw the city off the side of
-      // the frame before you had looked at it.
-      const sway = 0.2 + p * 0.42;
-      const yaw = state.pointer.x * sway + Math.sin(t * 0.07) * 0.03;
-      const pitch =
-        (1 - p) * 0.02 +
-        p * 0.17 +
-        state.pointer.y * (0.04 + p * 0.06) +
-        Math.sin(t * 0.05) * 0.012;
+      // How much the cursor is allowed to turn your head, blended the
+      // same way: a lot in the middle of the street, almost none when
+      // the shot is framing something.
+      const sway = lerp(a.sway ?? 0.1, b.sway ?? 0.1, f);
+      const extra = a.street || b.street ? 0 : state.pointer.x * sway;
 
-      const px = Math.sin(yaw) * (0.4 + p * 0.7);
-      const py =
-        HERO_STOP.y + (1.8 - HERO_STOP.y) * p + Math.sin(t * 0.09) * 0.06;
-      const pz = HERO_STOP.z + (3.6 - HERO_STOP.z) * p;
+      for (const key of ["px", "py", "pz", "lx", "ly", "lz"]) {
+        SHOT[key] = lerp(A[key], B[key], f);
+      }
+      // Swings the aim point around the camera rather than sliding the
+      // whole shot sideways, so a nudge reads as turning your head.
+      if (extra) {
+        const dx = SHOT.lx - SHOT.px;
+        const dz = SHOT.lz - SHOT.pz;
+        const c = Math.cos(extra);
+        const s2 = Math.sin(extra);
+        SHOT.lx = SHOT.px + dx * c + dz * s2;
+        SHOT.lz = SHOT.pz - dx * s2 + dz * c;
+        SHOT.ly += state.pointer.y * sway * 1.4;
+      }
 
-      cam.position.x += (px - cam.position.x) * k;
-      cam.position.y += (py - cam.position.y) * k;
-      cam.position.z += (pz - cam.position.z) * k;
-
-      // Aimed at a point on a sphere around the viewer rather than at a
-      // fixed spot, so steering turns the head instead of sliding the
-      // whole shot sideways.
-      const reach = 14 + (1 - p) * 10;
-      LOOK.x += (cam.position.x + Math.sin(yaw) * reach - LOOK.x) * k;
-      LOOK.y += (cam.position.y + Math.tan(pitch) * reach - LOOK.y) * k;
-      LOOK.z += (cam.position.z - Math.cos(yaw) * reach - LOOK.z) * k;
+      cam.position.x += (SHOT.px - cam.position.x) * k;
+      cam.position.y += (SHOT.py - cam.position.y) * k;
+      cam.position.z += (SHOT.pz - cam.position.z) * k;
+      LOOK.x += (SHOT.lx - LOOK.x) * k;
+      LOOK.y += (SHOT.ly - LOOK.y) * k;
+      LOOK.z += (SHOT.lz - LOOK.z) * k;
       cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
       return;
     }
@@ -1056,21 +986,14 @@ function Rig({ target, narrow }) {
     // Backing straight off along +Z was fine for the two towers in the
     // middle of the arc and wrong for everything else: the buildings at
     // either end stand turned by up to sixty degrees, so you flew in and
-    // met them at a corner. The approach now runs along the building's own
-    // facing normal - which, since every building is turned to look at the
-    // centre of the arc, points from it back at the viewer.
+    // met them at a corner. The approach runs along the building's own
+    // facing normal, which - since every building is turned to look at
+    // the centre of the arc - points from it back at the viewer.
     const dist = narrow ? 22 : 13.5;
     const nx = -Math.sin(target.angle);
     const nz = Math.cos(target.angle);
-    // The camera's right in that frame, so the building can be pushed to
-    // the left of the viewport along the screen's own axis rather than the
-    // world's.
     const rx = Math.cos(target.angle);
     const rz = Math.sin(target.angle);
-
-    // Sideways offset derived from how wide the camera actually sees at
-    // this distance. A fixed world offset puts the building a third of the
-    // way across a laptop and dead centre on an ultrawide.
     const halfW = narrow ? 0 : Math.tan(halfFov) * dist * cam.aspect;
 
     const px = target.x + nx * dist + rx * halfW * 0.5;
@@ -1091,8 +1014,88 @@ function Rig({ target, narrow }) {
   return null;
 }
 
-export default function StreetScene({ focused, onFocus, active, narrow }) {
+/**
+ * Keeps a boolean in step with where the camera is, without rendering
+ * every frame. Visibility gates only have to flip a few times a page,
+ * so they are read in the frame loop and pushed into state only when
+ * the answer actually changes.
+ */
+function useNear(from, to) {
+  const [on, setOn] = useState(() => {
+    const j = getJourney();
+    return j >= from && j <= to;
+  });
+  useFrame(() => {
+    const j = getJourney();
+    const want = j >= from && j <= to;
+    if (want !== on) setOn(want);
+  });
+  return on;
+}
+
+/**
+ * Mirrored, non-interactive copies of the towers, foreshortened. A
+ * full-length mirror reads as a second skyline hanging downward.
+ *
+ * Its own component so the visibility gate can use a frame-loop hook:
+ * there is no point mirroring eight buildings into a pavement nobody
+ * can see from the establishing shot, or from inside a house.
+ */
+function Reflections({ layout, windows, frame, byUrl, focused }) {
+  const on = useNear(0.7, 3.6);
+  return (
+    <group scale={[1, -0.45, 1]} visible={on}>
+      {layout.map((tower) => (
+        <Building
+          key={`r-${tower.role.id}`}
+          tower={tower}
+          windows={windows}
+          frame={frame}
+          logo={tower.role.logo ? byUrl[tower.role.logo] : null}
+          focused={tower.role.id === focused}
+          dimmed={Boolean(focused) && tower.role.id !== focused}
+          onFocus={() => {}}
+          mirrored
+        />
+      ))}
+    </group>
+  );
+}
+
+/**
+ * Everything that is not a tower, with its visibility tied to where the
+ * camera is. A group that is `visible={false}` is never submitted, so
+ * the interior of the house costs nothing until you are walking into
+ * it, and the mailboxes cost nothing until you are near them.
+ *
+ * The landmarks themselves stay on throughout, because the establishing
+ * shot has to show the whole town at once - that is what it is for.
+ */
+function Town({ town, screen, marks }) {
+  const inside = useNear(3.4, 4.75);
+  const mail = useNear(4.1, 5.5);
+  return (
+    <>
+      <Dressing mats={town} visible />
+      <Billboard mats={town} visible />
+      <House mats={town} visible />
+      <Workshop mats={town} visible />
+      <Study mats={town} visible={inside} screen={screen} />
+      <Mailboxes mats={town} visible={mail} labels={marks} />
+    </>
+  );
+}
+
+export default function TownScene({
+  focused,
+  onFocus,
+  active,
+  narrow,
+  screen,
+  marks,
+}) {
   const layout = useLayout();
+  const town = useTownMaterials();
   const windows = useMemo(makeWindowTexture, []);
   const frame = useMemo(makeFrameTexture, []);
   const target = focused ? layout.find((t) => t.role.id === focused) : null;
@@ -1114,7 +1117,7 @@ export default function StreetScene({ focused, onFocus, active, narrow }) {
       frameloop={active ? "always" : "never"}
       dpr={[1, 1.5]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, HERO_STOP.y, HERO_STOP.z], fov: 52 }}
+      camera={{ position: STOPS[0].free.pos, fov: 52 }}
       onPointerMissed={() => onFocus(null)}
       style={{ position: "absolute", inset: 0 }}
       // The stage owns where this sits on the page.
@@ -1124,31 +1127,25 @@ export default function StreetScene({ focused, onFocus, active, narrow }) {
           the background instead of everything past a hard plane vanishing
           at once. Matched to the page background so there is no seam. */}
       <fogExp2 attach="fog" args={["#000000", 0.019]} />
-      <ambientLight intensity={0.16} />
-      <directionalLight position={[5, 10, 7]} intensity={0.5} />
+      <ambientLight intensity={0.3} />
+      {/* Sky and ground fill. One directional light leaves whichever
+          side of a building the camera happens to be on in the dark,
+          and the camera visits all of them. */}
+      <hemisphereLight args={["#8d9ccb", "#0a0a14", 1.15]} />
+      <directionalLight position={[14, 18, 22]} intensity={0.85} />
 
       <Rig target={target} narrow={narrow} />
       <Distant />
-      <Approach />
+      <Town town={town} screen={screen} marks={marks} />
       <ClusterSigns hidden={Boolean(focused)} />
 
-      {/* Mirrored, non-interactive copies, foreshortened. A full-length
-          mirror reads as a second skyline hanging downward. */}
-      <group scale={[1, -0.45, 1]}>
-        {layout.map((tower) => (
-          <Building
-            key={`r-${tower.role.id}`}
-            tower={tower}
-            windows={windows}
-            frame={frame}
-            logo={tower.role.logo ? byUrl[tower.role.logo] : null}
-            focused={tower.role.id === focused}
-            dimmed={Boolean(focused) && tower.role.id !== focused}
-            onFocus={() => {}}
-            mirrored
-          />
-        ))}
-      </group>
+      <Reflections
+        layout={layout}
+        windows={windows}
+        frame={frame}
+        byUrl={byUrl}
+        focused={focused}
+      />
 
       {layout.map((tower) => (
         <Building

@@ -67,11 +67,11 @@ export function ExtrudedText({
  * the whole scene a second time into a texture, and mirrored geometry
  * under a dark pane is far cheaper for the same read.
  */
-export function Ground({ size = 140, divisions = 110, opacity = 0.88 }) {
+export function Ground({ size = 150, divisions = 60, opacity = 0.88 }) {
   return (
     <>
       <gridHelper
-        args={[size, divisions, "#3e3e3e", "#242424"]}
+        args={[size, divisions, "#343438", "#1e1e22"]}
         position={[0, 0.02, 0]}
       />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
