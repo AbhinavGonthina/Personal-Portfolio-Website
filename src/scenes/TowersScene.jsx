@@ -5,6 +5,8 @@ import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
+import { makeEmblemMaterials } from "../lib/emblemMaterials";
+import Emblem from "./emblems";
 
 /**
  * The roles as buildings on an arc that curves around the viewer: startups
@@ -408,6 +410,20 @@ function Building({
   const on = focused || hovered;
   const lit = useMemo(() => crownLight(role.accent), [role.accent]);
 
+  // Two materials shared by every part of the roof emblem, lerped here
+  // with everything else the building owns.
+  // Built from the normalised accent, not the raw one, and driven by the
+  // same gain the crowns use - otherwise Rainfall's navy emblem sits at a
+  // fraction of the brightness of Quak's orange for the same number.
+  const emblem = useMemo(() => makeEmblemMaterials(lit.color), [lit]);
+  useEffect(
+    () => () => {
+      emblem.base.dispose();
+      emblem.lit.dispose();
+    },
+    [emblem],
+  );
+
   // A round building has no flat face, so the sign hangs off the apothem
   // (which the octagon's radius is chosen to make equal to w/2) or the
   // drum's radius. A flat plane tangent to a cylinder never intersects it.
@@ -461,6 +477,10 @@ function Building({
     for (const m of edges.current) {
       if (m) m.opacity += (line - m.opacity) * k;
     }
+    emblem.base.emissiveIntensity +=
+      (target * 1.5 * lit.gain - emblem.base.emissiveIntensity) * k;
+    emblem.lit.emissiveIntensity +=
+      (target * 3.2 * lit.gain - emblem.lit.emissiveIntensity) * k;
   });
 
   const body_h = top === "setback" ? height * 0.78 : height;
@@ -470,6 +490,14 @@ function Building({
   // tower it was landing on the narrow upper stage, where a nameplate
   // sized to the full facade hung off both sides into open air.
   const signTop = top === "setback" ? body_h - 0.3 : height - 0.62;
+  // Clear of whatever finishes the building, so the emblem never grows
+  // out of a pyramid or sits inside a dome.
+  // The mast is not in the list on purpose: the emblem sits on the roof
+  // and lets the mast rise behind it. Clearing the whole 1.7 units put it
+  // in orbit.
+  const ROOF = { pyramid: 0.82, pylons: 0.5, setback: 0.34 };
+  const emblemY =
+    height + (top === "dome" ? w * 0.5 + 0.26 : (ROOF[top] ?? 0.34)) + 0.14;
 
   // On the group rather than the shaft, so the crown, the sign, the mast
   // and the upper stage are all part of the same target. With them on the
@@ -710,6 +738,15 @@ function Building({
           depthWrite={false}
         />
       </mesh>
+
+      {/* Not in the reflection. The emblems are the most detailed thing
+          in the scene and the mirrored copies sit at 45% under a dark
+          sheet, which is a poor return on doubling them. */}
+      {role.emblem && !mirrored && (
+        <group position={[0, emblemY, 0]}>
+          <Emblem kind={role.emblem} mats={emblem} scale={1} />
+        </group>
+      )}
 
       <pointLight
         ref={light}

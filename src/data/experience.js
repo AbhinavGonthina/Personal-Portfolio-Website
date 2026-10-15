@@ -9,6 +9,9 @@ export const EXPERIENCE_GROUPS = [
   { id: "northeastern", label: "Northeastern" },
 ];
 
+// `emblem` is the small object standing on that building's roof in the 3D
+// skyline - what the place does, in one shape.
+
 // `accent` is a light colour per role, used by anything that has to tell
 // them apart without reading - the 3D towers behind this section, for one.
 // It is not `brand`: that is the logo plate's background, and it is white
@@ -19,6 +22,7 @@ export const EXPERIENCE_GROUPS = [
 export const experience = [
   {
     id: "athenahealth",
+    emblem: "chart",
     accent: "#7B2D8E",
     category: "work",
     short: "athenahealth",
@@ -52,6 +56,7 @@ export const experience = [
   },
   {
     id: "philips",
+    emblem: "ward",
     accent: "#1F6FEB",
     category: "work",
     short: "Philips",
@@ -73,6 +78,7 @@ export const experience = [
   },
   {
     id: "quak",
+    emblem: "plane",
     accent: "#FC3600",
     category: "startup",
     short: "Quak Travel",
@@ -102,6 +108,7 @@ export const experience = [
   },
   {
     id: "ner",
+    emblem: "car",
     accent: "#C8102E",
     category: "northeastern",
     short: "NER",
@@ -129,6 +136,7 @@ export const experience = [
   },
   {
     id: "rainfall",
+    emblem: "cloud",
     accent: "#17319C",
     category: "startup",
     short: "Rainfall",
@@ -157,6 +165,7 @@ export const experience = [
   },
   {
     id: "khoury",
+    emblem: "cap",
     accent: "#E63C2F",
     category: "northeastern",
     short: "Khoury",
@@ -177,6 +186,7 @@ export const experience = [
   },
   {
     id: "oasis",
+    emblem: "palm",
     category: "northeastern",
     // TODO(abhinav): fill in. Everything below this line is a placeholder.
     short: "Oasis",
@@ -193,6 +203,7 @@ export const experience = [
   },
   {
     id: "pawtograder",
+    emblem: "husky",
     category: "northeastern",
     // TODO(abhinav): fill in the role, dates and bullets.
     short: "Pawtograder",
