@@ -176,9 +176,12 @@ export default function Experience() {
     return (
       <section id="experience" className="scroll-mt-16 py-20">
         <div className="mx-auto w-full max-w-6xl px-6">
-          <h2 className="mb-8 text-3xl font-semibold tracking-tight">
-            Experience
-          </h2>
+          <div className="mb-8">
+            <h2 className="text-3xl font-semibold tracking-tight">
+              Experience
+            </h2>
+            <div className="mt-3 h-px w-16 bg-fg" />
+          </div>
           <RoleNav
             selected={shown.id}
             onSelect={setFocused}
