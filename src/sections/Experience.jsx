@@ -185,6 +185,9 @@ export default function Experience() {
         <h2 className="text-3xl font-semibold tracking-tight">
           Where I&apos;ve worked
         </h2>
+        {/* Short rule under the heading - against a black skyline the
+            title otherwise floats with nothing holding it to the page. */}
+        <div className="mt-3 h-px w-16 bg-fg" />
       </div>
 
       <AnimatePresence>
