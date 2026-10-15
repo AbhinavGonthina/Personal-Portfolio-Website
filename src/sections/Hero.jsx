@@ -1,17 +1,20 @@
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import TiltCard from "../components/TiltCard";
+import { usePlain } from "../lib/plain";
 import { profile, RESUME_URL } from "../data/profile";
 import { education } from "../data/about";
 
 /**
- * The street the Experience section is further down, drawn flat.
+ * The far end of the street.
  *
- * It was briefly a second WebGL scene - the same pavement, the city on
- * the horizon - and it made the skyline below it stutter. Two live GL
- * contexts on one page is a bill the page cannot pay, so everything here
- * is CSS: a receding grid that echoes the skyline's floor, a smear of
- * light along the horizon, and the portrait turning on a real perspective
- * transform. All of it is composited; none of it repaints.
+ * The name and the portrait are not here - they are standing on the
+ * pavement in the scene behind this, which is the same canvas the
+ * Experience section uses. This section is the copy that has to be
+ * selectable, linkable and readable by a crawler, laid over it.
+ *
+ * Narrow screens and the plain read get the flat layout instead: no
+ * canvas is mounted at all, so the name and the photo come back as DOM.
  */
 
 const EASE = [0.22, 1, 0.36, 1];
@@ -21,6 +24,27 @@ const BTN =
 
 const scrollTo = (id) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
+function Actions() {
+  return (
+    <div className="flex flex-wrap gap-3">
+      <button
+        onClick={() => scrollTo("experience")}
+        className={`${BTN} bg-fg text-ink-950 hover:opacity-90`}
+      >
+        View my work
+      </button>
+      <a
+        href={RESUME_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${BTN} border border-ink-600 text-fg hover:bg-ink-800`}
+      >
+        Resume
+      </a>
+    </div>
+  );
+}
 
 function Rise({ delay = 0, children, className }) {
   return (
@@ -35,10 +59,25 @@ function Rise({ delay = 0, children, className }) {
   );
 }
 
-export default function Hero() {
+export default function Hero({ ref }) {
+  const plain = usePlain();
+  const [narrow, setNarrow] = useState(null);
+  useEffect(() => {
+    const q = window.matchMedia("(max-width: 767px)");
+    const sync = () => setNarrow(q.matches);
+    sync();
+    q.addEventListener("change", sync);
+    return () => q.removeEventListener("change", sync);
+  }, []);
+
+  const flat = narrow || plain;
+
   return (
-    <section className="relative flex min-h-[94vh] w-full items-center overflow-hidden bg-black">
-      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 pb-44 pt-24 md:grid-cols-[1fr_340px]">
+    <section
+      ref={ref}
+      className="pointer-events-auto relative flex min-h-[94vh] w-full items-start overflow-hidden"
+    >
+      <div className={cnGrid(flat)}>
         <div>
           <Rise>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
@@ -46,70 +85,87 @@ export default function Hero() {
             </p>
           </Rise>
 
+          {/* On a wide screen the name is lettering standing in the
+              scene, so this one is only here to be read by machines. */}
           <Rise delay={0.08}>
-            <h1 className="mt-4 text-5xl font-semibold tracking-tight sm:text-6xl">
+            <h1
+              className={
+                flat
+                  ? "mt-4 text-5xl font-semibold tracking-tight sm:text-6xl"
+                  : "sr-only"
+              }
+            >
               {profile.name}
             </h1>
           </Rise>
 
           <Rise delay={0.16}>
-            <p className="mt-6 max-w-xl leading-relaxed text-fg-muted">
+            <p
+              className={`max-w-xl leading-relaxed text-fg-muted ${flat ? "mt-6" : "mt-5"}`}
+            >
               {profile.tagline}
             </p>
           </Rise>
 
-          <Rise delay={0.24}>
-            <p className="mt-6 font-mono text-xs tracking-wide text-fg-subtle">
+          <Rise delay={0.22}>
+            <p className="mt-5 flex items-start gap-2.5 text-sm text-fg-muted">
+              <span
+                aria-hidden
+                className="mt-1.5 size-1.5 shrink-0 animate-pulse rounded-full bg-fg"
+              />
+              <span>
+                <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
+                  Currently
+                </span>{" "}
+                &mdash; {profile.currently}
+              </span>
+            </p>
+          </Rise>
+
+          <Rise delay={0.28}>
+            <p className="mt-5 font-mono text-xs tracking-wide text-fg-subtle">
               Graduating {education.graduation} &middot; GPA {education.gpa}{" "}
               &middot; {education.honors}
             </p>
           </Rise>
 
-          <Rise delay={0.32}>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                onClick={() => scrollTo("experience")}
-                className={`${BTN} bg-fg text-ink-950 hover:opacity-90`}
-              >
-                View my work
-              </button>
-              <a
-                href={RESUME_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${BTN} border border-ink-600 text-fg hover:bg-ink-800`}
-              >
-                Resume
-              </a>
+          <Rise delay={0.36}>
+            <div className="mt-8">
+              <Actions />
             </div>
           </Rise>
         </div>
 
-        <Rise delay={0.18} className="order-first md:order-none">
-          <TiltCard className="mx-auto w-full max-w-[272px] md:ml-auto md:mr-0">
-            {/* Each layer stands a little further off the card, so turning
-                it slides them past each other. Thin bezel on something
-                nearly square: the badges on the buildings are the
-                reference, not a framed print. */}
-            <div className="relative rounded-md border border-white/10 bg-ink-950 p-1 [transform:translateZ(0px)]">
-              <img
-                src={profile.photo}
-                alt={`Portrait of ${profile.name}`}
-                width={820}
-                height={820}
-                className="w-full rounded-sm [transform:translateZ(22px)]"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-1 rounded-sm ring-1 ring-inset ring-white/15 [transform:translateZ(34px)]"
-              />
-              <span className="absolute -bottom-2.5 left-3 rounded border border-white/10 bg-ink-950 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-fg-subtle [transform:translateZ(56px)]">
-                {education.graduation}
-              </span>
-            </div>
-          </TiltCard>
-        </Rise>
+        {flat && (
+          <Rise delay={0.18} className="order-first md:order-none">
+            <TiltCard className="mx-auto w-full max-w-[272px] md:ml-auto md:mr-0">
+              <div className="relative rounded-md border border-white/10 bg-ink-950 p-1 [transform:translateZ(0px)]">
+                <img
+                  src={profile.photo}
+                  alt={`Portrait of ${profile.name}`}
+                  width={820}
+                  height={820}
+                  className="w-full rounded-sm [transform:translateZ(22px)]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-1 rounded-sm ring-1 ring-inset ring-white/15 [transform:translateZ(34px)]"
+                />
+              </div>
+            </TiltCard>
+          </Rise>
+        )}
       </div>
     </section>
   );
 }
+
+/**
+ * Two columns when the portrait is in the DOM, one when it is in the
+ * scene - and narrower in that case, so the copy stays clear of the
+ * hoarding standing on the right of the road.
+ */
+const cnGrid = (flat) =>
+  flat
+    ? "relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 py-24 md:grid-cols-[1fr_340px]"
+    : "relative mx-auto w-full max-w-6xl px-6 pb-24 pt-28 [&>div]:max-w-lg";

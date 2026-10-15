@@ -3,16 +3,30 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
+import { profile } from "../data/profile";
+import { getProgress } from "../lib/stage";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
 
 /**
- * The roles as buildings on an arc that curves around the viewer: startups
- * off to the left, the two industry roles straight ahead, Northeastern to
- * the right. Clicking one flies the camera in and frames it on the left of
- * the viewport, leaving the right half for the written detail.
+ * One street, seen from two distances.
+ *
+ * This canvas sits behind both the landing section and the Experience
+ * section and never unmounts between them. Scrolling walks the camera
+ * from the far end of the road - where the name stands on the pavement,
+ * the portrait is up on a hoarding and the city is a haze of lights
+ * ahead - into the arc of buildings that is the Experience section. One
+ * GL context, one render loop, one world: the transition between the two
+ * is literally travel rather than a crossfade between two scenes.
+ *
+ * The roles are buildings on an arc that curves around the viewer:
+ * startups off to the left, the two industry roles straight ahead,
+ * Northeastern to the right. Clicking one flies the camera in and frames
+ * it on the left of the viewport, leaving the right half for the written
+ * detail.
  *
  * Each group is a different kind of building, so the three clusters are
  * legible as shapes before you read a single label:
@@ -794,7 +808,196 @@ function ClusterSigns({ hidden }) {
   ));
 }
 
+/**
+ * The rest of the city, far enough out to be shapes.
+ *
+ * Only two draw calls: every silhouette is merged into one buffer and
+ * every crown light into another. They stand on a wide arc well outside
+ * the eight real buildings, which gives the landing view a skyline to
+ * look at and the skyline view something behind it. The crown pips are
+ * the only colour up there, and they are the role accents - the city is
+ * lit by the same eight lights the foreground is.
+ */
+function makeDistant() {
+  const base = [];
+  const lit = [];
+  for (let i = 0; i < 26; i++) {
+    // Seeded, so the horizon is the same one on every visit.
+    const n = (x) => {
+      const v = Math.sin(i * x) * 43758.5453;
+      return v - Math.floor(v);
+    };
+    const a = (-78 + (i / 25) * 156 + (n(12.9898) - 0.5) * 5) * DEG;
+    const r = 27 + n(78.233) * 17;
+    const w = 1.8 + n(37.719) * 2.6;
+    const h = 3 + n(11.135) * 11;
+    const x = Math.sin(a) * r;
+    const z = -Math.cos(a) * r;
+    base.push(new THREE.BoxGeometry(w, h, w).translate(x, h / 2, z));
+    lit.push(
+      new THREE.BoxGeometry(w + 0.08, 0.16, w + 0.08).translate(x, h + 0.08, z),
+    );
+  }
+  return {
+    base: mergeGeometries(base, false),
+    lit: mergeGeometries(lit, false),
+  };
+}
+
+function Distant() {
+  const made = useMemo(makeDistant, []);
+  useEffect(
+    () => () => {
+      made.base.dispose();
+      made.lit.dispose();
+    },
+    [made],
+  );
+  return (
+    <group>
+      <mesh geometry={made.base}>
+        <meshBasicMaterial color="#04040a" />
+      </mesh>
+      {/* One colour for the far lights rather than eight: at this
+          distance individual hues turn to mud, and a single cool white
+          with the accents only in the foreground keeps the eight that
+          matter legible. */}
+      <mesh geometry={made.lit}>
+        <meshBasicMaterial color="#5f6ea8" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
+ * The landing end of the street: the name standing on the pavement and
+ * the portrait up on a hoarding beside it.
+ *
+ * Both fade out as the camera walks past them, because it does walk
+ * past them - they sit between the viewer's first position and the arc,
+ * and watching a nameplate slide through the camera is not the effect.
+ */
+const HERO_Z = 12.2;
+const NAME_H = 0.66;
+const BOARD = 2.05;
+
+function Approach() {
+  const mats = useRef([]);
+  const lines = useMemo(() => {
+    const [first, ...rest] = profile.name.toUpperCase().split(" ");
+    return [first, rest.join(" ")].map((t) => makeTextTexture(t));
+  }, []);
+  useEffect(() => () => lines.forEach((l) => l.tex.dispose()), [lines]);
+  const photo = useLoader(THREE.TextureLoader, profile.photo);
+
+  useFrame((_, delta) => {
+    const k = 1 - Math.exp(-6 * delta);
+    // Gone by the time the skyline fills the frame.
+    const want = 1 - Math.min(1, Math.max(0, (getProgress() - 0.18) / 0.4));
+    for (const m of mats.current) {
+      if (m) m.opacity += (want * (m.userData.full ?? 1) - m.opacity) * k;
+    }
+  });
+
+  mats.current.length = 0;
+  const keep =
+    (full = 1) =>
+    (m) => {
+      if (!m) return;
+      m.userData.full = full;
+      mats.current.push(m);
+    };
+
+  const half = BOARD / 2;
+  const mid = 1.45 + half;
+
+  return (
+    <>
+      <group position={[-4.6, 0, HERO_Z]} rotation={[0, 0.16, 0]}>
+        {lines.map((l, i) => (
+          <group key={i} position={[0, NAME_H * (1.58 - i) * 1.16, 0]}>
+            <ExtrudedText
+              tex={l.tex}
+              aspect={l.aspect}
+              height={NAME_H}
+              depth={0.3}
+              layers={14}
+              matRef={keep()}
+            />
+          </group>
+        ))}
+      </group>
+
+      <group position={[5.5, 0, HERO_Z - 2.2]} rotation={[0, -0.24, 0]}>
+        {[-1, 1].map((side) => (
+          <mesh key={side} position={[side * (half - 0.26), 0.72, 0]}>
+            <boxGeometry args={[0.12, 1.45, 0.12]} />
+            <meshBasicMaterial
+              ref={keep(0.85)}
+              color="#15151d"
+              transparent
+              opacity={0.85}
+            />
+          </mesh>
+        ))}
+        <mesh position={[0, mid, -0.06]}>
+          <boxGeometry args={[BOARD + 0.16, BOARD + 0.16, 0.12]} />
+          <meshBasicMaterial
+            ref={keep(0.9)}
+            color="#0b0b12"
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+        <mesh position={[0, mid, 0.012]}>
+          <planeGeometry args={[BOARD, BOARD]} />
+          <meshBasicMaterial
+            ref={keep()}
+            map={photo}
+            transparent
+            toneMapped={false}
+          />
+        </mesh>
+        {/* Four bars, not a wireframe plane: a wireframe draws the
+            quad's diagonal too, which put a line straight across the
+            photo. */}
+        {[
+          [0, half + 0.06, BOARD + 0.14, 0.055],
+          [0, -half - 0.06, BOARD + 0.14, 0.055],
+        ].map(([dx, dy, bw, bh], i) => (
+          <mesh key={`h${i}`} position={[dx, mid + dy, 0.03]}>
+            <boxGeometry args={[bw, bh, 0.055]} />
+            <meshBasicMaterial
+              ref={keep(0.75)}
+              color="#aab4e0"
+              transparent
+              opacity={0.75}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
+        {[-1, 1].map((side) => (
+          <mesh key={`v${side}`} position={[side * (half + 0.06), mid, 0.03]}>
+            <boxGeometry args={[0.055, BOARD + 0.14, 0.055]} />
+            <meshBasicMaterial
+              ref={keep(0.75)}
+              color="#aab4e0"
+              transparent
+              opacity={0.75}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
+      </group>
+    </>
+  );
+}
+
 const LOOK = { x: 0, y: 3, z: -2 };
+
+/** Where the camera stands at the landing end of the road. */
+const HERO_STOP = { y: 2.0, z: 20.5 };
+const ease = (p) => p * p * (3 - 2 * p);
 
 function Rig({ target, narrow }) {
   useFrame((state, delta) => {
@@ -811,17 +1014,39 @@ function Rig({ target, narrow }) {
       // Follows the cursor rather than needing a drag: the pointer steers
       // where you are looking, the same feel as before, just from the
       // pavement instead of above the block.
-      const yaw = state.pointer.x * 0.62 + Math.sin(t * 0.07) * 0.03;
-      const pitch = 0.17 + state.pointer.y * 0.1 + Math.sin(t * 0.05) * 0.012;
-      cam.position.x += (Math.sin(yaw) * 1.1 - cam.position.x) * k;
-      cam.position.y += (1.8 + Math.sin(t * 0.09) * 0.06 - cam.position.y) * k;
-      cam.position.z += (3.6 - cam.position.z) * k;
+      // Scroll walks the camera up the road. At p=0 you are at the far
+      // end looking at the city; at p=1 you are standing inside the arc.
+      // Everything in between is the same shot moving, which is the
+      // whole point of one canvas spanning both sections.
+      const p = ease(getProgress());
+
+      // The cursor steers less from a distance than it does up close -
+      // at the far end a big swing would throw the city off the side of
+      // the frame before you had looked at it.
+      const sway = 0.2 + p * 0.42;
+      const yaw = state.pointer.x * sway + Math.sin(t * 0.07) * 0.03;
+      const pitch =
+        (1 - p) * 0.02 +
+        p * 0.17 +
+        state.pointer.y * (0.04 + p * 0.06) +
+        Math.sin(t * 0.05) * 0.012;
+
+      const px = Math.sin(yaw) * (0.4 + p * 0.7);
+      const py =
+        HERO_STOP.y + (1.8 - HERO_STOP.y) * p + Math.sin(t * 0.09) * 0.06;
+      const pz = HERO_STOP.z + (3.6 - HERO_STOP.z) * p;
+
+      cam.position.x += (px - cam.position.x) * k;
+      cam.position.y += (py - cam.position.y) * k;
+      cam.position.z += (pz - cam.position.z) * k;
+
       // Aimed at a point on a sphere around the viewer rather than at a
-      // fixed spot, so dragging turns the head instead of sliding the whole
-      // shot sideways.
-      LOOK.x += (cam.position.x + Math.sin(yaw) * 14 - LOOK.x) * k;
-      LOOK.y += (cam.position.y + Math.tan(pitch) * 14 - LOOK.y) * k;
-      LOOK.z += (cam.position.z - Math.cos(yaw) * 14 - LOOK.z) * k;
+      // fixed spot, so steering turns the head instead of sliding the
+      // whole shot sideways.
+      const reach = 14 + (1 - p) * 10;
+      LOOK.x += (cam.position.x + Math.sin(yaw) * reach - LOOK.x) * k;
+      LOOK.y += (cam.position.y + Math.tan(pitch) * reach - LOOK.y) * k;
+      LOOK.z += (cam.position.z - Math.cos(yaw) * reach - LOOK.z) * k;
       cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
       return;
     }
@@ -866,7 +1091,7 @@ function Rig({ target, narrow }) {
   return null;
 }
 
-export default function TowersScene({ focused, onFocus, active, narrow }) {
+export default function StreetScene({ focused, onFocus, active, narrow }) {
   const layout = useLayout();
   const windows = useMemo(makeWindowTexture, []);
   const frame = useMemo(makeFrameTexture, []);
@@ -889,19 +1114,22 @@ export default function TowersScene({ focused, onFocus, active, narrow }) {
       frameloop={active ? "always" : "never"}
       dpr={[1, 1.5]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, 1.8, 3.6], fov: 52 }}
+      camera={{ position: [0, HERO_STOP.y, HERO_STOP.z], fov: 52 }}
       onPointerMissed={() => onFocus(null)}
       style={{ position: "absolute", inset: 0 }}
+      // The stage owns where this sits on the page.
     >
       <color attach="background" args={["#000000"]} />
       {/* Exponential rather than linear: distance falls off smoothly into
           the background instead of everything past a hard plane vanishing
           at once. Matched to the page background so there is no seam. */}
-      <fogExp2 attach="fog" args={["#000000", 0.026]} />
+      <fogExp2 attach="fog" args={["#000000", 0.019]} />
       <ambientLight intensity={0.16} />
       <directionalLight position={[5, 10, 7]} intensity={0.5} />
 
       <Rig target={target} narrow={narrow} />
+      <Distant />
+      <Approach />
       <ClusterSigns hidden={Boolean(focused)} />
 
       {/* Mirrored, non-interactive copies, foreshortened. A full-length
@@ -912,8 +1140,6 @@ export default function TowersScene({ focused, onFocus, active, narrow }) {
             key={`r-${tower.role.id}`}
             tower={tower}
             windows={windows}
-            frame={frame}
-            frame={frame}
             frame={frame}
             logo={tower.role.logo ? byUrl[tower.role.logo] : null}
             focused={tower.role.id === focused}

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import SceneSlot from "../components/SceneSlot";
 import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
+import { setFocused, useFocused } from "../lib/stage";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
 
 /**
@@ -153,9 +153,11 @@ function RoleNav({ selected, onSelect, className }) {
   );
 }
 
-export default function Experience() {
+export default function Experience({ ref }) {
   const plain = usePlain();
-  const [focused, setFocused] = useState(null);
+  // The skyline is drawn by a canvas that lives above this component, so
+  // which building is open is shared state rather than local.
+  const focused = useFocused();
 
   // The scene frames a focused building differently when there is no room
   // for a column beside it, and a phone gets no 3D at all.
@@ -174,7 +176,11 @@ export default function Experience() {
   if (narrow || plain) {
     const shown = current ?? experience[0];
     return (
-      <section id="experience" className="scroll-mt-16 py-20">
+      <section
+        ref={ref}
+        id="experience"
+        className="pointer-events-auto scroll-mt-16 py-20"
+      >
         <div className="mx-auto w-full max-w-6xl px-6">
           <div className="mb-8">
             <h2 className="text-3xl font-semibold tracking-tight">
@@ -199,25 +205,24 @@ export default function Experience() {
   // only, so a phone never briefly mounts a WebGL context it is about to
   // throw away.
   if (narrow === null) {
-    return <section id="experience" className="h-[92vh] min-h-[620px]" />;
+    return (
+      <section ref={ref} id="experience" className="h-[92vh] min-h-[620px]" />
+    );
   }
 
   // --- wide: the skyline is the section ---------------------------------
   return (
     <section
+      ref={ref}
       id="experience"
       // scroll-mt-16 so jumping here clears the sticky bar, the same
       // offset every other section gets from Section. At 92vh the whole
       // skyline still fits underneath it.
-      className="relative h-[92vh] min-h-[620px] w-full scroll-mt-16 overflow-hidden bg-black"
+      // pointer-events-none so clicks reach the canvas behind this,
+      // which is no longer a child of the section. Everything in here
+      // that is meant to be clicked turns them back on.
+      className="pointer-events-none relative h-[92vh] min-h-[620px] w-full scroll-mt-16"
     >
-      <SceneSlot
-        load={() => import("../scenes/TowersScene")}
-        focused={focused}
-        onFocus={setFocused}
-        narrow={false}
-      />
-
       {/* The towers are pointer-only, so this is the keyboard and
           screen-reader route to the same state. `sr-only` rather than
           `hidden`, which would take it out of the tab order; focus-within
@@ -225,7 +230,7 @@ export default function Experience() {
       <RoleNav
         selected={focused}
         onSelect={setFocused}
-        className="sr-only z-20 focus-within:not-sr-only focus-within:absolute focus-within:inset-x-0 focus-within:top-20 focus-within:mx-auto focus-within:flex focus-within:max-w-6xl focus-within:gap-8 focus-within:px-6"
+        className="pointer-events-auto sr-only z-20 focus-within:not-sr-only focus-within:absolute focus-within:inset-x-0 focus-within:top-20 focus-within:mx-auto focus-within:flex focus-within:max-w-6xl focus-within:gap-8 focus-within:px-6"
       />
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 mx-auto w-full max-w-6xl px-6 pt-20">
@@ -279,7 +284,7 @@ export default function Experience() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 40 }}
             transition={{ duration: 0.45, ease: EASE }}
-            className="absolute inset-y-0 right-0 z-10 flex w-[46%] items-center"
+            className="pointer-events-auto absolute inset-y-0 right-0 z-10 flex w-[46%] items-center"
           >
             {/* Something to read against. The skyline keeps moving behind
                 this column, so the copy was landing on lit windows. Two
