@@ -177,7 +177,7 @@ export default function Experience() {
       <section id="experience" className="scroll-mt-16 py-20">
         <div className="mx-auto w-full max-w-6xl px-6">
           <h2 className="mb-8 text-3xl font-semibold tracking-tight">
-            Where I&apos;ve worked
+            Experience
           </h2>
           <RoleNav
             selected={shown.id}
@@ -236,7 +236,7 @@ export default function Experience() {
                 "radial-gradient(60% 70% at 40% 50%, rgba(7,10,20,0.92), transparent 75%)",
             }}
           />
-          Where I&apos;ve worked
+          Experience
         </h2>
         {/* Short rule under the heading - against a black skyline the
             title otherwise floats with nothing holding it to the page. */}

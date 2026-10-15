@@ -4,7 +4,7 @@ import { socials } from "../data/profile";
 /** Four plain buttons. This is the end of the page; there is no footer. */
 export default function Connect() {
   return (
-    <Section id="connect" title="Let's talk">
+    <Section id="connect" title="Contact">
       <div className="flex flex-wrap gap-3">
         {socials.map((s) => (
           <a
