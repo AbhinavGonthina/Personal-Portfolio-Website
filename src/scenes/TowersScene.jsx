@@ -3,6 +3,8 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
+import { makeTextTexture } from "../lib/canvasText";
+import { ExtrudedText, Ground } from "./street";
 
 /**
  * The roles as buildings on an arc that curves around the viewer: startups
@@ -722,52 +724,11 @@ function Building({
 }
 
 /**
- * The name of a cluster, standing on the pavement in front of it.
- *
- * Built from the same canvas trick as the building nameplates, then given
- * real depth by stacking the same glyphs back into the scene over a short
- * run and darkening each copy. That is not a drop shadow: the layers are
- * separate planes in world space, so turning the camera slides the sides
- * of the letters past the fronts the way an extrusion does.
- *
- * It is done this way rather than with TextGeometry because that needs a
- * typeface converted to JSON and shipped as an asset, and the rest of this
- * scene is drawn from nothing at runtime.
+ * The name of a cluster, standing on the pavement in front of it, in the
+ * same extruded lettering the hero uses for the name.
  */
-function makeSignTexture(text) {
-  const H = 150;
-  const PAD = 24;
-  const c = document.createElement("canvas");
-  const g = c.getContext("2d");
-  const font = `700 ${H}px "Geist Mono Variable", ui-monospace, monospace`;
-  const setup = () => {
-    g.font = font;
-    if ("letterSpacing" in g) g.letterSpacing = "20px";
-  };
-  setup();
-  c.width = Math.ceil(g.measureText(text).width) + PAD * 2;
-  c.height = H + PAD * 2;
-
-  setup();
-  g.textAlign = "center";
-  g.textBaseline = "middle";
-  g.fillStyle = "#ffffff";
-  g.fillText(text, c.width / 2, c.height / 2);
-
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  return { tex, aspect: c.width / c.height };
-}
-
-/** Where the signs stand, and how far the letters run back. */
 const SIGN_R = 7.4;
 const SIGN_H = 0.52;
-const SIGN_DEPTH = 0.26;
-const SIGN_LAYERS = 14;
-/** Front face, and the colour the sides fall away to. */
-const SIGN_FACE = new THREE.Color("#ffffff");
-const SIGN_SIDE = new THREE.Color("#2b2b33");
 
 function ClusterSigns({ hidden }) {
   const mats = useRef([]);
@@ -775,7 +736,7 @@ function ClusterSigns({ hidden }) {
     () =>
       ARC.map(({ id, ground, centre }) => ({
         id,
-        ...makeSignTexture(ground),
+        ...makeTextTexture(ground),
         angle: centre * DEG,
       })),
     [],
@@ -794,28 +755,12 @@ function ClusterSigns({ hidden }) {
     // Turned to face the centre of the arc, like the buildings behind it.
     <group key={m.id} rotation={[0, -m.angle, 0]}>
       <group position={[0, SIGN_H * 0.62, -SIGN_R]}>
-        {Array.from({ length: SIGN_LAYERS }, (_, i) => {
-          const t = i / (SIGN_LAYERS - 1);
-          return (
-            <mesh
-              key={i}
-              position={[0, 0, -t * SIGN_DEPTH]}
-              // Nearest layer last, so the painter's sort three does on
-              // transparent objects stacks them in the right order.
-              renderOrder={SIGN_LAYERS - i}
-            >
-              <planeGeometry args={[SIGN_H * m.aspect, SIGN_H]} />
-              <meshBasicMaterial
-                ref={(el) => el && mats.current.push(el)}
-                map={m.tex}
-                color={SIGN_FACE.clone().lerp(SIGN_SIDE, t)}
-                transparent
-                depthWrite={false}
-                toneMapped={false}
-              />
-            </mesh>
-          );
-        })}
+        <ExtrudedText
+          tex={m.tex}
+          aspect={m.aspect}
+          height={SIGN_H}
+          matRef={(el) => el && mats.current.push(el)}
+        />
       </group>
     </group>
   ));
@@ -964,28 +909,7 @@ export default function TowersScene({ focused, onFocus, active, narrow }) {
         />
       ))}
 
-      {/* Above the floor sheet, not below it: the sheet is transparent, so
-          it draws after everything opaque and would paint the grid out. */}
-      <gridHelper
-        args={[140, 110, "#3e3e3e", "#242424"]}
-        position={[0, 0.02, 0]}
-      />
-
-      {/* The floor. A sheet of near-black over the mirrored copies rather
-          than a reflective material - MeshReflectorMaterial renders the
-          whole scene a second time into a texture, and at eight boxes the
-          mirrored geometry is far cheaper for the same read. Below ground,
-          because at y=0.01 it intersected and sliced every base. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
-        <planeGeometry args={[140, 140]} />
-        <meshStandardMaterial
-          color="#05050a"
-          roughness={0.16}
-          metalness={0.92}
-          transparent
-          opacity={0.88}
-        />
-      </mesh>
+      <Ground />
 
       {/* Thresholded at 0.9 so bloom only catches the crowns and masts,
           which are the only things pushed past 1.0 - hence their
