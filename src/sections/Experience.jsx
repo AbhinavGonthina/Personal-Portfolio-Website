@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import SceneSlot from "../components/SceneSlot";
 import { cn } from "../lib/cn";
@@ -107,7 +107,6 @@ function RoleNav({ selected, onSelect, className }) {
 
 export default function Experience() {
   const [focused, setFocused] = useState(null);
-  const labels = useRef(null);
 
   // The scene frames a focused building differently when there is no room
   // for a column beside it, and a phone gets no 3D at all.
@@ -161,14 +160,7 @@ export default function Experience() {
         load={() => import("../scenes/TowersScene")}
         focused={focused}
         onFocus={setFocused}
-        labelHost={labels}
         narrow={false}
-      />
-
-      <div
-        ref={labels}
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-10"
       />
 
       {/* The towers are pointer-only, so this is the keyboard and

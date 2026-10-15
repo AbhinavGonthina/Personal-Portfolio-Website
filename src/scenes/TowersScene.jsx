@@ -72,8 +72,34 @@ const ARC = [
  */
 const KIND = {
   work: { h: [6.6, 8.8], w: 1.95, d: 1.95 },
-  startup: { h: [3.0, 4.1], w: 2.4, d: 2.0 },
-  northeastern: { h: [2.3, 3.4], w: 1.55, d: 1.55 },
+  startup: { h: [3.2, 4.3], w: 2.4, d: 2.0 },
+  northeastern: { h: [2.9, 4.0], w: 1.7, d: 1.7 },
+};
+
+/**
+ * A silhouette per building, so no two are the same object at a different
+ * height. `shaft` is the body - a box, an octagonal prism or a drum - and
+ * `top` is what finishes it. Taken in order within each group, so the forms
+ * stay put as roles are added rather than reshuffling the whole street.
+ *
+ * `fat`/`thin` nudge the footprint, which is what separates two buildings
+ * that share a form.
+ */
+const FORMS = {
+  work: [
+    { shaft: "box", top: "setback" },
+    { shaft: "box", top: "mast", fat: 0.94 },
+  ],
+  startup: [
+    { shaft: "box", top: "pylons", fat: 1.1, thin: 0.74 },
+    { shaft: "oct", top: "setback", fat: 0.88 },
+  ],
+  northeastern: [
+    { shaft: "box", top: "pyramid" },
+    { shaft: "oct", top: null, fat: 1.06 },
+    { shaft: "cyl", top: "dome", fat: 0.96 },
+    { shaft: "box", top: "pylons", fat: 1.08, thin: 0.86 },
+  ],
 };
 
 function useLayout() {
@@ -91,6 +117,7 @@ function useLayout() {
       roles.forEach((role, i) => {
         const angle = (centre + (i - (roles.length - 1) / 2) * step) * DEG;
         const t = Math.min(1, Math.sqrt(spans[i] / longest) || 0);
+        const form = FORMS[id][i % FORMS[id].length];
         out.push({
           role,
           kind: id,
@@ -100,11 +127,10 @@ function useLayout() {
           // Faces the centre of the arc, which is where the viewer stands.
           rotY: -angle,
           height: kind.h[0] + (kind.h[1] - kind.h[0]) * t,
-          w: kind.w + (i % 2) * 0.14,
-          d: kind.d + (i % 3) * 0.1,
-          // The two industry towers are deliberately not twins: one steps
-          // back near the top, the other runs straight up to a mast.
-          variant: id === "work" ? (i === 0 ? "setback" : "mast") : null,
+          w: kind.w * (form.fat ?? 1),
+          d: kind.d * (form.thin ?? form.fat ?? 1),
+          shaft: form.shaft,
+          top: form.top,
         });
       });
     });
@@ -195,6 +221,88 @@ function makeFrameTexture() {
   return tex;
 }
 
+/**
+ * The company name, drawn into a canvas and hung on the facade under the
+ * badge.
+ *
+ * It used to be a DOM label floating above the roofline. That meant the
+ * names drifted as the camera turned, and where buildings stand close
+ * together they had to be shunted onto different rows to stay apart -
+ * so the one thing that should have been fixed to a building was the one
+ * thing that moved. On the facade it is simply part of the building.
+ *
+ * The type is fitted to the face it sits on: wrapped onto a second line
+ * when that buys a bigger size, then scaled up until the longest line
+ * nearly spans the wall, and capped so a short name like OASIS does not
+ * end up in billboard letters.
+ */
+const PLATE_RES = 512;
+const PLATE_PAD = 16;
+const PLATE_MAX = 72;
+const plateFont = (g, size) => {
+  g.font = `600 ${size}px "Geist Mono Variable", ui-monospace, monospace`;
+  if ("letterSpacing" in g) g.letterSpacing = `${(size * 0.08).toFixed(1)}px`;
+};
+
+/** The split that leaves the two lines as even as possible. */
+function wrapEvenly(words, measure) {
+  let best = null;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(" ");
+    const b = words.slice(i).join(" ");
+    const wide = Math.max(measure(a), measure(b));
+    if (!best || wide < best.wide) best = { lines: [a, b], wide };
+  }
+  return best;
+}
+
+function makeNamePlate(text, faceW) {
+  const c = document.createElement("canvas");
+  const g = c.getContext("2d");
+  const REF = 100;
+  plateFont(g, REF);
+  const measure = (t) => g.measureText(t).width;
+
+  const words = text.toUpperCase().split(" ");
+  const avail = PLATE_RES - PLATE_PAD * 2;
+  let lines = [words.join(" ")];
+  let wide = measure(lines[0]);
+  if (words.length > 1) {
+    const two = wrapEvenly(words, measure);
+    // Only worth a second line if it buys a meaningfully larger size;
+    // otherwise a two-word name splits for no reason.
+    if (two && two.wide < wide * 0.78) {
+      lines = two.lines;
+      wide = two.wide;
+    }
+  }
+
+  const size = Math.min(PLATE_MAX, (avail / wide) * REF);
+  const lead = size * 1.3;
+  c.width = PLATE_RES;
+  c.height = Math.ceil(lines.length * lead) + PLATE_PAD * 2;
+
+  // Resizing a canvas resets its context, so everything is set again here.
+  plateFont(g, size);
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillStyle = "#ffffff";
+  // The wall behind is lit windows, not flat black. Three passes build the
+  // shadow into a dark pad under the glyphs so they stay legible over one.
+  g.shadowColor = "rgba(0,0,0,0.92)";
+  g.shadowBlur = size * 0.42;
+  lines.forEach((l, i) => {
+    const y = PLATE_PAD + lead * (i + 0.5);
+    for (let pass = 0; pass < 3; pass++) g.fillText(l, c.width / 2, y);
+  });
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const scale = (faceW * 0.96) / PLATE_RES;
+  return { tex, w: PLATE_RES * scale, h: c.height * scale };
+}
+
 function crownLight(hex) {
   const c = new THREE.Color(hex);
   const peak = Math.max(c.r, c.g, c.b) || 1;
@@ -203,6 +311,24 @@ function crownLight(hex) {
   // Clamped: without a ceiling a pure blue would be driven to absurdity.
   const gain = Math.min(4, Math.max(1, CROWN_LUM / Math.max(lum, 0.06)));
   return { color: c, gain };
+}
+
+/**
+ * The body of a building. An octagon's radius is set so its flat faces sit
+ * exactly where a box's would, which keeps the signboard offset the same
+ * for both; `thetaStart` turns it so a face, not a corner, meets the
+ * viewer.
+ */
+const OCT = Math.cos(Math.PI / 8);
+function ShaftGeo({ form, w, d, h }) {
+  if (form === "cyl") return <cylinderGeometry args={[w / 2, w / 2, h, 28]} />;
+  if (form === "oct")
+    return (
+      <cylinderGeometry
+        args={[w / 2 / OCT, w / 2 / OCT, h, 8, 1, false, -Math.PI / 8]}
+      />
+    );
+  return <boxGeometry args={[w, h, d]} />;
 }
 
 function Building({
@@ -219,11 +345,24 @@ function Building({
   const stage = useRef();
   const crown = useRef();
   const light = useRef();
+  // Signage is unlit on purpose, so dimming the building does nothing to
+  // it. Behind the detail column a dropped-back tower was still showing a
+  // full-brightness badge and a white nameplate through the copy.
+  const signage = useRef([]);
   const [hovered, setHovered] = useState(false);
-  const { role, x, z, rotY, height, w, d, variant } = tower;
+  const { role, x, z, rotY, height, w, d, shaft: form, top } = tower;
   const on = focused || hovered;
   const lit = useMemo(() => crownLight(role.accent), [role.accent]);
-  // Square, and never wider than the face it sits on.
+
+  // A round building has no flat face, so the sign hangs off the apothem
+  // (which the octagon's radius is chosen to make equal to w/2) or the
+  // drum's radius. A flat plane tangent to a cylinder never intersects it.
+  const faceZ = form === "box" ? d / 2 : w / 2;
+  const plate = useMemo(
+    () => makeNamePlate(role.company, w),
+    [role.company, w],
+  );
+  useEffect(() => () => plate.tex.dispose(), [plate]);
 
   const map = useMemo(() => {
     const m = windows.clone();
@@ -252,9 +391,21 @@ function Building({
     if (light.current) {
       light.current.intensity += (target * 9 - light.current.intensity) * k;
     }
+    const want = dimmed ? 0.06 : 1;
+    for (const part of signage.current) {
+      if (!part) continue;
+      const m = part.material;
+      m.opacity += (want * (m.userData.full ?? 1) - m.opacity) * k;
+    }
   });
 
-  const shaft = variant === "setback" ? height * 0.78 : height;
+  const body_h = top === "setback" ? height * 0.78 : height;
+  const crownW = top === "setback" ? w * 0.62 : w;
+  const crownD = top === "setback" ? d * 0.62 : d;
+  // The sign goes on the widest part of the building. On the setback
+  // tower it was landing on the narrow upper stage, where a nameplate
+  // sized to the full facade hung off both sides into open air.
+  const signTop = top === "setback" ? body_h - 0.3 : height - 0.62;
 
   // On the group rather than the shaft, so the crown, the sign, the mast
   // and the upper stage are all part of the same target. With them on the
@@ -287,6 +438,16 @@ function Building({
   // transparent material that writes neither colour nor depth instead.
   const hitH = height + 1.9;
 
+  // Collects the sign meshes so the frame loop can fade them with the
+  // building. `full` is the opacity each one sits at when nothing is
+  // dropped back, since the bezel is deliberately not solid.
+  const sign =
+    (i, full = 1) =>
+    (m) => {
+      if (m) m.material.userData.full = full;
+      signage.current[i] = m;
+    };
+
   return (
     <group position={[x, 0, z]} rotation={[0, rotY, 0]}>
       {!mirrored && (
@@ -301,8 +462,8 @@ function Building({
         </mesh>
       )}
 
-      <mesh ref={body} position={[0, shaft / 2, 0]}>
-        <boxGeometry args={[w, shaft, d]} />
+      <mesh ref={body} position={[0, body_h / 2, 0]}>
+        <ShaftGeo form={form} w={w} d={d} h={body_h} />
         <meshStandardMaterial
           color="#09090b"
           emissive={role.accent}
@@ -313,11 +474,10 @@ function Building({
         />
       </mesh>
 
-      {/* A narrower upper stage, so one of the two industry towers reads
-          differently from the other at a glance. */}
-      {variant === "setback" && (
-        <mesh ref={stage} position={[0, shaft + (height - shaft) / 2, 0]}>
-          <boxGeometry args={[w * 0.62, height - shaft, d * 0.62]} />
+      {/* A narrower upper stage. */}
+      {top === "setback" && (
+        <mesh ref={stage} position={[0, body_h + (height - body_h) / 2, 0]}>
+          <ShaftGeo form={form} w={w * 0.62} d={d * 0.62} h={height - body_h} />
           <meshStandardMaterial
             color="#09090b"
             emissive={role.accent}
@@ -332,13 +492,7 @@ function Building({
       {/* The lit band at the top. One cheap detail is the difference between
           reading as a building and reading as a bar on a chart. */}
       <mesh ref={crown} position={[0, height - 0.18, 0]}>
-        <boxGeometry
-          args={[
-            (variant === "setback" ? w * 0.62 : w) + 0.11,
-            0.26,
-            (variant === "setback" ? d * 0.62 : d) + 0.11,
-          ]}
-        />
+        <ShaftGeo form={form} w={crownW + 0.11} d={crownD + 0.11} h={0.26} />
         <meshStandardMaterial
           color="#000000"
           emissive={lit.color}
@@ -347,7 +501,10 @@ function Building({
         />
       </mesh>
 
-      {variant === "mast" && (
+      {/* What finishes the building off. Each is a few triangles, and
+          between them they stop the street reading as eight copies of one
+          box at different heights. */}
+      {top === "mast" && (
         <mesh position={[0, height + 0.85, 0]}>
           <cylinderGeometry args={[0.02, 0.05, 1.7, 6]} />
           <meshStandardMaterial
@@ -359,6 +516,55 @@ function Building({
         </mesh>
       )}
 
+      {top === "pyramid" && (
+        <mesh position={[0, height + 0.36, 0]} rotation={[0, Math.PI / 4, 0]}>
+          <coneGeometry args={[w * 0.78, 0.76, 4]} />
+          <meshStandardMaterial
+            color="#09090b"
+            emissive={lit.color}
+            emissiveIntensity={IDLE * 0.5}
+            roughness={0.42}
+            metalness={0.3}
+          />
+        </mesh>
+      )}
+
+      {top === "dome" && (
+        <mesh position={[0, height - 0.04, 0]}>
+          <sphereGeometry
+            args={[w * 0.5, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2]}
+          />
+          <meshStandardMaterial
+            color="#09090b"
+            emissive={lit.color}
+            emissiveIntensity={IDLE * 0.5}
+            roughness={0.3}
+            metalness={0.45}
+          />
+        </mesh>
+      )}
+
+      {top === "pylons" &&
+        [
+          [-1, -1],
+          [1, -1],
+          [-1, 1],
+          [1, 1],
+        ].map(([sx, sz]) => (
+          <mesh
+            key={`${sx}${sz}`}
+            position={[sx * (w / 2 - 0.12), height + 0.22, sz * (d / 2 - 0.12)]}
+          >
+            <boxGeometry args={[0.08, 0.5, 0.08]} />
+            <meshStandardMaterial
+              color="#000000"
+              emissive={lit.color}
+              emissiveIntensity={0.9 * lit.gain}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
+
       {/* The signboard, three layers deep so it reads as built in rather
           than applied: a dark plate, a lit bezel around it in the
           building's own colour, and the badge itself on the front.
@@ -369,16 +575,17 @@ function Building({
           only just smaller than the badge: its job is to stop the windows
           showing through the badge's feathered edge, not to be seen. */}
       {logo && (
-        <group position={[0, height - 0.78 - BADGE / 2, d / 2 + 0.018]}>
-          <mesh position={[0, 0, -0.014]}>
+        <group position={[0, signTop - BADGE / 2, faceZ + 0.018]}>
+          <mesh position={[0, 0, -0.014]} ref={sign(0)}>
             <planeGeometry args={[BADGE * 0.98, BADGE * 0.98]} />
             <meshStandardMaterial
               color="#0a0a0d"
               roughness={0.55}
               metalness={0.35}
+              transparent
             />
           </mesh>
-          <mesh position={[0, 0, -0.007]}>
+          <mesh position={[0, 0, -0.007]} ref={sign(1, 0.85)}>
             <planeGeometry args={[BADGE * 1.16, BADGE * 1.16]} />
             <meshBasicMaterial
               map={frame}
@@ -389,12 +596,29 @@ function Building({
               depthWrite={false}
             />
           </mesh>
-          <mesh>
+          <mesh ref={sign(2)}>
             <planeGeometry args={[BADGE, BADGE]} />
             <meshBasicMaterial map={logo} toneMapped={false} transparent />
           </mesh>
         </group>
       )}
+
+      {/* The name, on the wall directly under the badge. Unlit, so it
+          stays the same clean white however the building is lit - it is
+          signage, not a surface. Just clear of the badge, which has a
+          feathered edge of its own. */}
+      <mesh
+        ref={sign(3)}
+        position={[0, signTop - BADGE - 0.1 - plate.h / 2, faceZ + 0.019]}
+      >
+        <planeGeometry args={[plate.w, plate.h]} />
+        <meshBasicMaterial
+          map={plate.tex}
+          transparent
+          toneMapped={false}
+          depthWrite={false}
+        />
+      </mesh>
 
       <pointLight
         ref={light}
@@ -406,90 +630,6 @@ function Building({
       />
     </group>
   );
-}
-
-/**
- * Labels, projected by hand into a plain DOM layer outside the canvas.
- *
- * drei's <Html> was the obvious choice and it dropped one of six on mount.
- * This is deterministic instead, and writing `style.transform` directly
- * means a 60fps camera does not cause 60 React renders a second.
- */
-function Labels({ host, layout, hidden }) {
-  const spans = useRef([]);
-  const v = useRef(new THREE.Vector3());
-
-  useEffect(() => {
-    const parent = host?.current;
-    if (!parent) return;
-    const made = layout.map((t) => {
-      const el = document.createElement("div");
-      el.textContent = t.role.company;
-      el.className =
-        "absolute left-0 top-0 whitespace-nowrap font-mono text-[11px] uppercase tracking-[0.18em] text-fg-muted transition-opacity duration-300";
-      parent.appendChild(el);
-      return el;
-    });
-    spans.current = made;
-    return () => made.forEach((el) => el.remove());
-  }, [host, layout]);
-
-  const placed = useRef([]);
-
-  useFrame((state) => {
-    const { width, height } = state.size;
-
-    // Project everything first, then resolve collisions, then write. Doing
-    // it in one pass would compare a label against positions from the
-    // previous frame.
-    const items = [];
-    layout.forEach((t, i) => {
-      const el = spans.current[i];
-      if (!el) return;
-      v.current.set(t.x, t.height + 0.9, t.z).project(state.camera);
-      items.push({
-        el,
-        x: (v.current.x * 0.5 + 0.5) * width,
-        y: (-v.current.y * 0.5 + 0.5) * height,
-        w: el.offsetWidth || 90,
-        behind: v.current.z > 1,
-      });
-    });
-
-    // Adjacent buildings put their labels on top of each other, badly at
-    // the Northeastern end where four stand close together. Nearest first,
-    // then each one is lifted onto the first row above it that is clear -
-    // nearest wins its natural height because it is the one in front.
-    items.sort((a, b) => a.y - b.y);
-    const taken = placed.current;
-    taken.length = 0;
-    for (const it of items) {
-      // Compare final positions, not row numbers. Two buildings of
-      // different heights can be lifted onto different rows and still
-      // land at the same point on screen, which is how "...ELECTRIC
-      // RACING KHOURY" ran together as one string. 22px is the line
-      // height plus a little air; the 30px of lateral padding is so
-      // labels that merely touch still read as two.
-      while (
-        taken.some(
-          (r) =>
-            Math.abs(r.x - it.x) < (r.w + it.w) / 2 + 30 &&
-            Math.abs(r.y - it.y) < 20,
-        )
-      ) {
-        it.y -= 22;
-      }
-      taken.push({ x: it.x, y: it.y, w: it.w });
-    }
-
-    for (const it of items) {
-      const off = it.behind || it.x < -90 || it.x > width + 90;
-      it.el.style.transform = `translate3d(${it.x}px, ${it.y}px, 0) translate(-50%, -100%)`;
-      it.el.style.opacity = hidden || off ? "0" : "1";
-    }
-  });
-
-  return null;
 }
 
 const LOOK = { x: 0, y: 3, z: -2 };
@@ -554,13 +694,7 @@ function Rig({ target, narrow }) {
   return null;
 }
 
-export default function TowersScene({
-  focused,
-  onFocus,
-  active,
-  labelHost,
-  narrow,
-}) {
+export default function TowersScene({ focused, onFocus, active, narrow }) {
   const layout = useLayout();
   const windows = useMemo(makeWindowTexture, []);
   const frame = useMemo(makeFrameTexture, []);
@@ -596,7 +730,6 @@ export default function TowersScene({
       <directionalLight position={[5, 10, 7]} intensity={0.5} />
 
       <Rig target={target} narrow={narrow} />
-      <Labels host={labelHost} layout={layout} hidden={Boolean(focused)} />
 
       {/* Mirrored, non-interactive copies, foreshortened. A full-length
           mirror reads as a second skyline hanging downward. */}
@@ -623,7 +756,6 @@ export default function TowersScene({
           key={tower.role.id}
           tower={tower}
           windows={windows}
-          frame={frame}
           frame={frame}
           logo={tower.role.logo ? byUrl[tower.role.logo] : null}
           focused={tower.role.id === focused}
