@@ -48,6 +48,20 @@
   --font-mono:
     "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
     monospace;
+
+  /* The hero's receding grid. Animating `transform` keeps it on the
+     compositor - animating `background-position`, which is the obvious
+     way to scroll a tiled grid, repaints the whole element every frame. */
+  --animate-grid: grid 22s linear infinite;
+}
+
+@keyframes grid {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 @layer base {

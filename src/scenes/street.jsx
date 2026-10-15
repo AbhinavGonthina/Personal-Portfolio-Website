@@ -67,7 +67,7 @@ export function ExtrudedText({
  * the whole scene a second time into a texture, and mirrored geometry
  * under a dark pane is far cheaper for the same read.
  */
-export function Ground({ size = 140, divisions = 110 }) {
+export function Ground({ size = 140, divisions = 110, opacity = 0.88 }) {
   return (
     <>
       <gridHelper
@@ -81,7 +81,7 @@ export function Ground({ size = 140, divisions = 110 }) {
           roughness={0.16}
           metalness={0.92}
           transparent
-          opacity={0.88}
+          opacity={opacity}
         />
       </mesh>
     </>
