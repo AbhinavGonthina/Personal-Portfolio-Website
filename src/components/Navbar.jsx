@@ -3,6 +3,7 @@ import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
+import { setPlain, usePlain } from "../lib/plain";
 
 /**
  * Three techniques, all of them transform- or opacity-only, so none of this
@@ -26,6 +27,7 @@ const scrollTo = (id) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
 export default function Navbar() {
+  const plain = usePlain();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState(null);
   const [hovered, setHovered] = useState(null);
@@ -75,10 +77,13 @@ export default function Navbar() {
         )}
       />
 
-      <nav className="mx-auto flex h-16 w-full max-w-6xl items-center px-6">
+      {/* Three columns rather than a flex row, so the section links sit on
+          the centre of the page and stay there whatever the name on the
+          left or the buttons on the right happen to be. */}
+      <nav className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6">
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="group mr-auto flex items-center gap-2 text-sm font-semibold tracking-tight"
+          className="group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
         >
           <span className="size-1.5 rounded-full bg-fg transition-transform duration-300 group-hover:scale-150" />
           {profile.name}
@@ -112,12 +117,27 @@ export default function Navbar() {
           ))}
         </div>
 
-        <button
-          onClick={() => scrollTo("connect")}
-          className="ml-4 rounded-full bg-fg px-4 py-1.5 text-sm font-medium text-ink-950 transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-        >
-          Contact
-        </button>
+        <div className="flex items-center justify-end gap-3">
+          {/* The way out for anyone who would rather just read the thing.
+              Phrased as a question because it is an offer, not a mode
+              switch someone is looking for. */}
+          <button
+            onClick={() => setPlain(!plain)}
+            aria-pressed={plain}
+            className="hidden rounded-full border border-ink-700 px-3.5 py-1.5 text-sm text-fg-muted transition-colors duration-200 hover:border-ink-600 hover:text-fg lg:block"
+          >
+            {plain
+              ? "Back to the interactive version"
+              : "Prefer a more straightforward read?"}
+          </button>
+
+          <button
+            onClick={() => scrollTo("connect")}
+            className="rounded-full bg-fg px-4 py-1.5 text-sm font-medium text-ink-950 transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+          >
+            Contact
+          </button>
+        </div>
       </nav>
     </header>
   );
