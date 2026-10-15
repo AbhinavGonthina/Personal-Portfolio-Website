@@ -38,9 +38,15 @@ const ACCENTS = experience.map((r) => r.accent);
 const SPREAD = ACCENTS.filter((_, i) => i % 2 === 0).concat(
   ACCENTS.filter((_, i) => i % 2 === 1).reverse(),
 );
+/**
+ * Discrete lights rather than a wash. A single sweep of all eight accents
+ * came out as a muddy smear across the middle of the page; separated into
+ * points along the horizon they read as a city too far away to resolve,
+ * which is what the skyline below actually is.
+ */
 const HORIZON = SPREAD.map(
   (hex, i) =>
-    `radial-gradient(42rem 14rem at ${(i / (SPREAD.length - 1)) * 100}% 100%, ${hex}55, transparent 72%)`,
+    `radial-gradient(9rem 5rem at ${6 + (i / (SPREAD.length - 1)) * 88}% 100%, ${hex}5c, transparent 70%)`,
 ).join(", ");
 
 function Rise({ delay = 0, children, className }) {
@@ -59,7 +65,7 @@ function Rise({ delay = 0, children, className }) {
 export default function Hero() {
   return (
     <section className="relative flex min-h-[94vh] w-full items-center overflow-hidden bg-black">
-      <RetroGrid className="top-auto h-[62%]" />
+      <RetroGrid className="top-auto h-[55%]" />
 
       {/* The city, out of sight, throwing its light up at the sky. Plain
           radial gradients rather than a blurred element: `filter: blur`
@@ -67,15 +73,15 @@ export default function Hero() {
           is composited, and the gradient is already soft. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-[38%] h-80"
+        className="pointer-events-none absolute inset-x-0 bottom-[41%] h-36"
         style={{ background: HORIZON }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-[38%] h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"
+        className="pointer-events-none absolute inset-x-0 bottom-[41%] h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
       />
 
-      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 py-24 md:grid-cols-[1fr_340px]">
+      <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 pb-44 pt-24 md:grid-cols-[1fr_340px]">
         <div>
           <Rise>
             <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
@@ -123,23 +129,24 @@ export default function Hero() {
         </div>
 
         <Rise delay={0.18} className="order-first md:order-none">
-          <TiltCard className="mx-auto w-full max-w-[340px] md:ml-auto md:mr-0">
+          <TiltCard className="mx-auto w-full max-w-[272px] md:ml-auto md:mr-0">
             {/* Each layer stands a little further off the card, so turning
-                it slides them past each other. The bezel is the same
-                treatment the badges wear on the buildings. */}
-            <div className="relative rounded-xl border border-white/10 bg-ink-900/60 p-2 [transform:translateZ(0px)]">
+                it slides them past each other. Thin bezel on something
+                nearly square: the badges on the buildings are the
+                reference, not a framed print. */}
+            <div className="relative rounded-md border border-white/10 bg-ink-950 p-1 [transform:translateZ(0px)]">
               <img
                 src={profile.photo}
                 alt={`Portrait of ${profile.name}`}
                 width={820}
                 height={820}
-                className="w-full rounded-lg [transform:translateZ(28px)]"
+                className="w-full rounded-sm [transform:translateZ(22px)]"
               />
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-2 rounded-lg ring-1 ring-inset ring-white/25 [transform:translateZ(44px)]"
+                className="pointer-events-none absolute inset-1 rounded-sm ring-1 ring-inset ring-white/15 [transform:translateZ(34px)]"
               />
-              <span className="absolute -bottom-3 left-5 rounded-full border border-white/15 bg-ink-950 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-fg-muted [transform:translateZ(70px)]">
+              <span className="absolute -bottom-2.5 left-3 rounded border border-white/10 bg-ink-950 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-fg-subtle [transform:translateZ(56px)]">
                 {education.graduation}
               </span>
             </div>
