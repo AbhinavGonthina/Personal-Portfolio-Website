@@ -206,7 +206,10 @@ export default function Experience() {
   return (
     <section
       id="experience"
-      className="relative h-[92vh] min-h-[620px] w-full overflow-hidden bg-black"
+      // scroll-mt-16 so jumping here clears the sticky bar, the same
+      // offset every other section gets from Section. At 92vh the whole
+      // skyline still fits underneath it.
+      className="relative h-[92vh] min-h-[620px] w-full scroll-mt-16 overflow-hidden bg-black"
     >
       <SceneSlot
         load={() => import("../scenes/TowersScene")}
