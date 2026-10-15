@@ -186,7 +186,9 @@ function makeFrameTexture() {
   g.shadowBlur = 14;
   const pad = 26;
   g.beginPath();
-  g.roundRect(pad, pad, S - pad * 2, S - pad * 2, 26);
+  // Matches the badge art's own corner radius once the plane is scaled,
+  // so the bezel traces the badge rather than boxing it in.
+  g.roundRect(pad, pad, S - pad * 2, S - pad * 2, 48);
   g.stroke();
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -358,14 +360,18 @@ function Building({
       )}
 
       {/* The signboard, three layers deep so it reads as built in rather
-          than applied: a recessed dark plate, a lit bezel around it in the
-          building's own colour, and the badge itself on the front. The
-          badge art already has feathered edges, so it fades into the plate
-          instead of ending on a border. */}
+          than applied: a dark plate, a lit bezel around it in the
+          building's own colour, and the badge itself on the front.
+
+          The bezel hugs the badge. Sized any wider and the dark plate
+          shows through as a band between the two, which makes the outline
+          look like a separate frame hung around the logo. The plate is now
+          only just smaller than the badge: its job is to stop the windows
+          showing through the badge's feathered edge, not to be seen. */}
       {logo && (
         <group position={[0, height - 0.78 - BADGE / 2, d / 2 + 0.018]}>
           <mesh position={[0, 0, -0.014]}>
-            <planeGeometry args={[BADGE * 1.24, BADGE * 1.24]} />
+            <planeGeometry args={[BADGE * 0.98, BADGE * 0.98]} />
             <meshStandardMaterial
               color="#0a0a0d"
               roughness={0.55}
@@ -373,7 +379,7 @@ function Building({
             />
           </mesh>
           <mesh position={[0, 0, -0.007]}>
-            <planeGeometry args={[BADGE * 1.34, BADGE * 1.34]} />
+            <planeGeometry args={[BADGE * 1.16, BADGE * 1.16]} />
             <meshBasicMaterial
               map={frame}
               color={lit.color}
