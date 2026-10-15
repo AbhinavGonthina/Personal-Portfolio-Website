@@ -60,7 +60,7 @@ export const experience = [
     location: "Cambridge, MA",
     start: "Jan 2026",
     end: "May 2026",
-    logo: "/logos/philips.webp",
+    logo: "/logos/philips-mark.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.8 },
@@ -173,6 +173,39 @@ export const experience = [
       "Teaching Assistant for Discrete Structures (CS1800), supporting a cohort of 500+ students across combinatorics, graph theory, algorithmic efficiency, logic, induction, and proofs.",
       "Personally assisted 30+ students each week at recitations and graded close to 100 assignments weekly.",
     ],
+    tech: [],
+  },
+  {
+    id: "oasis",
+    category: "northeastern",
+    // TODO(abhinav): fill in. Everything below this line is a placeholder.
+    short: "Oasis",
+    company: "Oasis",
+    accent: "#2E8B9A",
+    role: "Role TBD",
+    location: "Boston, MA",
+    start: "Jan 2026",
+    end: "Present",
+    logo: null,
+    brand: "#FFFFFF",
+    bullets: [],
+    tech: [],
+  },
+  {
+    id: "papergrader",
+    category: "northeastern",
+    // TODO(abhinav): fill in, including the real name - this was guessed
+    // from "paetograder" and is probably wrong.
+    short: "PaperGrader",
+    company: "PaperGrader",
+    accent: "#8A6FD6",
+    role: "Role TBD",
+    location: "Boston, MA",
+    start: "Jan 2026",
+    end: "Present",
+    logo: null,
+    brand: "#FFFFFF",
+    bullets: [],
     tech: [],
   },
 ];
