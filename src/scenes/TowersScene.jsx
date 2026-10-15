@@ -162,9 +162,6 @@ function makeWindowTexture() {
  */
 const CROWN_LUM = 0.42;
 
-// Wordmarks wide enough to be worth turning vertical.
-const VERTICAL_SIGN = new Set(["athenahealth", "quak", "rainfall"]);
-
 function crownLight(hex) {
   const c = new THREE.Color(hex);
   const peak = Math.max(c.r, c.g, c.b) || 1;
@@ -191,11 +188,9 @@ function Building({
   const [hovered, setHovered] = useState(false);
   const { role, x, z, rotY, height, w, d, variant } = tower;
   const on = focused || hovered;
-  const logoAspect = logo ? logo.image.width / logo.image.height : 3;
   const lit = useMemo(() => crownLight(role.accent), [role.accent]);
-  // Long wordmarks turned on their side, so they run down the tower.
-  const vertical = VERTICAL_SIGN.has(role.id);
-  const signW = vertical ? height * 0.62 : w * 0.92;
+  // Square, and never wider than the face it sits on.
+  const badge = Math.min(w * 0.72, height * 0.3);
 
   const map = useMemo(() => {
     const m = windows.clone();
@@ -331,38 +326,14 @@ function Building({
         </mesh>
       )}
 
-      {/* The company's mark, backgrounds already cut away so it is the
-          letterforms alone on the facade.
-
-          Three of them run vertically down the building: their wordmarks
-          are long rectangles, and turned on their side they use the one
-          dimension a tower has plenty of.
-
-          Two planes, not one. The rear copy is the same texture in white,
-          very slightly larger and half transparent - with bloom on, that
-          reads as a soft halo behind the letters, which is what makes a
-          dark mark legible against a dark facade. */}
+      {/* A square badge just under the crown. Its edges are feathered in
+          the asset itself, so it sits into the facade instead of looking
+          like a sticker with a hard border. */}
       {logo && (
-        <group
-          position={[0, height * (vertical ? 0.58 : 0.72), d / 2 + 0.02]}
-          rotation={[0, 0, vertical ? -Math.PI / 2 : 0]}
-        >
-          <mesh position={[0, 0, -0.01]} scale={1.055}>
-            <planeGeometry args={[signW, signW / logoAspect]} />
-            <meshBasicMaterial
-              map={logo}
-              color="#ffffff"
-              transparent
-              opacity={0.55}
-              toneMapped={false}
-              depthWrite={false}
-            />
-          </mesh>
-          <mesh>
-            <planeGeometry args={[signW, signW / logoAspect]} />
-            <meshBasicMaterial map={logo} toneMapped={false} transparent />
-          </mesh>
-        </group>
+        <mesh position={[0, height - 0.75 - badge / 2, d / 2 + 0.02]}>
+          <planeGeometry args={[badge, badge]} />
+          <meshBasicMaterial map={logo} toneMapped={false} transparent />
+        </mesh>
       )}
 
       <pointLight
@@ -422,10 +393,7 @@ function Labels({ host, layout, hidden }) {
 
 const LOOK = { x: 0, y: 3, z: -2 };
 
-// How far the view may swing before it is pointed at nothing.
-const YAW_LIMIT = 62 * DEG;
-
-function Rig({ target, narrow, look }) {
+function Rig({ target, narrow }) {
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-2.6 * delta);
     const cam = state.camera;
@@ -437,8 +405,11 @@ function Rig({ target, narrow, look }) {
       // past the edges of the frame on purpose - turning your head to find
       // the rest of them is the point, so the camera does not retreat until
       // everything fits.
-      const yaw = look.current.yaw + Math.sin(t * 0.07) * 0.03;
-      const pitch = look.current.pitch;
+      // Follows the cursor rather than needing a drag: the pointer steers
+      // where you are looking, the same feel as before, just from the
+      // pavement instead of above the block.
+      const yaw = state.pointer.x * 0.62 + Math.sin(t * 0.07) * 0.03;
+      const pitch = 0.17 + state.pointer.y * 0.1 + Math.sin(t * 0.05) * 0.012;
       cam.position.x += (Math.sin(yaw) * 1.1 - cam.position.x) * k;
       cam.position.y += (1.8 + Math.sin(t * 0.09) * 0.06 - cam.position.y) * k;
       cam.position.z += (3.6 - cam.position.z) * k;
@@ -488,7 +459,6 @@ export default function TowersScene({
   active,
   labelHost,
   narrow,
-  look,
 }) {
   const layout = useLayout();
   const windows = useMemo(makeWindowTexture, []);
@@ -520,7 +490,7 @@ export default function TowersScene({
       <ambientLight intensity={0.16} />
       <directionalLight position={[5, 10, 7]} intensity={0.5} />
 
-      <Rig target={target} narrow={narrow} look={look} />
+      <Rig target={target} narrow={narrow} />
       <Labels host={labelHost} layout={layout} hidden={Boolean(focused)} />
 
       {/* Mirrored, non-interactive copies, foreshortened. A full-length

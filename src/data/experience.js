@@ -27,7 +27,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jun 2026",
     end: "Aug 2026",
-    logo: "/logos/athenahealth-cut.png",
+    logo: "/logos/badges/athenahealth.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "right", t: 0.94 },
@@ -60,7 +60,7 @@ export const experience = [
     location: "Cambridge, MA",
     start: "Jan 2026",
     end: "May 2026",
-    logo: "/logos/philips-mark.png",
+    logo: "/logos/badges/philips.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.8 },
@@ -81,7 +81,7 @@ export const experience = [
     location: "Remote",
     start: "Mar 2025",
     end: "Jan 2026",
-    logo: "/logos/quak-cut.png",
+    logo: "/logos/badges/quak.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FC3600",
     branch: { side: "right", t: 0.66 },
@@ -110,7 +110,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jan 2025",
     end: "Apr 2026",
-    logo: "/logos/ner-cut.png",
+    logo: "/logos/badges/ner.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.52 },
@@ -137,7 +137,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jun 2025",
     end: "Dec 2025",
-    logo: "/logos/rainfall-cut.png",
+    logo: "/logos/badges/rainfall.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
@@ -165,7 +165,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Aug 2025",
     end: "Dec 2025",
-    logo: "/logos/khoury-cut.png",
+    logo: "/logos/badges/khoury.png",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.24 },
@@ -186,24 +186,23 @@ export const experience = [
     location: "Boston, MA",
     start: "Jan 2026",
     end: "Present",
-    logo: null,
+    logo: "/logos/badges/oasis.png",
     brand: "#FFFFFF",
     bullets: [],
     tech: [],
   },
   {
-    id: "papergrader",
+    id: "pawtograder",
     category: "northeastern",
-    // TODO(abhinav): fill in, including the real name - this was guessed
-    // from "paetograder" and is probably wrong.
-    short: "PaperGrader",
-    company: "PaperGrader",
+    // TODO(abhinav): fill in the role, dates and bullets.
+    short: "Pawtograder",
+    company: "Pawtograder",
     accent: "#8A6FD6",
     role: "Role TBD",
     location: "Boston, MA",
     start: "Jan 2026",
     end: "Present",
-    logo: null,
+    logo: "/logos/badges/pawtograder.png",
     brand: "#FFFFFF",
     bullets: [],
     tech: [],
