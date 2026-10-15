@@ -321,15 +321,65 @@ function crownLight(hex) {
  * viewer.
  */
 const OCT = Math.cos(Math.PI / 8);
-function ShaftGeo({ form, w, d, h }) {
-  if (form === "cyl") return <cylinderGeometry args={[w / 2, w / 2, h, 28]} />;
+function makeShaft(form, w, d, h) {
+  if (form === "cyl") return new THREE.CylinderGeometry(w / 2, w / 2, h, 28);
   if (form === "oct")
-    return (
-      <cylinderGeometry
-        args={[w / 2 / OCT, w / 2 / OCT, h, 8, 1, false, -Math.PI / 8]}
-      />
+    return new THREE.CylinderGeometry(
+      w / 2 / OCT,
+      w / 2 / OCT,
+      h,
+      8,
+      1,
+      false,
+      -Math.PI / 8,
     );
-  return <boxGeometry args={[w, h, d]} />;
+  return new THREE.BoxGeometry(w, h, d);
+}
+
+/** One geometry per shape, built once and thrown away with the building. */
+function useShaft(form, w, d, h) {
+  const geo = useMemo(() => makeShaft(form, w, d, h), [form, w, d, h]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  return geo;
+}
+
+function ShaftGeo({ form, w, d, h }) {
+  return <primitive object={useShaft(form, w, d, h)} attach="geometry" />;
+}
+
+const EDGE_IDLE = 0.3;
+const EDGE_ON = 0.85;
+const EDGE_DIM = 0.07;
+
+/**
+ * A hairline along the building's edges.
+ *
+ * Against a black sky an unlit facade has no silhouette at all - the
+ * buildings were reading as holes in the page rather than as volumes, and
+ * only the crown and the badge told you anything was standing there. The
+ * threshold angle keeps the drum smooth: at eighteen degrees a 28-sided
+ * cylinder draws only its top and bottom rings, while the octagon's
+ * forty-five degree corners still come through.
+ */
+function Edges({ form, w, d, h, color, matRef }) {
+  const base = useShaft(form, w, d, h);
+  const geo = useMemo(() => new THREE.EdgesGeometry(base, 18), [base]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  return (
+    <lineSegments geometry={geo}>
+      <lineBasicMaterial
+        ref={matRef}
+        color={color}
+        transparent
+        opacity={EDGE_IDLE}
+        // Occluded by whatever is in front, but never writes depth of its
+        // own: a hairline punching a hole in the building behind it looks
+        // worse than the overlap does.
+        depthWrite={false}
+        toneMapped={false}
+      />
+    </lineSegments>
+  );
 }
 
 function Building({
@@ -350,6 +400,7 @@ function Building({
   // it. Behind the detail column a dropped-back tower was still showing a
   // full-brightness badge and a white nameplate through the copy.
   const signage = useRef([]);
+  const edges = useRef([]);
   const [hovered, setHovered] = useState(false);
   const { role, x, z, rotY, height, w, d, shaft: form, top } = tower;
   const on = focused || hovered;
@@ -359,6 +410,12 @@ function Building({
   // (which the octagon's radius is chosen to make equal to w/2) or the
   // drum's radius. A flat plane tangent to a cylinder never intersects it.
   const faceZ = form === "box" ? d / 2 : w / 2;
+  // Tinted toward the building's own accent but washed most of the way to
+  // white, so the outline reads as a lit edge and not as a second colour.
+  const edgeColor = useMemo(
+    () => lit.color.clone().lerp(new THREE.Color("#ffffff"), 0.6),
+    [lit],
+  );
   const plate = useMemo(
     () => makeNamePlate(role.company, w),
     [role.company, w],
@@ -397,6 +454,10 @@ function Building({
       if (!part) continue;
       const m = part.material;
       m.opacity += (want * (m.userData.full ?? 1) - m.opacity) * k;
+    }
+    const line = on ? EDGE_ON : dimmed ? EDGE_DIM : EDGE_IDLE;
+    for (const m of edges.current) {
+      if (m) m.opacity += (line - m.opacity) * k;
     }
   });
 
@@ -448,6 +509,9 @@ function Building({
       if (m) m.material.userData.full = full;
       signage.current[i] = m;
     };
+  const edge = (i) => (m) => {
+    edges.current[i] = m;
+  };
 
   return (
     <group position={[x, 0, z]} rotation={[0, rotY, 0]}>
@@ -463,6 +527,17 @@ function Building({
         </mesh>
       )}
 
+      <group position={[0, body_h / 2, 0]}>
+        <Edges
+          form={form}
+          w={w}
+          d={d}
+          h={body_h}
+          color={edgeColor}
+          matRef={edge(0)}
+        />
+      </group>
+
       <mesh ref={body} position={[0, body_h / 2, 0]}>
         <ShaftGeo form={form} w={w} d={d} h={body_h} />
         <meshStandardMaterial
@@ -476,6 +551,19 @@ function Building({
       </mesh>
 
       {/* A narrower upper stage. */}
+      {top === "setback" && (
+        <group position={[0, body_h + (height - body_h) / 2, 0]}>
+          <Edges
+            form={form}
+            w={w * 0.62}
+            d={d * 0.62}
+            h={height - body_h}
+            color={edgeColor}
+            matRef={edge(1)}
+          />
+        </group>
+      )}
+
       {top === "setback" && (
         <mesh ref={stage} position={[0, body_h + (height - body_h) / 2, 0]}>
           <ShaftGeo form={form} w={w * 0.62} d={d * 0.62} h={height - body_h} />
