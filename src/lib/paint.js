@@ -185,7 +185,165 @@ export function paintScreen(project, index, total) {
   g.font = `500 22px ${MONO}`;
   g.fillText("$", 56, 540);
   g.fillStyle = "#6f7694";
-  g.fillText("use the list to the right", 84, 540);
+  g.fillText("keep scrolling", 84, 540);
+
+  return finish(c);
+}
+
+/* ------------------------------------------------------------------ */
+
+const wrap = (g, text, maxW) => {
+  const out = [];
+  let line = "";
+  for (const w of String(text).split(" ")) {
+    const next = line ? line + " " + w : w;
+    if (g.measureText(next).width > maxW && line) {
+      out.push(line);
+      line = w;
+    } else line = next;
+  }
+  if (line) out.push(line);
+  return out;
+};
+
+/**
+ * The right-hand half of the hoarding: who the face belongs to.
+ *
+ * It is painted onto the board rather than shown in a panel beside it,
+ * because a sign that needs a caption floating next to it is not a
+ * sign. WELCOME runs across the top the way a town sign does.
+ */
+export function paintBoard(profile) {
+  const W = 1100;
+  const H = 1024;
+  const [c, g] = canvas(W, H);
+
+  g.fillStyle = "#0a0c14";
+  g.fillRect(0, 0, W, H);
+
+  g.textAlign = "left";
+  g.textBaseline = "alphabetic";
+
+  g.fillStyle = "#8d9ccb";
+  g.font = "700 40px " + MONO;
+  if ("letterSpacing" in g) g.letterSpacing = "16px";
+  g.fillText("WELCOME", 56, 104);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+  g.fillStyle = "#ffffff";
+  g.font = "600 86px " + SANS;
+  g.fillText(profile.name, 52, 214);
+
+  g.strokeStyle = "#2d3350";
+  g.lineWidth = 3;
+  g.beginPath();
+  g.moveTo(54, 252);
+  g.lineTo(W - 56, 252);
+  g.stroke();
+
+  g.fillStyle = "#9fb4ff";
+  g.font = "500 34px " + MONO;
+  if ("letterSpacing" in g) g.letterSpacing = "5px";
+  g.fillText(
+    (profile.role + "  ·  " + profile.location).toUpperCase(),
+    56,
+    320,
+  );
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+  g.fillStyle = "#c6cde4";
+  g.font = "400 40px " + SANS;
+  let y = 406;
+  for (const line of wrap(g, profile.tagline, W - 112)) {
+    g.fillText(line, 56, y);
+    y += 56;
+  }
+
+  y += 36;
+  g.fillStyle = "#6f7694";
+  g.font = "500 28px " + MONO;
+  if ("letterSpacing" in g) g.letterSpacing = "5px";
+  g.fillText("CURRENTLY", 56, y);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+  g.fillStyle = "#c6cde4";
+  g.font = "400 36px " + SANS;
+  y += 50;
+  for (const line of wrap(g, profile.currently, W - 112)) {
+    g.fillText(line, 56, y);
+    y += 48;
+  }
+
+  // Four focus technologies along the bottom, as chips.
+  g.font = "500 28px " + MONO;
+  let x = 56;
+  const chipY = H - 96;
+  for (const t of profile.focus) {
+    const w = g.measureText(t).width + 40;
+    g.strokeStyle = "#2d3350";
+    g.lineWidth = 3;
+    g.beginPath();
+    g.roundRect(x, chipY, w, 54, 12);
+    g.stroke();
+    g.fillStyle = "#9fb4ff";
+    g.fillText(t, x + 20, chipY + 36);
+    x += w + 16;
+  }
+
+  return finish(c);
+}
+
+/** The board above the racks: every skill, grouped. */
+export function paintSkills(groups) {
+  const W = 1024;
+  const H = 760;
+  const [c, g] = canvas(W, H);
+
+  g.fillStyle = "#080a12";
+  g.fillRect(0, 0, W, H);
+  g.strokeStyle = "#232942";
+  g.lineWidth = 6;
+  g.strokeRect(3, 3, W - 6, H - 6);
+
+  g.textAlign = "left";
+  g.textBaseline = "alphabetic";
+  g.fillStyle = "#ffffff";
+  g.font = "600 52px " + SANS;
+  g.fillText("Skills", 44, 78);
+  g.strokeStyle = "#ffffff";
+  g.lineWidth = 3;
+  g.beginPath();
+  g.moveTo(46, 96);
+  g.lineTo(118, 96);
+  g.stroke();
+
+  let y = 158;
+  for (const group of groups) {
+    g.fillStyle = "#6f7694";
+    g.font = "500 22px " + MONO;
+    if ("letterSpacing" in g) g.letterSpacing = "4px";
+    g.fillText(group.label.toUpperCase(), 44, y);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+    g.font = "500 24px " + MONO;
+    let x = 44;
+    y += 36;
+    for (const item of group.items) {
+      const w = g.measureText(item).width + 30;
+      if (x + w > W - 44) {
+        x = 44;
+        y += 44;
+      }
+      g.strokeStyle = "#262c45";
+      g.lineWidth = 2;
+      g.beginPath();
+      g.roundRect(x, y - 26, w, 38, 9);
+      g.stroke();
+      g.fillStyle = "#c6cde4";
+      g.fillText(item, x + 15, y);
+      x += w + 10;
+    }
+    y += 56;
+  }
 
   return finish(c);
 }

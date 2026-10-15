@@ -1,84 +1,80 @@
-import * as THREE from "three";
 import { ball, box, cone, cyl, HALF, merge, place, plane, rnd } from "./geo";
 
 /**
  * Everything in the town that is not a tower.
  *
  * Each builder returns merged buffers - usually a dark `base` and a
- * bright `lit`, occasionally a third for parts that animate - so a house
- * with forty boxes in it still draws in two calls. The scene gates whole
- * groups on visibility by where the camera is, so nothing off the
- * current stop is submitted at all.
+ * bright `lit` - so a house with forty boxes still draws in two calls.
+ * The scene gates whole groups on where the camera is, so nothing off
+ * the current stop is submitted at all.
  *
- * World layout, looking down the +Z axis from the landing camera:
+ * Layout, looking down the road from the landing camera:
  *
- *      billboard            the city            the house
- *      x = -15              x = 0               x = 19
- *                                               garage at x = 12
- *                                               mailboxes at z = 13
+ *      the house            the city            the hoarding
+ *      x = -16              x = 0               x = 14
+ *      mailboxes in                             trees and park
+ *      front of it                              off to the right
+ *
+ * The house is deliberately small - a little bigger than one of the
+ * Northeastern blocks, not a mansion - because you walk into it and a
+ * room has to feel like a room at that scale.
  */
 
 export const TOWN = {
-  billboard: { x: -15, z: 4, yaw: 0.34 },
-  house: { x: 19, z: 5.5, yaw: -0.16 },
-  garage: { x: 11.4, z: 7.2, yaw: -0.16 },
-  mail: { x: 16.2, z: 18.5, yaw: -0.08 },
+  house: { x: -16.5, z: 6.5, yaw: 0.2 },
+  mail: { x: -13.2, z: 14.2, yaw: 0.12 },
+  billboard: { x: 13.5, z: 6.0, yaw: -0.28 },
 };
 
 /* ---------------------------------------------------------------- */
 
-/** Posts, frame and a gantry lamp. The photo plane is mounted separately. */
-export const BILLBOARD_W = 5.4;
-export const BILLBOARD_H = 4.2;
-const BILLBOARD_Y = 3.4;
+/**
+ * The hoarding at the edge of town: the portrait, and beside it who the
+ * face belongs to. Both are planes the scene mounts on the board,
+ * because the About section's words belong painted on it rather than
+ * floating in a panel over the top.
+ */
+export const BOARD = { w: 7.4, h: 3.4, y: 2.5, pad: 0.2 };
+export const BOARD_PHOTO = BOARD.h - BOARD.pad * 2;
 
 export function billboard() {
   const base = [];
   const lit = [];
-  const hw = BILLBOARD_W / 2;
-  const hh = BILLBOARD_H / 2;
-  const mid = BILLBOARD_Y + hh;
+  const hw = BOARD.w / 2;
+  const hh = BOARD.h / 2;
+  const mid = BOARD.y + hh;
 
   for (const side of [-1, 1]) {
     base.push(
-      box(0.26, BILLBOARD_Y + 0.4, 0.26, [
-        side * (hw - 0.7),
-        (BILLBOARD_Y + 0.4) / 2,
+      box(0.24, BOARD.y + 0.4, 0.24, [
+        side * (hw - 0.9),
+        (BOARD.y + 0.4) / 2,
         0,
       ]),
     );
-    // Cross-brace, which is what stops it reading as a photo on sticks.
     base.push(
       box(
-        0.12,
-        0.12,
-        2.4,
-        [side * (hw - 0.7), BILLBOARD_Y * 0.55, -0.6],
+        0.1,
+        0.1,
+        1.9,
+        [side * (hw - 0.9), BOARD.y * 0.55, -0.5],
         [0.7, 0, 0],
       ),
     );
   }
-  base.push(box(BILLBOARD_W + 0.5, BILLBOARD_H + 0.5, 0.3, [0, mid, -0.1]));
+  base.push(box(BOARD.w + 0.4, BOARD.h + 0.4, 0.26, [0, mid, -0.1]));
 
-  for (const [dx, dy, bw, bh] of [
-    [0, hh + 0.14, BILLBOARD_W + 0.4, 0.17],
-    [0, -hh - 0.14, BILLBOARD_W + 0.4, 0.17],
-  ]) {
-    lit.push(box(bw, bh, 0.17, [dx, mid + dy, 0.09]));
+  for (const dy of [hh + 0.12, -hh - 0.12]) {
+    lit.push(box(BOARD.w + 0.34, 0.13, 0.14, [0, mid + dy, 0.08]));
   }
   for (const side of [-1, 1]) {
-    lit.push(
-      box(0.17, BILLBOARD_H + 0.4, 0.17, [side * (hw + 0.14), mid, 0.09]),
-    );
+    lit.push(box(0.13, BOARD.h + 0.34, 0.14, [side * (hw + 0.12), mid, 0.08]));
   }
-  // Two gantry lamps on arms above the board.
   for (const side of [-1, 1]) {
     base.push(
-      cyl(0.05, 0.05, 0.8, 6, [side * 1.5, mid + hh + 0.4, 0.3], [0.7, 0, 0]),
+      cyl(0.045, 0.045, 0.7, 6, [side * 2, mid + hh + 0.35, 0.25], [0.7, 0, 0]),
     );
-    lit.push(
-      ball(0.12, [side * 1.5, mid + hh + 0.62, 0.55], null, [1, 0.7, 1]),
-    );
+    lit.push(ball(0.1, [side * 2, mid + hh + 0.55, 0.47], null, [1, 0.7, 1]));
   }
 
   return { base: merge(base), lit: merge(lit), mid, hw, hh };
@@ -86,345 +82,353 @@ export function billboard() {
 
 /* ---------------------------------------------------------------- */
 
-const HOUSE_W = 9.4;
-const HOUSE_D = 8.2;
-const HOUSE_H = 3.9;
-export const DOOR_W = 1.5;
-const DOOR_H = 2.4;
+export const HOUSE = { w: 6.2, d: 6.2, h: 3.1, door: 1.15, doorH: 2.05 };
+const T = 0.16;
 
 /**
- * The house, with a real doorway cut in the front wall, because the
- * camera goes through it. The front is four boxes around a hole rather
- * than one wall with a door drawn on it.
+ * A small house with a real doorway, because the camera goes through
+ * it. The front is four boxes around a hole rather than a wall with a
+ * door drawn on it, and the leaf itself swings - the scene hinges it.
  */
 export function house() {
   const base = [];
   const lit = [];
-  const hw = HOUSE_W / 2;
-  const hd = HOUSE_D / 2;
-  const T = 0.22;
+  const hw = HOUSE.w / 2;
+  const hd = HOUSE.d / 2;
+  const { door, doorH } = HOUSE;
 
-  // Back and sides.
-  base.push(box(HOUSE_W, HOUSE_H, T, [0, HOUSE_H / 2, -hd]));
-  for (const side of [-1, 1]) {
-    base.push(box(T, HOUSE_H, HOUSE_D, [side * hw, HOUSE_H / 2, 0]));
+  base.push(box(HOUSE.w, HOUSE.h, T, [0, HOUSE.h / 2, -hd]));
+  for (const s of [-1, 1]) {
+    base.push(box(T, HOUSE.h, HOUSE.d, [s * hw, HOUSE.h / 2, 0]));
   }
-  base.push(box(HOUSE_W, T, HOUSE_D, [0, 0.04, 0]));
-  base.push(box(HOUSE_W, T, HOUSE_D, [0, HOUSE_H, 0]));
+  base.push(box(HOUSE.w, T, HOUSE.d, [0, 0.02, 0]));
+  base.push(box(HOUSE.w, T, HOUSE.d, [0, HOUSE.h, 0]));
 
-  // Front wall, in four pieces around the doorway.
-  const side = (HOUSE_W - DOOR_W) / 2;
+  const side = (HOUSE.w - door) / 2;
   for (const s of [-1, 1]) {
     base.push(
-      box(side, HOUSE_H, T, [s * (DOOR_W / 2 + side / 2), HOUSE_H / 2, hd]),
+      box(side, HOUSE.h, T, [s * (door / 2 + side / 2), HOUSE.h / 2, hd]),
     );
   }
   base.push(
-    box(DOOR_W, HOUSE_H - DOOR_H, T, [0, DOOR_H + (HOUSE_H - DOOR_H) / 2, hd]),
+    box(door, HOUSE.h - doorH, T, [0, doorH + (HOUSE.h - doorH) / 2, hd]),
   );
-  // Doorframe.
   for (const s of [-1, 1]) {
-    base.push(box(0.12, DOOR_H, 0.3, [s * (DOOR_W / 2), DOOR_H / 2, hd]));
+    base.push(box(0.1, doorH, 0.22, [s * (door / 2), doorH / 2, hd]));
   }
-  base.push(box(DOOR_W + 0.24, 0.12, 0.3, [0, DOOR_H, hd]));
-  // Warm light spilling out of the doorway.
-  lit.push(plane(DOOR_W - 0.1, 0.1, [0, 0.06, hd + 0.02]));
+  base.push(box(door + 0.2, 0.1, 0.22, [0, doorH, hd]));
 
-  // Pitched roof: two slabs and the gable ends.
-  const rise = 2.0;
+  const rise = 1.5;
   const slope = Math.atan2(rise, hw);
   const len = Math.hypot(rise, hw);
   for (const s of [-1, 1]) {
     base.push(
       box(
-        len + 0.3,
-        0.2,
-        HOUSE_D + 0.9,
-        [s * hw * 0.5, HOUSE_H + rise / 2, 0],
+        len + 0.22,
+        0.16,
+        HOUSE.d + 0.7,
+        [s * hw * 0.5, HOUSE.h + rise / 2, 0],
         [0, 0, -s * slope],
       ),
     );
+    // Gables as angled slabs rather than an extrusion: mergeGeometries
+    // will not mix indexed and un-indexed buffers.
+    for (const z of [-hd + T / 2, hd - T / 2]) {
+      base.push(
+        box(
+          len * 0.54,
+          0.46,
+          T,
+          [s * hw * 0.5, HOUSE.h + rise * 0.26, z],
+          [0, 0, -s * slope],
+        ),
+      );
+    }
+  }
+  base.push(box(0.5, 1.3, 0.5, [hw * 0.5, HOUSE.h + rise * 0.7, -hd * 0.5]));
+
+  for (const s of [-1, 1]) {
+    const x = s * (door / 2 + side / 2);
+    base.push(box(1.1, 0.9, 0.08, [x, 1.55, hd + 0.03]));
+    lit.push(plane(0.92, 0.72, [x, 1.55, hd + 0.08]));
+    base.push(box(0.05, 0.76, 0.03, [x, 1.55, hd + 0.09]));
   }
   for (const s of [-1, 1]) {
-    const g = new THREE.Shape();
-    g.moveTo(-hw, 0);
-    g.lineTo(hw, 0);
-    g.lineTo(0, rise);
+    base.push(box(0.08, 0.9, 1, [s * (hw + 0.03), 1.55, -1]));
+    lit.push(plane(0.84, 0.72, [s * (hw + 0.08), 1.55, -1], [0, s * HALF, 0]));
+  }
+
+  base.push(box(door + 1.8, 0.1, 1.3, [0, 0.05, hd + 0.65]));
+  for (const s of [-1, 1]) {
+    base.push(cyl(0.08, 0.09, 2.1, 8, [s * (door / 2 + 0.7), 1.05, hd + 1.15]));
+  }
+  base.push(box(door + 2, 0.12, 1.45, [0, 2.15, hd + 0.72]));
+  lit.push(ball(0.08, [0, 1.95, hd + 0.2]));
+  for (let i = 0; i < 8; i++) {
+    base.push(box(0.85, 0.03, 0.55, [i * 0.3, 0.02, hd + 1.7 + i * 0.92]));
+  }
+
+  return { base: merge(base), lit: merge(lit) };
+}
+
+/** The door leaf. Hinged on its left edge, so it is built off-centre. */
+export function doorLeaf() {
+  const { door, doorH } = HOUSE;
+  return merge([
+    box(door - 0.05, doorH - 0.05, 0.06, [door / 2, doorH / 2, 0]),
+    box(0.05, 0.05, 0.09, [door - 0.16, doorH / 2, 0.05]),
+  ]);
+}
+
+/* ---------------------------------------------------------------- */
+
+const R = { w: HOUSE.w - T * 2, d: HOUSE.d - T * 2, h: HOUSE.h - T };
+
+/** Where the two things on the walls sit, in house-local coordinates. */
+export const RACKS = { x: -R.w / 2 + 0.42, y: 1.2 };
+export const DESK = { x: R.w / 2 - 0.4, y: 1.26, z: -0.1 };
+export const DESK_SCREEN = { w: 1.5, h: 0.92 };
+/**
+ * The skills board hangs on the back wall rather than over the racks.
+ * Above them it had to be small enough to clear the rack tops, which
+ * left the type unreadable; on the back wall it can be the size it
+ * needs to be and the racks still fill the left of the shot.
+ */
+export const WALL_PANEL = { w: 2.3, h: 1.71, x: -0.95, y: 1.72 };
+
+/**
+ * The room: servers down the left wall, a desk and monitor on the
+ * right, and enough of a bedroom around them that it reads as somewhere
+ * someone works rather than a showroom for two props.
+ */
+export function interior() {
+  const base = [];
+  const lit = [];
+  const hw = R.w / 2;
+  const hd = R.d / 2;
+
+  base.push(box(R.w, 0.04, R.d, [0, 0.1, 0]));
+  for (let i = 0; i < 9; i++) {
+    base.push(box(R.w, 0.01, 0.025, [0, 0.122, -hd + 0.3 + i * 0.62]));
+  }
+  base.push(box(2.2, 0.02, 1.6, [0.1, 0.13, 0.9]));
+
+  for (let r = 0; r < 3; r++) {
+    const z = -1.5 + r * 1.5;
+    base.push(box(0.6, 2, 1.1, [RACKS.x, 1, z]));
+    base.push(box(0.64, 0.07, 1.16, [RACKS.x, 2.02, z]));
+    for (let u = 0; u < 8; u++) {
+      const y = 0.26 + u * 0.21;
+      base.push(box(0.06, 0.16, 0.95, [RACKS.x + 0.31, y, z]));
+      lit.push(box(0.03, 0.04, 0.05, [RACKS.x + 0.345, y, z - 0.36]));
+      lit.push(box(0.03, 0.04, 0.05, [RACKS.x + 0.345, y, z - 0.28]));
+      if (u % 3 === 0) {
+        lit.push(box(0.03, 0.02, 0.36, [RACKS.x + 0.345, y, z + 0.2]));
+      }
+    }
+  }
+  base.push(box(0.1, 0.1, R.d - 0.6, [RACKS.x - 0.2, 2.45, 0]));
+
+  base.push(box(0.9, 0.07, 2.3, [DESK.x, 0.78, DESK.z]));
+  for (const z of [DESK.z - 1.05, DESK.z + 1.05]) {
+    base.push(box(0.07, 0.78, 0.8, [DESK.x, 0.39, z]));
+  }
+  base.push(box(0.22, 0.05, 0.5, [DESK.x, 0.88, DESK.z]));
+  base.push(cyl(0.035, 0.035, 0.34, 8, [DESK.x, 1.03, DESK.z]));
+  base.push(
+    box(0.06, DESK_SCREEN.h + 0.1, DESK_SCREEN.w + 0.1, [
+      DESK.x - 0.02,
+      DESK.y,
+      DESK.z,
+    ]),
+  );
+  base.push(
+    box(0.3, 0.025, 0.85, [DESK.x - 0.38, 0.83, DESK.z - 0.1], [0, 0, 0.05]),
+  );
+  base.push(cyl(0.07, 0.065, 0.14, 10, [DESK.x - 0.3, 0.89, DESK.z + 0.75]));
+  base.push(cyl(0.1, 0.11, 0.03, 10, [DESK.x - 0.1, 0.83, DESK.z - 1]));
+  base.push(
+    cyl(0.018, 0.018, 0.42, 6, [DESK.x - 0.1, 1.03, DESK.z - 1], [0, 0, 0.18]),
+  );
+  base.push(
+    cone(
+      0.13,
+      0.16,
+      10,
+      [DESK.x - 0.22, 1.25, DESK.z - 1],
+      [0, 0, Math.PI + 0.6],
+    ),
+  );
+  lit.push(ball(0.05, [DESK.x - 0.24, 1.18, DESK.z - 1]));
+  base.push(box(0.5, 0.06, 0.5, [DESK.x - 0.95, 0.5, DESK.z]));
+  base.push(box(0.07, 0.6, 0.48, [DESK.x - 1.18, 0.78, DESK.z]));
+  base.push(cyl(0.045, 0.045, 0.4, 8, [DESK.x - 0.95, 0.27, DESK.z]));
+  base.push(cyl(0.22, 0.22, 0.04, 12, [DESK.x - 0.95, 0.09, DESK.z]));
+
+  base.push(box(1.5, 0.3, 2, [-0.5, 0.26, -hd + 1.1]));
+  base.push(box(1.56, 0.22, 2.06, [-0.5, 0.48, -hd + 1.1]));
+  base.push(box(1.56, 0.5, 0.1, [-0.5, 0.52, -hd + 0.08]));
+  base.push(box(0.6, 0.13, 0.38, [-0.82, 0.64, -hd + 0.35]));
+  base.push(box(0.6, 0.13, 0.38, [-0.2, 0.64, -hd + 0.35]));
+  base.push(box(1.5, 0.08, 1.15, [-0.5, 0.62, -hd + 1.6]));
+  base.push(box(0.44, 0.5, 0.4, [0.52, 0.35, -hd + 0.42]));
+  base.push(cyl(0.075, 0.095, 0.2, 10, [0.52, 0.7, -hd + 0.42]));
+  lit.push(cyl(0.1, 0.075, 0.15, 10, [0.52, 0.86, -hd + 0.42]));
+
+  base.push(cyl(0.15, 0.19, 0.28, 10, [hw - 0.5, 0.25, hd - 0.6]));
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
     base.push(
-      new THREE.ExtrudeGeometry(g, { depth: T, bevelEnabled: false }).translate(
-        0,
-        HOUSE_H,
-        s * hd - (s > 0 ? 0 : T),
+      cone(
+        0.1,
+        0.78,
+        5,
+        [hw - 0.5 + Math.cos(a) * 0.15, 0.72, hd - 0.6 + Math.sin(a) * 0.15],
+        [0, -a, -0.5 - (i % 2) * 0.3],
+        [1, 1, 0.34],
       ),
     );
   }
-  base.push(box(0.7, 2.0, 0.7, [hw * 0.45, HOUSE_H + rise * 0.6, -hd * 0.5]));
-
-  // Windows: two on the front, one each side, all lit warm.
-  for (const s of [-1, 1]) {
-    const x = s * (DOOR_W / 2 + side / 2);
-    base.push(box(1.5, 1.2, 0.1, [x, 2.0, hd + 0.04]));
-    lit.push(plane(1.26, 0.96, [x, 2.0, hd + 0.1]));
-    base.push(box(0.07, 1.0, 0.03, [x, 2.0, hd + 0.11]));
-    base.push(box(1.3, 0.07, 0.03, [x, 2.0, hd + 0.11]));
-  }
-  for (const s of [-1, 1]) {
-    base.push(box(0.1, 1.2, 1.4, [s * (hw + 0.04), 2.0, -1.4]));
-    lit.push(plane(1.16, 0.96, [s * (hw + 0.1), 2.0, -1.4], [0, s * HALF, 0]));
-  }
-
-  // Porch.
-  base.push(box(DOOR_W + 2.6, 0.14, 1.8, [0, 0.07, hd + 0.9]));
-  for (const s of [-1, 1]) {
-    base.push(cyl(0.1, 0.11, 2.6, 8, [s * (DOOR_W / 2 + 1.0), 1.3, hd + 1.6]));
-  }
-  base.push(box(DOOR_W + 2.8, 0.16, 2.0, [0, 2.65, hd + 1.0]));
-  lit.push(ball(0.11, [0, 2.4, hd + 0.3]));
-
-  // A path out to the mailboxes.
-  for (let i = 0; i < 7; i++) {
-    base.push(box(1.1, 0.04, 0.7, [i * 0.3, 0.03, hd + 2.3 + i * 1.15]));
-  }
-
-  return { base: merge(base), lit: merge(lit) };
-}
-
-/* ---------------------------------------------------------------- */
-
-const ROOM_W = 7.0;
-const ROOM_D = 6.0;
-const ROOM_H = 3.4;
-
-/**
- * The desk the camera settles on inside the house, plus just enough room
- * around it to feel enclosed. The screen is its own plane so the scene
- * can paint it with whatever project is selected.
- */
-export const SCREEN = { w: 2.3, h: 1.35, y: 1.72, z: -1.52 };
-
-export function study() {
-  const base = [];
-  const lit = [];
-  const hw = ROOM_W / 2;
-  const hd = ROOM_D / 2;
-
-  base.push(box(ROOM_W, 0.1, ROOM_D, [0, 0, 0]));
-  base.push(box(ROOM_W, 0.1, ROOM_D, [0, ROOM_H, 0]));
-  base.push(box(ROOM_W, ROOM_H, 0.12, [0, ROOM_H / 2, -hd]));
-  for (const s of [-1, 1]) {
-    base.push(box(0.12, ROOM_H, ROOM_D, [s * hw, ROOM_H / 2, 0]));
-  }
-
-  // Desk.
-  base.push(box(3.6, 0.1, 1.5, [0, 0.78, -1.0]));
-  for (const s of [-1, 1]) {
-    base.push(box(0.1, 0.78, 1.3, [s * 1.7, 0.39, -1.0]));
-  }
-  base.push(box(3.4, 0.08, 0.08, [0, 0.3, -1.6]));
-
-  // Monitor: a slab on an arm, plus a keyboard and a mug.
-  base.push(
-    box(SCREEN.w + 0.14, SCREEN.h + 0.14, 0.09, [0, SCREEN.y, SCREEN.z]),
-  );
-  base.push(cyl(0.05, 0.05, 0.42, 8, [0, 1.0, SCREEN.z - 0.04]));
-  base.push(box(0.6, 0.05, 0.3, [0, 0.85, SCREEN.z + 0.05]));
-  base.push(box(1.3, 0.04, 0.42, [0, 0.85, -0.65], [-0.06, 0, 0]));
-  base.push(cyl(0.11, 0.1, 0.22, 10, [1.1, 0.94, -0.7]));
-  lit.push(
-    box(SCREEN.w + 0.2, SCREEN.h + 0.2, 0.01, [0, SCREEN.y, SCREEN.z - 0.06]),
-  );
-
-  // Shelf of books above the desk, in whatever colours they come in.
-  base.push(box(3.0, 0.08, 0.4, [0, 2.7, -hd + 0.3]));
-  for (let i = 0; i < 11; i++) {
-    const h = 0.3 + rnd(i, 7.1) * 0.18;
+  for (let i = 0; i < 3; i++) {
     base.push(
-      box(0.14 + rnd(i, 3.3) * 0.08, h, 0.3, [
-        -1.3 + i * 0.26,
-        2.74 + h / 2,
-        -hd + 0.3,
-      ]),
+      box(
+        0.28,
+        0.05,
+        0.2,
+        [-hw + 1.3, 0.16 + i * 0.055, hd - 0.8],
+        [0, rnd(i, 4.1) * 0.5, 0],
+      ),
     );
   }
+  base.push(
+    cyl(0.18, 0.18, 0.05, 16, [hw - 0.6, 2.45, -hd + 0.06], [HALF, 0, 0]),
+  );
 
-  // A desk lamp and a strip under the shelf: the room's only light.
-  base.push(cyl(0.16, 0.18, 0.04, 10, [-1.45, 0.85, -1.2]));
-  base.push(cyl(0.025, 0.025, 0.5, 6, [-1.45, 1.1, -1.2], [0, 0, 0.2]));
-  base.push(cone(0.18, 0.22, 10, [-1.3, 1.4, -1.2], [0, 0, Math.PI + 0.5]));
-  lit.push(ball(0.07, [-1.28, 1.31, -1.2]));
-  lit.push(box(2.6, 0.03, 0.03, [0, 2.66, -hd + 0.5]));
-
-  // Chair.
-  base.push(box(0.9, 0.08, 0.8, [0, 0.52, 0.2]));
-  base.push(box(0.85, 0.9, 0.1, [0, 0.98, 0.56], [0.1, 0, 0]));
-  base.push(cyl(0.06, 0.06, 0.5, 8, [0, 0.27, 0.2]));
-  base.push(cyl(0.3, 0.3, 0.05, 12, [0, 0.04, 0.2]));
+  base.push(cyl(0.014, 0.014, 0.3, 6, [0.2, R.h - 0.15, 0.4]));
+  lit.push(ball(0.12, [0.2, R.h - 0.34, 0.4], null, [1, 0.72, 1]));
+  lit.push(box(0.035, 0.03, R.d - 1.2, [RACKS.x + 0.1, R.h - 0.12, 0]));
 
   return { base: merge(base), lit: merge(lit) };
 }
 
 /* ---------------------------------------------------------------- */
 
-/**
- * An open-fronted workshop holding four server racks, one per skill
- * group. The rack units are the lit buffer, so the whole wall of them
- * brightens together.
- */
-const BAY_W = 8.6;
-const BAY_D = 5.4;
-const BAY_H = 3.6;
-export const RACK_X = [-2.7, -0.9, 0.9, 2.7];
-
-export function workshop() {
-  const base = [];
-  const lit = [];
-  const hw = BAY_W / 2;
-  const hd = BAY_D / 2;
-
-  base.push(box(BAY_W, 0.1, BAY_D, [0, 0.03, 0]));
-  base.push(box(BAY_W, BAY_H, 0.14, [0, BAY_H / 2, -hd]));
-  for (const s of [-1, 1]) {
-    base.push(box(0.14, BAY_H, BAY_D, [s * hw, BAY_H / 2, 0]));
-  }
-  base.push(box(BAY_W + 0.5, 0.18, BAY_D + 0.5, [0, BAY_H, 0]));
-  base.push(box(BAY_W + 0.5, 0.3, 0.2, [0, BAY_H - 0.25, hd + 0.2]));
-
-  // Four racks against the back wall.
-  for (const x of RACK_X) {
-    base.push(box(1.5, 2.7, 0.9, [x, 1.35, -hd + 0.6]));
-    base.push(box(1.56, 0.1, 0.96, [x, 2.72, -hd + 0.6]));
-    for (let u = 0; u < 9; u++) {
-      const y = 0.3 + u * 0.26;
-      base.push(box(1.3, 0.2, 0.06, [x, y, -hd + 1.06]));
-      lit.push(box(0.06, 0.05, 0.03, [x - 0.5, y, -hd + 1.11]));
-      lit.push(box(0.06, 0.05, 0.03, [x - 0.38, y, -hd + 1.11]));
-      if (u % 3 === 0)
-        lit.push(box(0.5, 0.025, 0.03, [x + 0.3, y, -hd + 1.11]));
-    }
-  }
-
-  // A lit wall behind the racks. Without it the whole bay read as a
-  // hole in the page with a few LEDs floating in it.
-  lit.push(box(BAY_W - 0.6, 0.05, 0.05, [0, 2.95, -hd + 0.2]));
-  lit.push(box(0.05, 2.4, 0.05, [-hw + 0.3, 1.4, -hd + 0.2]));
-  lit.push(box(0.05, 2.4, 0.05, [hw - 0.3, 1.4, -hd + 0.2]));
-
-  // Cable tray overhead and a strip light.
-  base.push(box(BAY_W - 1.0, 0.1, 0.4, [0, 3.1, -hd + 1.4]));
-  lit.push(box(BAY_W - 1.6, 0.05, 0.12, [0, 3.0, 0.2]));
-
-  return { base: merge(base), lit: merge(lit) };
-}
-
-/* ---------------------------------------------------------------- */
-
-/**
- * Four mailboxes on one rail. The lids are returned separately and one
- * at a time, because each opens on its own when you point at it.
- */
-export const MAIL_GAP = 1.5;
-export const MAIL_BODY = { w: 0.62, h: 0.52, d: 0.95 };
+export const MAIL_GAP = 1.4;
+export const MAIL_BODY = { w: 0.58, h: 0.48, d: 0.88 };
 
 export function mailrail(count) {
   const base = [];
-  const lit = [];
   const span = (count - 1) * MAIL_GAP;
-
-  base.push(box(span + 1.4, 0.14, 0.2, [0, 1.02, 0]));
+  base.push(box(span + 1.3, 0.13, 0.18, [0, 0.98, 0]));
   for (const s of [-1, 1]) {
-    base.push(cyl(0.09, 0.11, 1.1, 8, [s * (span / 2 + 0.6), 0.55, 0]));
+    base.push(cyl(0.085, 0.1, 1.05, 8, [s * (span / 2 + 0.55), 0.52, 0]));
   }
   for (let i = 0; i < count; i++) {
-    const x = -span / 2 + i * MAIL_GAP;
-    base.push(box(0.1, 0.32, 0.1, [x, 1.25, 0]));
+    base.push(box(0.09, 0.3, 0.09, [-span / 2 + i * MAIL_GAP, 1.2, 0]));
   }
-  return { base: merge(base), lit: merge(lit) };
+  return { base: merge(base) };
 }
 
-/** One mailbox body, built at the origin facing +Z. */
 export function mailbox() {
   const { w, h, d } = MAIL_BODY;
-  const base = [
+  return merge([
     box(w, h * 0.55, d, [0, h * 0.275, 0]),
-    // A rounded back, so it reads as a mailbox and not a shoebox.
     cyl(w / 2, w / 2, d, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
-    box(w * 0.9, 0.06, 0.06, [0, h * 0.2, d / 2 + 0.02]),
-  ];
-  return merge(base);
+    box(w * 0.9, 0.055, 0.055, [0, h * 0.2, d / 2 + 0.02]),
+  ]);
 }
 
-/** The hinged lid and the flag, which move. */
 export function maillid() {
   const { w, h, d } = MAIL_BODY;
-  // Hinged at the back: the pivot is the group, so the geometry is built
-  // forward of the origin.
   const parts = [
     cyl(
       w / 2 + 0.03,
       w / 2 + 0.03,
-      0.09,
+      0.08,
       14,
       [0, 0, d / 2],
       [HALF, 0, 0],
       [1, 1, 0.8],
     ),
-    box(w * 0.5, 0.05, 0.14, [0, -w / 2 + 0.06, d / 2 + 0.05]),
+    box(w * 0.5, 0.045, 0.13, [0, -w / 2 + 0.05, d / 2 + 0.05]),
   ];
   place(parts, [0, h * 0.55, -d / 2], null);
   return merge(parts);
 }
 
 export function mailflag() {
-  const parts = [
-    box(0.035, 0.34, 0.035, [0, 0.17, 0]),
-    box(0.025, 0.16, 0.19, [0, 0.27, 0.11]),
-  ];
-  return merge(parts);
+  return merge([
+    box(0.032, 0.3, 0.032, [0, 0.15, 0]),
+    box(0.022, 0.14, 0.17, [0, 0.24, 0.1]),
+  ]);
 }
 
 /* ---------------------------------------------------------------- */
 
 /**
- * Ground dressing: kerbs, street lamps, a hedge and a few trees. One
- * merged pair for the lot, drawn at every stop, because an empty plane
- * between the landmarks is what made the first version feel like three
- * objects floating rather than a place.
+ * Ground dressing. The trees are off to the right of the road now, and
+ * no two are built the same way - the first pass was one shape at eight
+ * scales, which from the landing shot read as a repeated stamp.
  */
 export function dressing() {
   const base = [];
   const lit = [];
 
-  // Everything here sits *behind* the landmarks. The first pass put a
-  // row of trees at z = 20, which from the establishing shot was a
-  // hedge three metres in front of the lens.
-  for (const z of [-19, 17]) {
-    base.push(box(78, 0.16, 0.5, [2, 0.08, z]));
+  for (const z of [-19, 17]) base.push(box(86, 0.14, 0.45, [0, 0.07, z]));
+
+  for (let i = 0; i < 12; i++) {
+    const x = -36 + i * 6.6;
+    base.push(cyl(0.08, 0.12, 4.8, 8, [x, 2.4, -18.3]));
+    base.push(box(0.09, 0.09, 1.3, [x, 4.75, -17.8]));
+    lit.push(ball(0.15, [x, 4.65, -17.25], null, [1.4, 0.6, 1]));
   }
 
-  // Street lamps along the far kerb.
-  for (let i = 0; i < 11; i++) {
-    const x = -34 + i * 7;
-    base.push(cyl(0.09, 0.13, 5.2, 8, [x, 2.6, -18.4]));
-    base.push(box(0.1, 0.1, 1.4, [x, 5.15, -17.9]));
-    lit.push(ball(0.17, [x, 5.05, -17.3], null, [1.4, 0.6, 1]));
-  }
-
-  // A hedge in front of the house and trees filling the gaps between
-  // the three landmarks.
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 12; i++) {
     base.push(
-      box(0.9, 0.7 + rnd(i, 5.5) * 0.2, 0.8, [8.5 + i * 0.9, 0.35, 11.4]),
+      box(0.8, 0.6 + rnd(i, 5.5) * 0.2, 0.7, [-20 + i * 0.84, 0.3, 11.6]),
     );
   }
-  for (let i = 0; i < 11; i++) {
-    const x = -30 + i * 6.4 + rnd(i, 2.2) * 2.4;
-    const z = -14 + rnd(i, 9.7) * 11;
-    // Nothing in the middle of the road, and nothing standing in the arc.
-    if (Math.hypot(x, z) < 14) continue;
-    const h = 2.6 + rnd(i, 4.4) * 2.2;
-    base.push(cyl(0.13, 0.19, h, 7, [x, h / 2, z]));
-    base.push(ball(0.95, [x, h + 0.5, z], null, [1, 1.25, 1]));
-    base.push(ball(0.62, [x + 0.4, h + 1.2, z - 0.2], null, [1, 1.1, 1]));
+
+  // Three kinds of tree, so a line of them does not look stamped.
+  for (let i = 0; i < 16; i++) {
+    const x = 6 + rnd(i, 2.2) * 28;
+    const z = -16 + rnd(i, 9.7) * 32;
+    if (Math.hypot(x - 13.5, z - 6) < 6) continue;
+    if (Math.hypot(x, z) < 15) continue;
+    const kind = i % 3;
+    const h = 2.3 + rnd(i, 4.4) * 2.8;
+    base.push(
+      cyl(0.1, 0.16, h, 7, [x, h / 2, z], [0, 0, (rnd(i, 6.6) - 0.5) * 0.12]),
+    );
+
+    if (kind === 0) {
+      base.push(ball(0.88, [x, h + 0.42, z], null, [1, 1.2, 1]));
+      base.push(ball(0.58, [x + 0.44, h + 1, z - 0.2], null, [1, 1.05, 1]));
+      base.push(ball(0.48, [x - 0.38, h + 0.86, z + 0.3], null, [1, 1, 1]));
+    } else if (kind === 1) {
+      for (let t = 0; t < 4; t++) {
+        base.push(cone(1 - t * 0.2, 1.05, 8, [x, h * 0.62 + t * 0.6, z]));
+      }
+    } else {
+      for (let bch = 0; bch < 5; bch++) {
+        const a = (bch / 5) * Math.PI * 2 + rnd(i, 3.3);
+        base.push(
+          cyl(
+            0.028,
+            0.045,
+            1.15,
+            5,
+            [
+              x + Math.cos(a) * 0.34,
+              h * 0.86 + bch * 0.11,
+              z + Math.sin(a) * 0.34,
+            ],
+            [0, -a, 0.72],
+          ),
+        );
+      }
+      base.push(ball(0.33, [x, h + 0.28, z], null, [1.4, 0.7, 1.4]));
+    }
   }
 
   return { base: merge(base), lit: merge(lit) };

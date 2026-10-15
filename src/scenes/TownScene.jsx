@@ -4,9 +4,9 @@ import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
 import { getJourney } from "../lib/stage";
-import { STOPS } from "../lib/stops";
+import { STOP, STOPS } from "../lib/stops";
 import { useTownMaterials } from "../lib/townMaterials";
-import { Billboard, Dressing, House, Mailboxes, Study, Workshop } from "./town";
+import { Billboard, Dressing, House, Interior, Mailboxes } from "./town";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -413,6 +413,7 @@ function Building({
   dimmed,
   onFocus,
   mirrored,
+  live,
 }) {
   const body = useRef();
   const stage = useRef();
@@ -521,23 +522,24 @@ function Building({
   // On the group rather than the shaft, so the crown, the sign, the mast
   // and the upper stage are all part of the same target. With them on the
   // shaft alone, pointing at the top of a building did nothing.
-  const events = mirrored
-    ? {}
-    : {
-        onPointerOver: (e) => {
-          e.stopPropagation();
-          setHovered(true);
-          document.body.style.cursor = "pointer";
-        },
-        onPointerOut: () => {
-          setHovered(false);
-          document.body.style.cursor = "";
-        },
-        onClick: (e) => {
-          e.stopPropagation();
-          onFocus(role.id);
-        },
-      };
+  const events =
+    mirrored || live === false
+      ? {}
+      : {
+          onPointerOver: (e) => {
+            e.stopPropagation();
+            setHovered(true);
+            document.body.style.cursor = "pointer";
+          },
+          onPointerOut: () => {
+            setHovered(false);
+            document.body.style.cursor = "";
+          },
+          onClick: (e) => {
+            e.stopPropagation();
+            onFocus(role.id);
+          },
+        };
 
   // One invisible box per building, covering the shaft, the upper stage,
   // the crown, the sign and the mast. Relying on the real meshes left dead
@@ -564,7 +566,7 @@ function Building({
 
   return (
     <group position={[x, 0, z]} rotation={[0, rotY, 0]}>
-      {!mirrored && (
+      {!mirrored && live !== false && (
         <mesh position={[0, hitH / 2, 0]} {...events}>
           <boxGeometry args={[w * 1.25, hitH, d * 1.25]} />
           <meshBasicMaterial
@@ -913,16 +915,20 @@ function resolve(stop, out, cam, pointer, t) {
     return out;
   }
 
-  const { at, yaw, dist } = stop.frame;
+  const { at, yaw, dist, centred } = stop.frame;
   const nx = Math.sin(yaw);
   const nz = Math.cos(yaw);
   const rx = Math.cos(yaw);
   const rz = -Math.sin(yaw);
-  const halfW = Math.tan((cam.fov * DEG) / 2) * dist * cam.aspect;
+  // A centred stop puts the subject in the middle of the frame. Only
+  // Experience still pushes its subject aside, because only Experience
+  // has a panel of copy to make room for; every other stop carries its
+  // words on a surface in the world.
+  const halfW = centred ? 0 : Math.tan((cam.fov * DEG) / 2) * dist * cam.aspect;
 
   out.px = at[0] + nx * dist + rx * halfW * 0.46;
   out.pz = at[2] + nz * dist + rz * halfW * 0.46;
-  out.py = at[1] + 0.25;
+  out.py = at[1] + (centred ? 0 : 0.25);
   out.lx = at[0] + rx * halfW * 0.4;
   out.lz = at[2] + rz * halfW * 0.4;
   out.ly = at[1];
@@ -1034,6 +1040,28 @@ function useNear(from, to) {
 }
 
 /**
+ * The skyline. Only clickable while the camera is actually standing in
+ * it - from outside the house the towers are still on screen, and
+ * clicking one from there would fly you back across town unasked.
+ */
+function Towers({ layout, windows, frame, byUrl, focused, onFocus }) {
+  const live = useNear(STOP.experience - 0.45, STOP.experience + 0.5);
+  return layout.map((tower) => (
+    <Building
+      key={tower.role.id}
+      tower={tower}
+      windows={windows}
+      frame={frame}
+      logo={tower.role.logo ? byUrl[tower.role.logo] : null}
+      focused={tower.role.id === focused}
+      dimmed={Boolean(focused) && tower.role.id !== focused}
+      onFocus={onFocus}
+      live={live}
+    />
+  ));
+}
+
+/**
  * Mirrored, non-interactive copies of the towers, foreshortened. A
  * full-length mirror reads as a second skyline hanging downward.
  *
@@ -1042,7 +1070,7 @@ function useNear(from, to) {
  * can see from the establishing shot, or from inside a house.
  */
 function Reflections({ layout, windows, frame, byUrl, focused }) {
-  const on = useNear(0.7, 3.6);
+  const on = useNear(0.6, STOP.experience + 0.7);
   return (
     <group scale={[1, -0.45, 1]} visible={on}>
       {layout.map((tower) => (
@@ -1065,23 +1093,27 @@ function Reflections({ layout, windows, frame, byUrl, focused }) {
 /**
  * Everything that is not a tower, with its visibility tied to where the
  * camera is. A group that is `visible={false}` is never submitted, so
- * the interior of the house costs nothing until you are walking into
- * it, and the mailboxes cost nothing until you are near them.
+ * the inside of the house costs nothing until you walk into it.
  *
- * The landmarks themselves stay on throughout, because the establishing
- * shot has to show the whole town at once - that is what it is for.
+ * The landmarks stay on throughout, because the establishing shot has
+ * to show the whole town at once - that is what it is for.
  */
-function Town({ town, screen, marks }) {
-  const inside = useNear(3.4, 4.75);
-  const mail = useNear(4.1, 5.5);
+function Town({ town, screen, skills, board, marks }) {
+  // The door starts opening as the camera leaves the city, so arriving
+  // and the door swinging are one motion rather than two that have to
+  // agree with each other.
+  const open = useNear(STOP.experience + 0.45, STOP.contact + 0.4);
+  const inside = useNear(STOP.experience + 0.45, STOP.contact - 0.25);
+  const mail = useNear(STOP["projects-hold"] + 0.2, STOPS.length);
+  const mailLive = useNear(STOP.contact - 0.35, STOPS.length);
+
   return (
     <>
       <Dressing mats={town} visible />
-      <Billboard mats={town} visible />
-      <House mats={town} visible />
-      <Workshop mats={town} visible />
-      <Study mats={town} visible={inside} screen={screen} />
-      <Mailboxes mats={town} visible={mail} labels={marks} />
+      <Billboard mats={town} visible board={board} />
+      <House mats={town} visible open={open} />
+      <Interior mats={town} visible={inside} screen={screen} skills={skills} />
+      <Mailboxes mats={town} visible={mail} labels={marks} live={mailLive} />
     </>
   );
 }
@@ -1092,6 +1124,8 @@ export default function TownScene({
   active,
   narrow,
   screen,
+  skills,
+  board,
   marks,
 }) {
   const layout = useLayout();
@@ -1136,7 +1170,13 @@ export default function TownScene({
 
       <Rig target={target} narrow={narrow} />
       <Distant />
-      <Town town={town} screen={screen} marks={marks} />
+      <Town
+        town={town}
+        screen={screen}
+        skills={skills}
+        board={board}
+        marks={marks}
+      />
       <ClusterSigns hidden={Boolean(focused)} />
 
       <Reflections
@@ -1147,18 +1187,14 @@ export default function TownScene({
         focused={focused}
       />
 
-      {layout.map((tower) => (
-        <Building
-          key={tower.role.id}
-          tower={tower}
-          windows={windows}
-          frame={frame}
-          logo={tower.role.logo ? byUrl[tower.role.logo] : null}
-          focused={tower.role.id === focused}
-          dimmed={Boolean(focused) && tower.role.id !== focused}
-          onFocus={onFocus}
-        />
-      ))}
+      <Towers
+        layout={layout}
+        windows={windows}
+        frame={frame}
+        byUrl={byUrl}
+        focused={focused}
+        onFocus={onFocus}
+      />
 
       <Ground />
 

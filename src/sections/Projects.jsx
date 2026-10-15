@@ -1,81 +1,68 @@
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
-import { setShown, useShown } from "../lib/shown";
-import { cn } from "../lib/cn";
 import { projects } from "../data/projects";
 
 /**
- * The desk in the study. The monitor in the scene shows whichever
- * project is selected; this list is what selects it.
- *
- * Pointing at a row is enough - there is nothing to confirm, and making
- * someone click to see a screen they are already looking at would be a
- * step for its own sake.
+ * The monitor on the desk. One scroll of this section walks the whole
+ * list across the screen, which is why the section is two viewports
+ * tall and the camera holds still across it - the marker below is the
+ * second of the two stops it holds between.
  */
-function Row({ p, on }) {
-  return (
-    <button
-      onMouseEnter={() => setShown(p.id)}
-      onFocus={() => setShown(p.id)}
-      className={cn(
-        "w-full rounded-lg border px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-        on
-          ? "border-ink-600 bg-ink-800/70"
-          : "border-ink-700/70 hover:border-ink-600 hover:bg-ink-900/70",
-      )}
-    >
-      <span className="flex items-baseline justify-between gap-4">
-        <span className="font-medium text-fg">{p.title}</span>
-        <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-fg-subtle">
-          {p.period}
-        </span>
-      </span>
-      <span className="mt-1 block text-sm leading-relaxed text-fg-muted">
-        {p.blurb}
-      </span>
-      <span className="mt-2 flex flex-wrap gap-3 text-xs">
-        {p.live && (
-          <a
-            href={p.live}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-fg hover:underline"
-          >
-            Live
-          </a>
-        )}
-        {p.github && (
-          <a
-            href={p.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-fg-muted hover:text-fg"
-          >
-            Code
-          </a>
-        )}
-      </span>
-    </button>
-  );
-}
-
-export default function Projects({ ref }) {
+export default function Projects({ ref, markRef }) {
   const plain = usePlain();
-  const shown = useShown();
 
   return (
-    <Stop id="projects" title="Projects" plain={plain} refEl={ref}>
-      <div
-        className={
-          plain ? "grid grid-cols-1 gap-4 md:grid-cols-2" : "space-y-2.5"
-        }
-      >
+    <Stop
+      id="projects"
+      title="Projects"
+      plain={plain}
+      refEl={ref}
+      markRef={plain ? null : markRef}
+      tall
+    >
+      <ul className={plain ? "grid grid-cols-1 gap-4 md:grid-cols-2" : ""}>
         {projects.map((p) => (
-          <Row key={p.id} p={p} on={!plain && p.id === shown} />
+          <li
+            key={p.id}
+            className={
+              plain
+                ? "flex flex-col rounded-lg border border-ink-700 bg-ink-900 p-5"
+                : ""
+            }
+          >
+            <h3 className="text-lg font-semibold">{p.title}</h3>
+            <p className="mt-0.5 font-mono text-xs text-fg-subtle">
+              {p.period}
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+              {p.blurb}
+            </p>
+            <p className="mt-3 text-xs text-fg-subtle">{p.tech.join(" · ")}</p>
+            <span className="mt-auto flex gap-4 pt-4 text-sm">
+              {p.live && (
+                <a
+                  href={p.live}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-fg hover:underline"
+                >
+                  Live
+                </a>
+              )}
+              {p.github && (
+                <a
+                  href={p.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-fg-muted hover:text-fg"
+                >
+                  Code
+                </a>
+              )}
+            </span>
+          </li>
         ))}
-      </div>
+      </ul>
     </Stop>
   );
 }
