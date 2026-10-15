@@ -5,6 +5,7 @@ import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
 import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
+import { education } from "../data/about";
 import { skillGroups } from "../data/skills";
 import { cn } from "../lib/cn";
 
@@ -49,7 +50,10 @@ export default function TownStage({ refs }) {
     () => (off ? [] : socials.map((s) => paintMark(s.icon, s.name))),
     [off],
   );
-  const board = useMemo(() => (off ? null : paintBoard(profile)), [off]);
+  const board = useMemo(
+    () => (off ? null : paintBoard(profile, education)),
+    [off],
+  );
   const skills = useMemo(() => (off ? null : paintSkills(skillGroups)), [off]);
   const screen = useMemo(
     () => (off ? null : paintScreen(projects[shot], shot, projects.length)),

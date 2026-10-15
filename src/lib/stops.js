@@ -24,44 +24,60 @@ export const toWorld = (b, [lx, ly, lz]) => [
 /** A shot that looks from one point at another, both in world space. */
 const shot = (pos, look) => ({ free: { pos, look } });
 
+/** Eye level, outdoors and indoors. Nothing is ever seen from above. */
+export const EYE = 1.68;
+const EYE_IN = 1.5;
+
+/** Standing on the path outside the front door, facing it. */
+const DOORSTEP = toWorld(TOWN.house, [0, EYE, 5.2]);
+const DOORWAY = toWorld(TOWN.house, [0, EYE_IN, 2.0]);
+
 export const STOPS = [
   {
-    // The establishing shot: the name on the pavement, the hoarding off
-    // to the right, the city ahead. Nothing is framed - this is the
-    // whole town at once.
+    // The establishing shot, from the pavement: the house off to the
+    // left, the city ahead, the hoarding to the right. Eye level, like
+    // everything else.
     id: "landing",
-    ...shot([-3, 8.5, 36], [0, 3.4, 2]),
-    sway: 0.12,
+    ...shot([-1.5, EYE + 0.25, 30], [-1, 2.6, 2]),
+    sway: 0.14,
   },
   {
-    // Square on to the hoarding, filling the frame. The board carries
-    // its own words, so the camera does not have to leave room for a
-    // column of copy.
+    // Square on to the hoarding. The board carries its own words, so
+    // the camera does not have to leave room for a column of copy.
     id: "about",
     frame: {
       at: toWorld(TOWN.billboard, [0, 4.2, 0]),
       yaw: TOWN.billboard.yaw,
-      dist: 8.4,
+      dist: 9.2,
       centred: true,
+      eye: EYE,
     },
     sway: 0.05,
   },
   {
-    // The one stop that is not a framed object: you stand in the middle
-    // of the arc and look around.
+    // The one stop that is not a framed object: you stand in the
+    // middle of the arc and look around.
     id: "experience",
     street: true,
     sway: 0.62,
   },
   {
-    // Inside the house, turned to the left wall and the servers.
+    // Inside, turned to the left wall and the servers.
+    //
+    // The way in matters: left to itself the camera would cut the
+    // corner and phase through the side wall straight from the city.
+    // `via` bends the path out to the doorstep first, so you walk up
+    // the path, face the door and go through it.
     id: "skills",
     frame: {
       at: toWorld(TOWN.house, [WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]),
       yaw: TOWN.house.yaw,
       dist: 3.2,
       centred: true,
+      eye: EYE_IN,
     },
+    via: DOORSTEP,
+    viaLook: DOORWAY,
     sway: 0.05,
   },
   {
@@ -72,6 +88,7 @@ export const STOPS = [
       yaw: TOWN.house.yaw - Math.PI / 2,
       dist: 2.3,
       centred: true,
+      eye: EYE_IN,
     },
     sway: 0.05,
   },
@@ -82,19 +99,24 @@ export const STOPS = [
     frame: {
       at: toWorld(TOWN.house, [DESK.x - 0.06, DESK.y, DESK.z]),
       yaw: TOWN.house.yaw - Math.PI / 2,
-      dist: 2.45,
+      dist: 2.3,
       centred: true,
+      eye: EYE_IN,
     },
     sway: 0.05,
   },
   {
+    // Back out through the same door, then down the path.
     id: "contact",
     frame: {
       at: toWorld(TOWN.mail, [0, 1.3, 0]),
       yaw: TOWN.mail.yaw,
-      dist: 5.6,
+      dist: 5,
       centred: true,
+      eye: EYE,
     },
+    via: DOORSTEP,
+    viaLook: toWorld(TOWN.mail, [0, 1.3, 0]),
     sway: 0.06,
   },
 ];

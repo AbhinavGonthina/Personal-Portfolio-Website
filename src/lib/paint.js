@@ -209,85 +209,79 @@ const wrap = (g, text, maxW) => {
 /**
  * The right-hand half of the hoarding: who the face belongs to.
  *
- * It is painted onto the board rather than shown in a panel beside it,
- * because a sign that needs a caption floating next to it is not a
- * sign. WELCOME runs across the top the way a town sign does.
+ * Word for word and weight for weight what used to sit in the corner
+ * of the landing page - the mono eyebrow, the name in Geist Sans, the
+ * tagline, the currently line, the graduation line. It reads as a sign
+ * because of where it is, not because it was rewritten as one.
+ *
+ * Drawn at 2x, because at 1024 across a board that fills half the
+ * screen the type was visibly soft.
  */
-export function paintBoard(profile) {
-  const W = 1100;
-  const H = 1024;
+const S = 2;
+
+export function paintBoard(profile, education) {
+  const W = 1100 * S;
+  const H = 880 * S;
   const [c, g] = canvas(W, H);
+  const pad = 70 * S;
 
-  g.fillStyle = "#0a0c14";
+  g.fillStyle = "#000000";
   g.fillRect(0, 0, W, H);
-
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
 
-  g.fillStyle = "#8d9ccb";
-  g.font = "700 40px " + MONO;
-  if ("letterSpacing" in g) g.letterSpacing = "16px";
-  g.fillText("WELCOME", 56, 104);
-  if ("letterSpacing" in g) g.letterSpacing = "0px";
-
-  g.fillStyle = "#ffffff";
-  g.font = "600 86px " + SANS;
-  g.fillText(profile.name, 52, 214);
-
-  g.strokeStyle = "#2d3350";
-  g.lineWidth = 3;
-  g.beginPath();
-  g.moveTo(54, 252);
-  g.lineTo(W - 56, 252);
-  g.stroke();
-
-  g.fillStyle = "#9fb4ff";
-  g.font = "500 34px " + MONO;
-  if ("letterSpacing" in g) g.letterSpacing = "5px";
+  // Eyebrow: mono caps, wide tracking, the subtle grey.
+  g.fillStyle = "#71717a";
+  g.font = `400 ${26 * S}px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = `${5 * S}px`;
   g.fillText(
-    (profile.role + "  ·  " + profile.location).toUpperCase(),
-    56,
-    320,
+    `${profile.role.toUpperCase()}  ·  ${profile.location.toUpperCase()}`,
+    pad,
+    pad + 26 * S,
   );
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-  g.fillStyle = "#c6cde4";
-  g.font = "400 40px " + SANS;
-  let y = 406;
-  for (const line of wrap(g, profile.tagline, W - 112)) {
-    g.fillText(line, 56, y);
-    y += 56;
+  g.fillStyle = "#ffffff";
+  g.font = `600 ${104 * S}px ${SANS}`;
+  g.fillText(profile.name, pad - 5 * S, pad + 150 * S);
+
+  g.fillStyle = "#a1a1aa";
+  g.font = `400 ${40 * S}px ${SANS}`;
+  let y = pad + 250 * S;
+  for (const line of wrap(g, profile.tagline, W - pad * 2)) {
+    g.fillText(line, pad, y);
+    y += 58 * S;
   }
 
-  y += 36;
-  g.fillStyle = "#6f7694";
-  g.font = "500 28px " + MONO;
-  if ("letterSpacing" in g) g.letterSpacing = "5px";
-  g.fillText("CURRENTLY", 56, y);
+  y += 44 * S;
+  g.font = `400 ${26 * S}px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = `${4 * S}px`;
+  g.fillStyle = "#71717a";
+  g.fillText("CURRENTLY", pad, y);
+  const w = g.measureText("CURRENTLY").width;
   if ("letterSpacing" in g) g.letterSpacing = "0px";
-  g.fillStyle = "#c6cde4";
-  g.font = "400 36px " + SANS;
-  y += 50;
-  for (const line of wrap(g, profile.currently, W - 112)) {
-    g.fillText(line, 56, y);
-    y += 48;
+  g.fillStyle = "#a1a1aa";
+  g.font = `400 ${34 * S}px ${SANS}`;
+  // The first line has the label beside it and the rest of the board
+  // to itself, so it wraps against two different widths. Run at one
+  // width and the sentence walks off the right-hand edge.
+  const head = pad + w + 14 * S;
+  const rest = wrap(g, `— ${profile.currently}`, W - head - pad);
+  g.fillText(rest[0] ?? "", head, y);
+  for (let i = 1; i < rest.length; i++) {
+    y += 46 * S;
+    g.fillText(rest[i], pad, y);
   }
 
-  // Four focus technologies along the bottom, as chips.
-  g.font = "500 28px " + MONO;
-  let x = 56;
-  const chipY = H - 96;
-  for (const t of profile.focus) {
-    const w = g.measureText(t).width + 40;
-    g.strokeStyle = "#2d3350";
-    g.lineWidth = 3;
-    g.beginPath();
-    g.roundRect(x, chipY, w, 54, 12);
-    g.stroke();
-    g.fillStyle = "#9fb4ff";
-    g.fillText(t, x + 20, chipY + 36);
-    x += w + 16;
-  }
+  y += 66 * S;
+  g.fillStyle = "#71717a";
+  g.font = `400 ${26 * S}px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = `${2 * S}px`;
+  g.fillText(
+    `Graduating ${education.graduation}  ·  GPA ${education.gpa}`,
+    pad,
+    y,
+  );
 
   return finish(c);
 }

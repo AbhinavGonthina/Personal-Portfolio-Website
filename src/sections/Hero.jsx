@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "motion/react";
+import Marker from "../components/Marker";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { profile, RESUME_URL } from "../data/profile";
@@ -131,28 +131,19 @@ export default function Hero({ ref }) {
     return <section ref={ref} className="h-[94vh] min-h-[620px]" />;
   }
 
+  // The name is extruded lettering standing on the pavement in the
+  // scene, and the hoarding two stops down says the rest. Nothing is
+  // left to put over the top of the town except the word for where
+  // you are.
   return (
     <section
       ref={ref}
-      className="pointer-events-auto relative flex h-[94vh] min-h-[620px] w-full items-start overflow-hidden"
+      className="pointer-events-none relative h-[94vh] min-h-[620px] w-full"
     >
-      <div className="relative mx-auto w-full max-w-6xl px-6 pt-20">
-        <Rise>
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
-            Welcome
-          </p>
-        </Rise>
-        <Rise delay={0.08}>
-          <h1 className="mt-3 text-6xl font-semibold tracking-tight lg:text-7xl">
-            {profile.name}
-          </h1>
-        </Rise>
-        <Rise delay={0.2}>
-          <div className="mt-8">
-            <Actions />
-          </div>
-        </Rise>
-      </div>
+      <Marker>Welcome</Marker>
+      <h1 className="sr-only">
+        {profile.name} &mdash; {profile.role}
+      </h1>
     </section>
   );
 }
