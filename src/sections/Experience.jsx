@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { setFocused, useFocused } from "../lib/stage";
+import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
 
 /**
@@ -158,6 +159,19 @@ export default function Experience({ ref }) {
   // The skyline is drawn by a canvas that lives above this component, so
   // which building is open is shared state rather than local.
   const focused = useFocused();
+
+  // Scroll drives the camera, so scrolling while a building is open
+  // would walk the shot off the thing being read about. The page is
+  // pinned until you come back out.
+  useScrollLock(Boolean(focused) && !plain);
+
+  // Escape is the shortcut everyone already tries for this.
+  useEffect(() => {
+    if (!focused) return;
+    const onKey = (e) => e.key === "Escape" && setFocused(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focused]);
 
   // The scene frames a focused building differently when there is no room
   // for a column beside it, and a phone gets no 3D at all.

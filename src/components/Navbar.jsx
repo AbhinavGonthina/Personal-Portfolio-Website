@@ -4,6 +4,7 @@ import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
 import { setPlain, usePlain } from "../lib/plain";
+import { setFocused } from "../lib/stage";
 
 /**
  * Dressed to match the skyline below it: small mono capitals with wide
@@ -21,8 +22,12 @@ import { setPlain, usePlain } from "../lib/plain";
  *    blurred strip once you scroll - one boolean flipped at a threshold.
  */
 
-const scrollTo = (id) =>
+const scrollTo = (id) => {
+  // A focused building pins the page, so a nav link would do nothing
+  // until you closed it by hand. Leaving is part of going somewhere.
+  setFocused(null);
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+};
 
 const LINK =
   "relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
@@ -99,7 +104,10 @@ export default function Navbar() {
           the right happen to be. */}
       <nav className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6">
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() => {
+            setFocused(null);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
         >
           <span className="size-1.5 rounded-full bg-fg transition-transform duration-300 group-hover:scale-150" />
