@@ -206,7 +206,7 @@ export default function Experience({ ref }) {
   // throw away.
   if (narrow === null) {
     return (
-      <section ref={ref} id="experience" className="h-[92vh] min-h-[620px]" />
+      <section ref={ref} id="experience" className="h-[94vh] min-h-[620px]" />
     );
   }
 
@@ -221,7 +221,7 @@ export default function Experience({ ref }) {
       // pointer-events-none so clicks reach the canvas behind this,
       // which is no longer a child of the section. Everything in here
       // that is meant to be clicked turns them back on.
-      className="pointer-events-none relative h-[92vh] min-h-[620px] w-full scroll-mt-16"
+      className="pointer-events-none relative h-[94vh] min-h-[620px] w-full scroll-mt-16"
     >
       {/* The towers are pointer-only, so this is the keyboard and
           screen-reader route to the same state. `sr-only` rather than
