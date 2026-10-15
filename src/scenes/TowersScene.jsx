@@ -93,7 +93,9 @@ const KIND = {
 const FORMS = {
   work: [
     { shaft: "box", top: "setback" },
-    { shaft: "box", top: "mast", fat: 0.94 },
+    // No mast: the ward emblem stands where it used to, and a pole
+    // through the middle of it helped nothing.
+    { shaft: "box", top: null, fat: 0.94 },
   ],
   startup: [
     { shaft: "box", top: "pylons", fat: 1.1, thin: 0.74 },
@@ -492,12 +494,13 @@ function Building({
   const signTop = top === "setback" ? body_h - 0.3 : height - 0.62;
   // Clear of whatever finishes the building, so the emblem never grows
   // out of a pyramid or sits inside a dome.
-  // The mast is not in the list on purpose: the emblem sits on the roof
-  // and lets the mast rise behind it. Clearing the whole 1.7 units put it
-  // in orbit.
+  // Clear of whatever finishes the building, then lifted again so the
+  // emblem floats in its own air. Sitting on the roof it was reading as
+  // part of the building's silhouette rather than as a thing you were
+  // meant to look at.
   const ROOF = { pyramid: 0.82, pylons: 0.5, setback: 0.34 };
   const emblemY =
-    height + (top === "dome" ? w * 0.5 + 0.26 : (ROOF[top] ?? 0.34)) + 0.14;
+    height + (top === "dome" ? w * 0.5 + 0.26 : (ROOF[top] ?? 0.34)) + 0.72;
 
   // On the group rather than the shaft, so the crown, the sign, the mast
   // and the upper stage are all part of the same target. With them on the
@@ -623,18 +626,6 @@ function Building({
       {/* What finishes the building off. Each is a few triangles, and
           between them they stop the street reading as eight copies of one
           box at different heights. */}
-      {top === "mast" && (
-        <mesh position={[0, height + 0.85, 0]}>
-          <cylinderGeometry args={[0.02, 0.05, 1.7, 6]} />
-          <meshStandardMaterial
-            color="#000000"
-            emissive={lit.color}
-            emissiveIntensity={1.1 * lit.gain}
-            toneMapped={false}
-          />
-        </mesh>
-      )}
-
       {top === "pyramid" && (
         <mesh position={[0, height + 0.36, 0]} rotation={[0, Math.PI / 4, 0]}>
           <coneGeometry args={[w * 0.78, 0.76, 4]} />
