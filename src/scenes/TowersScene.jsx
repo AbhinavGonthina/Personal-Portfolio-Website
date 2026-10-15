@@ -349,9 +349,9 @@ function ShaftGeo({ form, w, d, h }) {
   return <primitive object={useShaft(form, w, d, h)} attach="geometry" />;
 }
 
-const EDGE_IDLE = 0.3;
-const EDGE_ON = 0.85;
-const EDGE_DIM = 0.07;
+const EDGE_IDLE = 0.11;
+const EDGE_ON = 0.4;
+const EDGE_DIM = 0.03;
 
 /**
  * A hairline along the building's edges.
