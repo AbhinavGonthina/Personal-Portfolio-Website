@@ -162,6 +162,9 @@ function makeWindowTexture() {
  */
 const CROWN_LUM = 0.42;
 
+// Wordmarks wide enough to be worth turning vertical.
+const VERTICAL_SIGN = new Set(["athenahealth", "quak", "rainfall"]);
+
 function crownLight(hex) {
   const c = new THREE.Color(hex);
   const peak = Math.max(c.r, c.g, c.b) || 1;
@@ -190,6 +193,9 @@ function Building({
   const on = focused || hovered;
   const logoAspect = logo ? logo.image.width / logo.image.height : 3;
   const lit = useMemo(() => crownLight(role.accent), [role.accent]);
+  // Long wordmarks turned on their side, so they run down the tower.
+  const vertical = VERTICAL_SIGN.has(role.id);
+  const signW = vertical ? height * 0.62 : w * 0.92;
 
   const map = useMemo(() => {
     const m = windows.clone();
@@ -325,12 +331,38 @@ function Building({
         </mesh>
       )}
 
-      {/* The company's own mark, on the face toward the viewer. */}
+      {/* The company's mark, backgrounds already cut away so it is the
+          letterforms alone on the facade.
+
+          Three of them run vertically down the building: their wordmarks
+          are long rectangles, and turned on their side they use the one
+          dimension a tower has plenty of.
+
+          Two planes, not one. The rear copy is the same texture in white,
+          very slightly larger and half transparent - with bloom on, that
+          reads as a soft halo behind the letters, which is what makes a
+          dark mark legible against a dark facade. */}
       {logo && (
-        <mesh position={[0, height * 0.72, d / 2 + 0.02]}>
-          <planeGeometry args={[w * 0.92, (w * 0.92) / logoAspect]} />
-          <meshBasicMaterial map={logo} toneMapped={false} transparent />
-        </mesh>
+        <group
+          position={[0, height * (vertical ? 0.58 : 0.72), d / 2 + 0.02]}
+          rotation={[0, 0, vertical ? -Math.PI / 2 : 0]}
+        >
+          <mesh position={[0, 0, -0.01]} scale={1.055}>
+            <planeGeometry args={[signW, signW / logoAspect]} />
+            <meshBasicMaterial
+              map={logo}
+              color="#ffffff"
+              transparent
+              opacity={0.55}
+              toneMapped={false}
+              depthWrite={false}
+            />
+          </mesh>
+          <mesh>
+            <planeGeometry args={[signW, signW / logoAspect]} />
+            <meshBasicMaterial map={logo} toneMapped={false} transparent />
+          </mesh>
+        </group>
       )}
 
       <pointLight
@@ -389,66 +421,63 @@ function Labels({ host, layout, hidden }) {
 }
 
 const LOOK = { x: 0, y: 3, z: -2 };
-// Half the width and height the overview has to contain, in world units.
-const ARC_HALF_W = 12.2;
-const ARC_HALF_H = 6.4;
 
-function Rig({ target, narrow }) {
+// How far the view may swing before it is pointed at nothing.
+const YAW_LIMIT = 62 * DEG;
+
+function Rig({ target, narrow, look }) {
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-2.6 * delta);
-    const p = state.pointer;
-    const halfFov = (state.camera.fov * DEG) / 2;
-    // How far back the camera must sit for a given world half-width to fit.
-    const distFor = (halfW) =>
-      halfW / (Math.tan(halfFov) * state.camera.aspect);
+    const cam = state.camera;
+    const halfFov = (cam.fov * DEG) / 2;
+    const t = state.clock.elapsedTime;
 
-    let px, py, pz, lx, ly, lz;
-    if (target) {
-      pz = target.z + 13.5;
-      py = target.height * 0.58;
-      ly = target.height * 0.5;
-      lz = target.z;
-      // Sideways offset derived from how wide the camera actually sees at
-      // this distance. A fixed world offset puts the building a third of
-      // the way across a laptop and dead centre on an ultrawide.
-      const halfW = Math.tan(halfFov) * 13.5 * state.camera.aspect;
-      px = target.x + halfW * 0.5;
-      lx = target.x + halfW * 0.42;
-      if (narrow) {
-        px = target.x;
-        lx = target.x;
-        py = target.height * 0.5 + 1.2;
-        pz = target.z + 22;
-        ly = -1.2;
-      }
-    } else {
-      // Pulled back by whatever the aspect ratio demands, rather than a
-      // fixed distance - otherwise the ends of the arc fall off the sides
-      // of a narrow window and float in the middle of a wide one.
-      const t = state.clock.elapsedTime;
-      // Far enough back for *both* dimensions. Width alone was not enough:
-      // the two industry towers are nearly 10 units tall with their masts
-      // and were being clipped off the top of the frame.
-      const forWidth = distFor(ARC_HALF_W);
-      const forHeight = ARC_HALF_H / Math.tan(halfFov);
-      // The subtraction is how far in front of the arc's centre the outer
-      // buildings sit; pulling in further than that is what puts the viewer
-      // among them rather than looking down on the whole block.
-      pz = Math.max(11, Math.max(forWidth, forHeight) - 8);
-      px = p.x * 1.2 + Math.sin(t * 0.11) * 1.1;
-      py = 4.1 + p.y * 0.4 + Math.sin(t * 0.077) * 0.35;
-      lx = Math.sin(t * 0.063) * 0.5;
-      ly = 5.2;
-      lz = -2;
+    if (!target) {
+      // Standing on the street inside the arc, looking up. Buildings run
+      // past the edges of the frame on purpose - turning your head to find
+      // the rest of them is the point, so the camera does not retreat until
+      // everything fits.
+      const yaw = look.current.yaw + Math.sin(t * 0.07) * 0.03;
+      const pitch = look.current.pitch;
+      cam.position.x += (Math.sin(yaw) * 1.1 - cam.position.x) * k;
+      cam.position.y += (1.8 + Math.sin(t * 0.09) * 0.06 - cam.position.y) * k;
+      cam.position.z += (3.6 - cam.position.z) * k;
+      // Aimed at a point on a sphere around the viewer rather than at a
+      // fixed spot, so dragging turns the head instead of sliding the whole
+      // shot sideways.
+      LOOK.x += (cam.position.x + Math.sin(yaw) * 14 - LOOK.x) * k;
+      LOOK.y += (cam.position.y + Math.tan(pitch) * 14 - LOOK.y) * k;
+      LOOK.z += (cam.position.z - Math.cos(yaw) * 14 - LOOK.z) * k;
+      cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
+      return;
     }
 
-    state.camera.position.x += (px - state.camera.position.x) * k;
-    state.camera.position.y += (py - state.camera.position.y) * k;
-    state.camera.position.z += (pz - state.camera.position.z) * k;
+    let px, py, pz, lx, ly, lz;
+    pz = target.z + 13.5;
+    py = target.height * 0.58;
+    ly = target.height * 0.5;
+    lz = target.z;
+    // Sideways offset derived from how wide the camera actually sees at
+    // this distance. A fixed world offset puts the building a third of the
+    // way across a laptop and dead centre on an ultrawide.
+    const halfW = Math.tan(halfFov) * 13.5 * cam.aspect;
+    px = target.x + halfW * 0.5;
+    lx = target.x + halfW * 0.42;
+    if (narrow) {
+      px = target.x;
+      lx = target.x;
+      py = target.height * 0.5 + 1.2;
+      pz = target.z + 22;
+      ly = -1.2;
+    }
+
+    cam.position.x += (px - cam.position.x) * k;
+    cam.position.y += (py - cam.position.y) * k;
+    cam.position.z += (pz - cam.position.z) * k;
     LOOK.x += (lx - LOOK.x) * k;
     LOOK.y += (ly - LOOK.y) * k;
     LOOK.z += (lz - LOOK.z) * k;
-    state.camera.lookAt(LOOK.x, LOOK.y, LOOK.z);
+    cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
   });
   return null;
 }
@@ -459,6 +488,7 @@ export default function TowersScene({
   active,
   labelHost,
   narrow,
+  look,
 }) {
   const layout = useLayout();
   const windows = useMemo(makeWindowTexture, []);
@@ -481,7 +511,7 @@ export default function TowersScene({
       frameloop={active ? "always" : "never"}
       dpr={[1, 1.5]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, 6, 20], fov: 34 }}
+      camera={{ position: [0, 1.8, 3.6], fov: 52 }}
       onPointerMissed={() => onFocus(null)}
       style={{ position: "absolute", inset: 0 }}
     >
@@ -490,7 +520,7 @@ export default function TowersScene({
       <ambientLight intensity={0.16} />
       <directionalLight position={[5, 10, 7]} intensity={0.5} />
 
-      <Rig target={target} narrow={narrow} />
+      <Rig target={target} narrow={narrow} look={look} />
       <Labels host={labelHost} layout={layout} hidden={Boolean(focused)} />
 
       {/* Mirrored, non-interactive copies, foreshortened. A full-length
