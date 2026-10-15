@@ -9,11 +9,17 @@ export const EXPERIENCE_GROUPS = [
   { id: "northeastern", label: "Northeastern" },
 ];
 
+// `accent` is a light colour per role, used by anything that has to tell
+// them apart without reading - the 3D towers behind this section, for one.
+// It is not `brand`: that is the logo plate's background, and it is white
+// for half of these, which makes it useless as a signal.
+
 // Reverse-chronological. `branch` positions each role on the organic tree:
 // side = which way the branch grows, t = how far up the trunk it attaches (0..1).
 export const experience = [
   {
     id: "athenahealth",
+    accent: "#7B2D8E",
     category: "work",
     short: "athenahealth",
     company: "athenahealth",
@@ -46,6 +52,7 @@ export const experience = [
   },
   {
     id: "philips",
+    accent: "#1F6FEB",
     category: "work",
     short: "Philips",
     company: "Philips",
@@ -66,6 +73,7 @@ export const experience = [
   },
   {
     id: "quak",
+    accent: "#FC3600",
     category: "startup",
     short: "Quak Travel",
     company: "Quak Travel",
@@ -94,6 +102,7 @@ export const experience = [
   },
   {
     id: "ner",
+    accent: "#C8102E",
     category: "northeastern",
     short: "NER",
     company: "Northeastern Electric Racing",
@@ -120,6 +129,7 @@ export const experience = [
   },
   {
     id: "rainfall",
+    accent: "#17319C",
     category: "startup",
     short: "Rainfall",
     company: "Rainfall Learning",
@@ -147,6 +157,7 @@ export const experience = [
   },
   {
     id: "khoury",
+    accent: "#E63C2F",
     category: "northeastern",
     short: "Khoury",
     company: "Khoury",
