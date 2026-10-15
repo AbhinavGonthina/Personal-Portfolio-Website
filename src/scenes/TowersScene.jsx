@@ -162,6 +162,37 @@ function makeWindowTexture() {
  */
 const CROWN_LUM = 0.42;
 
+/**
+ * One size for every badge, in world units, rather than a fraction of the
+ * building. Scaling each to its own facade made the small Northeastern
+ * blocks carry marks half the size of the towers', which read as a mistake
+ * rather than as scale.
+ */
+const BADGE = 0.98;
+
+/**
+ * A soft glowing outline, drawn once. Used as the frame around a badge so
+ * the sign reads as set into the facade with a lit bezel, rather than as a
+ * picture stuck on the front.
+ */
+function makeFrameTexture() {
+  const S = 256;
+  const c = document.createElement("canvas");
+  c.width = c.height = S;
+  const g = c.getContext("2d");
+  g.strokeStyle = "#ffffff";
+  g.lineWidth = 7;
+  g.shadowColor = "#ffffff";
+  g.shadowBlur = 14;
+  const pad = 26;
+  g.beginPath();
+  g.roundRect(pad, pad, S - pad * 2, S - pad * 2, 26);
+  g.stroke();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function crownLight(hex) {
   const c = new THREE.Color(hex);
   const peak = Math.max(c.r, c.g, c.b) || 1;
@@ -176,6 +207,7 @@ function Building({
   tower,
   windows,
   logo,
+  frame,
   focused,
   dimmed,
   onFocus,
@@ -190,7 +222,6 @@ function Building({
   const on = focused || hovered;
   const lit = useMemo(() => crownLight(role.accent), [role.accent]);
   // Square, and never wider than the face it sits on.
-  const badge = Math.min(w * 0.72, height * 0.3);
 
   const map = useMemo(() => {
     const m = windows.clone();
@@ -326,14 +357,37 @@ function Building({
         </mesh>
       )}
 
-      {/* A square badge just under the crown. Its edges are feathered in
-          the asset itself, so it sits into the facade instead of looking
-          like a sticker with a hard border. */}
+      {/* The signboard, three layers deep so it reads as built in rather
+          than applied: a recessed dark plate, a lit bezel around it in the
+          building's own colour, and the badge itself on the front. The
+          badge art already has feathered edges, so it fades into the plate
+          instead of ending on a border. */}
       {logo && (
-        <mesh position={[0, height - 0.75 - badge / 2, d / 2 + 0.02]}>
-          <planeGeometry args={[badge, badge]} />
-          <meshBasicMaterial map={logo} toneMapped={false} transparent />
-        </mesh>
+        <group position={[0, height - 0.78 - BADGE / 2, d / 2 + 0.018]}>
+          <mesh position={[0, 0, -0.014]}>
+            <planeGeometry args={[BADGE * 1.24, BADGE * 1.24]} />
+            <meshStandardMaterial
+              color="#0a0a0d"
+              roughness={0.55}
+              metalness={0.35}
+            />
+          </mesh>
+          <mesh position={[0, 0, -0.007]}>
+            <planeGeometry args={[BADGE * 1.34, BADGE * 1.34]} />
+            <meshBasicMaterial
+              map={frame}
+              color={lit.color}
+              transparent
+              opacity={0.85}
+              toneMapped={false}
+              depthWrite={false}
+            />
+          </mesh>
+          <mesh>
+            <planeGeometry args={[BADGE, BADGE]} />
+            <meshBasicMaterial map={logo} toneMapped={false} transparent />
+          </mesh>
+        </group>
       )}
 
       <pointLight
@@ -374,18 +428,59 @@ function Labels({ host, layout, hidden }) {
     return () => made.forEach((el) => el.remove());
   }, [host, layout]);
 
+  const placed = useRef([]);
+
   useFrame((state) => {
     const { width, height } = state.size;
+
+    // Project everything first, then resolve collisions, then write. Doing
+    // it in one pass would compare a label against positions from the
+    // previous frame.
+    const items = [];
     layout.forEach((t, i) => {
       const el = spans.current[i];
       if (!el) return;
       v.current.set(t.x, t.height + 0.9, t.z).project(state.camera);
-      const px = (v.current.x * 0.5 + 0.5) * width;
-      const py = (-v.current.y * 0.5 + 0.5) * height;
-      const off = v.current.z > 1 || px < -90 || px > width + 90;
-      el.style.transform = `translate3d(${px}px, ${py}px, 0) translate(-50%, -100%)`;
-      el.style.opacity = hidden || off ? "0" : "1";
+      items.push({
+        el,
+        x: (v.current.x * 0.5 + 0.5) * width,
+        y: (-v.current.y * 0.5 + 0.5) * height,
+        w: el.offsetWidth || 90,
+        behind: v.current.z > 1,
+      });
     });
+
+    // Adjacent buildings put their labels on top of each other, badly at
+    // the Northeastern end where four stand close together. Nearest first,
+    // then each one is lifted onto the first row above it that is clear -
+    // nearest wins its natural height because it is the one in front.
+    items.sort((a, b) => a.y - b.y);
+    const taken = placed.current;
+    taken.length = 0;
+    for (const it of items) {
+      // Compare final positions, not row numbers. Two buildings of
+      // different heights can be lifted onto different rows and still
+      // land at the same point on screen, which is how "...ELECTRIC
+      // RACING KHOURY" ran together as one string. 22px is the line
+      // height plus a little air; the 30px of lateral padding is so
+      // labels that merely touch still read as two.
+      while (
+        taken.some(
+          (r) =>
+            Math.abs(r.x - it.x) < (r.w + it.w) / 2 + 30 &&
+            Math.abs(r.y - it.y) < 20,
+        )
+      ) {
+        it.y -= 22;
+      }
+      taken.push({ x: it.x, y: it.y, w: it.w });
+    }
+
+    for (const it of items) {
+      const off = it.behind || it.x < -90 || it.x > width + 90;
+      it.el.style.transform = `translate3d(${it.x}px, ${it.y}px, 0) translate(-50%, -100%)`;
+      it.el.style.opacity = hidden || off ? "0" : "1";
+    }
   });
 
   return null;
@@ -462,6 +557,7 @@ export default function TowersScene({
 }) {
   const layout = useLayout();
   const windows = useMemo(makeWindowTexture, []);
+  const frame = useMemo(makeFrameTexture, []);
   const target = focused ? layout.find((t) => t.role.id === focused) : null;
 
   // Only the roles that actually have art. useLoader caches and suspends,
@@ -486,7 +582,10 @@ export default function TowersScene({
       style={{ position: "absolute", inset: 0 }}
     >
       <color attach="background" args={["#000000"]} />
-      <fog attach="fog" args={["#000000", 26, 70]} />
+      {/* Exponential rather than linear: distance falls off smoothly into
+          the background instead of everything past a hard plane vanishing
+          at once. Matched to the page background so there is no seam. */}
+      <fogExp2 attach="fog" args={["#000000", 0.026]} />
       <ambientLight intensity={0.16} />
       <directionalLight position={[5, 10, 7]} intensity={0.5} />
 
@@ -501,6 +600,9 @@ export default function TowersScene({
             key={`r-${tower.role.id}`}
             tower={tower}
             windows={windows}
+            frame={frame}
+            frame={frame}
+            frame={frame}
             logo={tower.role.logo ? byUrl[tower.role.logo] : null}
             focused={tower.role.id === focused}
             dimmed={Boolean(focused) && tower.role.id !== focused}
@@ -515,6 +617,8 @@ export default function TowersScene({
           key={tower.role.id}
           tower={tower}
           windows={windows}
+          frame={frame}
+          frame={frame}
           logo={tower.role.logo ? byUrl[tower.role.logo] : null}
           focused={tower.role.id === focused}
           dimmed={Boolean(focused) && tower.role.id !== focused}
@@ -536,7 +640,13 @@ export default function TowersScene({
           because at y=0.01 it intersected and sliced every base. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
         <planeGeometry args={[140, 140]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.9} />
+        <meshStandardMaterial
+          color="#05050a"
+          roughness={0.16}
+          metalness={0.92}
+          transparent
+          opacity={0.88}
+        />
       </mesh>
 
       {/* Thresholded at 0.9 so bloom only catches the crowns and masts,
