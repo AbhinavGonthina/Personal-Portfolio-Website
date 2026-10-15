@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -93,7 +93,17 @@ function useLayout() {
       experience
         .filter((r) => r.category === group.id)
         .forEach((role) => {
-          out.push({ role, x, height: heightOf(role) });
+          // Deterministic per-index variation. Six identical extrusions
+          // read as a chart; a little variety in plan reads as a street.
+          const i = out.length;
+          out.push({
+            role,
+            x,
+            height: heightOf(role),
+            w: 1.05 + ((i * 7) % 5) * 0.11,
+            d: 1.0 + ((i * 3) % 4) * 0.13,
+            spire: i % 3 === 0,
+          });
           x += SPACING;
         });
     });
@@ -103,13 +113,14 @@ function useLayout() {
   }, []);
 }
 
-function Tower({ tower, windows, focused, dimmed, onFocus, mirrored }) {
+function Tower({ tower, windows, logo, focused, dimmed, onFocus, mirrored }) {
   const body = useRef();
   const crown = useRef();
   const light = useRef();
   const [hovered, setHovered] = useState(false);
-  const { role, x, height } = tower;
+  const { role, x, height, w, d, spire } = tower;
   const on = focused || hovered;
+  const logoAspect = logo ? logo.image.width / logo.image.height : 1;
 
   // Its own copy of the shared texture: a clone keeps the one bitmap but
   // gets its own repeat and offset, so towers of different heights keep
@@ -161,7 +172,7 @@ function Tower({ tower, windows, focused, dimmed, onFocus, mirrored }) {
           onFocus(role.id);
         }}
       >
-        <boxGeometry args={[1.25, height, 1.25]} />
+        <boxGeometry args={[w, height, d]} />
         <meshStandardMaterial
           color="#09090b"
           emissive={role.accent}
@@ -175,7 +186,7 @@ function Tower({ tower, windows, focused, dimmed, onFocus, mirrored }) {
       {/* A bright band at the top. One cheap detail is the difference between
           reading as a building and reading as a bar on a chart. */}
       <mesh ref={crown} position={[0, height - 0.3, 0]}>
-        <boxGeometry args={[1.36, 0.3, 1.36]} />
+        <boxGeometry args={[w + 0.11, 0.3, d + 0.11]} />
         <meshStandardMaterial
           color="#000000"
           emissive={role.accent}
@@ -183,6 +194,30 @@ function Tower({ tower, windows, focused, dimmed, onFocus, mirrored }) {
           toneMapped={false}
         />
       </mesh>
+
+      {/* The company's own mark, as a lit sign on the face toward the
+          street. The logo art carries its own background, so this reads as
+          an illuminated panel rather than a decal. `toneMapped={false}`
+          keeps the brand colours true and lets the bloom catch it. */}
+      {logo && (
+        <mesh position={[0, height * 0.78, d / 2 + 0.02]}>
+          <planeGeometry args={[w * 0.96, (w * 0.96) / logoAspect]} />
+          <meshBasicMaterial map={logo} toneMapped={false} transparent />
+        </mesh>
+      )}
+
+      {/* A mast on some of them, so the roofline is not six flat lids. */}
+      {spire && (
+        <mesh position={[0, height + 0.55, 0]}>
+          <cylinderGeometry args={[0.025, 0.05, 1.1, 6]} />
+          <meshStandardMaterial
+            color="#000000"
+            emissive={role.accent}
+            emissiveIntensity={0.8}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
 
       <pointLight
         ref={light}
@@ -323,6 +358,10 @@ export default function TowersScene({
 }) {
   const layout = useLayout();
   const windows = useMemo(makeWindowTexture, []);
+  // One load for all six. useLoader caches and suspends; SceneSlot already
+  // wraps the scene in a Suspense boundary.
+  const logoUrls = useMemo(() => layout.map((t) => t.role.logo), [layout]);
+  const logos = useLoader(THREE.TextureLoader, logoUrls);
   const target = focused ? layout.find((t) => t.role.id === focused) : null;
 
   return (
@@ -363,11 +402,12 @@ export default function TowersScene({
         ))}
       </group>
 
-      {layout.map((tower) => (
+      {layout.map((tower, i) => (
         <Tower
           key={tower.role.id}
           tower={tower}
           windows={windows}
+          logo={logos[i]}
           focused={tower.role.id === focused}
           dimmed={Boolean(focused) && tower.role.id !== focused}
           onFocus={onFocus}
