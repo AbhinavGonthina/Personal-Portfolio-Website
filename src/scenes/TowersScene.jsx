@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { experience, EXPERIENCE_GROUPS } from "../data/experience";
+import { ARC_GROUPS, experience } from "../data/experience";
 
 /**
  * The roles as buildings on an arc that curves around the viewer: startups
@@ -59,11 +59,12 @@ const DEG = Math.PI / 180;
  * Left to right across the arc. Not the data's own order - the groups are
  * arranged by where they should sit in front of the viewer.
  */
-const ARC = [
-  { id: "startup", centre: -47, step: 15 },
-  { id: "work", centre: 0, step: 19 },
-  { id: "northeastern", centre: 47, step: 10.5 },
-];
+const ARC_PLACE = {
+  startup: { centre: -47, step: 15 },
+  work: { centre: 0, step: 19 },
+  northeastern: { centre: 47, step: 10.5 },
+};
+const ARC = ARC_GROUPS.map((g) => ({ ...g, ...ARC_PLACE[g.id] }));
 
 /**
  * Per-group form. `h` is the height band a role is mapped into, so duration
@@ -632,6 +633,106 @@ function Building({
   );
 }
 
+/**
+ * The name of a cluster, standing on the pavement in front of it.
+ *
+ * Built from the same canvas trick as the building nameplates, then given
+ * real depth by stacking the same glyphs back into the scene over a short
+ * run and darkening each copy. That is not a drop shadow: the layers are
+ * separate planes in world space, so turning the camera slides the sides
+ * of the letters past the fronts the way an extrusion does.
+ *
+ * It is done this way rather than with TextGeometry because that needs a
+ * typeface converted to JSON and shipped as an asset, and the rest of this
+ * scene is drawn from nothing at runtime.
+ */
+function makeSignTexture(text) {
+  const H = 150;
+  const PAD = 24;
+  const c = document.createElement("canvas");
+  const g = c.getContext("2d");
+  const font = `700 ${H}px "Geist Mono Variable", ui-monospace, monospace`;
+  const setup = () => {
+    g.font = font;
+    if ("letterSpacing" in g) g.letterSpacing = "20px";
+  };
+  setup();
+  c.width = Math.ceil(g.measureText(text).width) + PAD * 2;
+  c.height = H + PAD * 2;
+
+  setup();
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillStyle = "#ffffff";
+  g.fillText(text, c.width / 2, c.height / 2);
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return { tex, aspect: c.width / c.height };
+}
+
+/** Where the signs stand, and how far the letters run back. */
+const SIGN_R = 7.4;
+const SIGN_H = 0.52;
+const SIGN_DEPTH = 0.26;
+const SIGN_LAYERS = 14;
+/** Front face, and the colour the sides fall away to. */
+const SIGN_FACE = new THREE.Color("#ffffff");
+const SIGN_SIDE = new THREE.Color("#2b2b33");
+
+function ClusterSigns({ hidden }) {
+  const mats = useRef([]);
+  const made = useMemo(
+    () =>
+      ARC.map(({ id, ground, centre }) => ({
+        id,
+        ...makeSignTexture(ground),
+        angle: centre * DEG,
+      })),
+    [],
+  );
+  useEffect(() => () => made.forEach((m) => m.tex.dispose()), [made]);
+
+  useFrame((_, delta) => {
+    const k = 1 - Math.exp(-3.4 * delta);
+    for (const m of mats.current) {
+      if (m) m.opacity += ((hidden ? 0 : 1) - m.opacity) * k;
+    }
+  });
+
+  mats.current.length = 0;
+  return made.map((m) => (
+    // Turned to face the centre of the arc, like the buildings behind it.
+    <group key={m.id} rotation={[0, -m.angle, 0]}>
+      <group position={[0, SIGN_H * 0.62, -SIGN_R]}>
+        {Array.from({ length: SIGN_LAYERS }, (_, i) => {
+          const t = i / (SIGN_LAYERS - 1);
+          return (
+            <mesh
+              key={i}
+              position={[0, 0, -t * SIGN_DEPTH]}
+              // Nearest layer last, so the painter's sort three does on
+              // transparent objects stacks them in the right order.
+              renderOrder={SIGN_LAYERS - i}
+            >
+              <planeGeometry args={[SIGN_H * m.aspect, SIGN_H]} />
+              <meshBasicMaterial
+                ref={(el) => el && mats.current.push(el)}
+                map={m.tex}
+                color={SIGN_FACE.clone().lerp(SIGN_SIDE, t)}
+                transparent
+                depthWrite={false}
+                toneMapped={false}
+              />
+            </mesh>
+          );
+        })}
+      </group>
+    </group>
+  ));
+}
+
 const LOOK = { x: 0, y: 3, z: -2 };
 
 function Rig({ target, narrow }) {
@@ -664,24 +765,34 @@ function Rig({ target, narrow }) {
       return;
     }
 
-    let px, py, pz, lx, ly, lz;
-    pz = target.z + 13.5;
-    py = target.height * 0.58;
-    ly = target.height * 0.5;
-    lz = target.z;
+    // Square on to the building, not to the world.
+    //
+    // Backing straight off along +Z was fine for the two towers in the
+    // middle of the arc and wrong for everything else: the buildings at
+    // either end stand turned by up to sixty degrees, so you flew in and
+    // met them at a corner. The approach now runs along the building's own
+    // facing normal - which, since every building is turned to look at the
+    // centre of the arc, points from it back at the viewer.
+    const dist = narrow ? 22 : 13.5;
+    const nx = -Math.sin(target.angle);
+    const nz = Math.cos(target.angle);
+    // The camera's right in that frame, so the building can be pushed to
+    // the left of the viewport along the screen's own axis rather than the
+    // world's.
+    const rx = Math.cos(target.angle);
+    const rz = Math.sin(target.angle);
+
     // Sideways offset derived from how wide the camera actually sees at
     // this distance. A fixed world offset puts the building a third of the
     // way across a laptop and dead centre on an ultrawide.
-    const halfW = Math.tan(halfFov) * 13.5 * cam.aspect;
-    px = target.x + halfW * 0.5;
-    lx = target.x + halfW * 0.42;
-    if (narrow) {
-      px = target.x;
-      lx = target.x;
-      py = target.height * 0.5 + 1.2;
-      pz = target.z + 22;
-      ly = -1.2;
-    }
+    const halfW = narrow ? 0 : Math.tan(halfFov) * dist * cam.aspect;
+
+    const px = target.x + nx * dist + rx * halfW * 0.5;
+    const pz = target.z + nz * dist + rz * halfW * 0.5;
+    const lx = target.x + rx * halfW * 0.42;
+    const lz = target.z + rz * halfW * 0.42;
+    const py = narrow ? target.height * 0.5 + 1.2 : target.height * 0.58;
+    const ly = narrow ? -1.2 : target.height * 0.5;
 
     cam.position.x += (px - cam.position.x) * k;
     cam.position.y += (py - cam.position.y) * k;
@@ -730,6 +841,7 @@ export default function TowersScene({ focused, onFocus, active, narrow }) {
       <directionalLight position={[5, 10, 7]} intensity={0.5} />
 
       <Rig target={target} narrow={narrow} />
+      <ClusterSigns hidden={Boolean(focused)} />
 
       {/* Mirrored, non-interactive copies, foreshortened. A full-length
           mirror reads as a second skyline hanging downward. */}
