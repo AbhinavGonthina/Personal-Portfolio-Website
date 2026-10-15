@@ -4,4 +4,7 @@ export const NAV_ITEMS = [
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Skills" },
   { id: "projects", label: "Projects" },
+  // Sits with the rest rather than off to one side as a filled button -
+  // it is a place on the page like any other.
+  { id: "connect", label: "Contact" },
 ];

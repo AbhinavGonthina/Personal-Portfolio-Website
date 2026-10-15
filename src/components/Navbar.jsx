@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
@@ -6,25 +6,26 @@ import { profile } from "../data/profile";
 import { setPlain, usePlain } from "../lib/plain";
 
 /**
- * Three techniques, all of them transform- or opacity-only, so none of this
- * costs frames:
+ * Dressed to match the skyline below it: small mono capitals with wide
+ * tracking, the same type the buildings carry on their facades, and the
+ * links gathered into one lit capsule the way a badge sits inside its
+ * bezel. Everything that moves is transform or opacity only.
  *
- * 1. A single pill that slides between items, via motion's shared-layout
- *    `layoutId`. One element animates between positions rather than each
- *    item fading its own background in and out. This is the whole trick -
- *    it reads as expensive and is almost free.
+ * 1. A single pill slides between items via motion's shared-layout
+ *    `layoutId`, rather than each item fading its own background. This is
+ *    the whole trick - it reads as expensive and is almost free.
  * 2. The pill rests on whichever section you are actually looking at, and
- *    follows the pointer on hover. Tracked with an IntersectionObserver, not
- *    a scroll handler, so nothing runs per frame.
+ *    follows the pointer on hover. Tracked with an IntersectionObserver,
+ *    so nothing runs per frame.
  * 3. The bar is bare at the top of the page and condenses into a bordered,
- *    blurred strip once you scroll. Driven by one boolean that flips at a
- *    threshold, so it re-renders twice per page, not continuously.
+ *    blurred strip once you scroll - one boolean flipped at a threshold.
  */
-
-const SECTIONS = [...NAV_ITEMS.map((i) => i.id), "connect"];
 
 const scrollTo = (id) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
+const LINK =
+  "relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
 
 export default function Navbar() {
   const plain = usePlain();
@@ -37,24 +38,40 @@ export default function Navbar() {
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
+  // Which section the reader is in, measured rather than observed.
+  //
+  // An IntersectionObserver was doing this and kept the highlight a
+  // section behind: it only reports what *changed*, so a callback can
+  // arrive holding nothing but the section being left, and reconstructing
+  // the full picture from a running map turned out to be just as much
+  // code and still wrong across fast scrolls. Four rect reads on a scroll
+  // that is already laying out is cheaper than being subtly broken.
+  const sections = useRef([]);
   useEffect(() => {
-    // A band across the middle of the viewport: whichever section crosses it
-    // is the one being read. Cheaper and steadier than measuring offsets.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActive(visible.target.id);
-      },
-      { rootMargin: "-45% 0px -45% 0px", threshold: 0 },
-    );
-    SECTIONS.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
+    sections.current = NAV_ITEMS.map(({ id }) => [
+      id,
+      document.getElementById(id),
+    ]).filter(([, el]) => el);
   }, []);
+
+  useMotionValueEvent(scrollY, "change", () => {
+    // A line a quarter of the way down the viewport: the section crossing
+    // it is the one being read. Measuring at the middle lets a tall
+    // section claim the highlight long before you reach it.
+    const line = window.innerHeight * 0.25;
+    let current = null;
+    for (const [id, el] of sections.current) {
+      if (el.getBoundingClientRect().top <= line) current = id;
+    }
+    // The last section is short and sits at the end of the document, so
+    // its top can never reach the line - the page runs out of scroll
+    // first. At the bottom, you are looking at it whatever the maths say.
+    const doc = document.documentElement;
+    if (window.scrollY + window.innerHeight >= doc.scrollHeight - 2) {
+      current = sections.current.at(-1)?.[0] ?? current;
+    }
+    setActive((prev) => (prev === current ? prev : current));
+  });
 
   const marked = hovered ?? active;
 
@@ -67,8 +84,8 @@ export default function Navbar() {
           : "border-b border-transparent bg-transparent",
       )}
     >
-      {/* Hairline that brightens toward the middle. Fades in with the bar, so
-          the edge reads as lit rather than ruled. */}
+      {/* Hairline that brightens toward the middle. Fades in with the bar,
+          so the edge reads as lit rather than ruled. */}
       <div
         aria-hidden
         className={cn(
@@ -77,9 +94,9 @@ export default function Navbar() {
         )}
       />
 
-      {/* Three columns rather than a flex row, so the section links sit on
-          the centre of the page and stay there whatever the name on the
-          left or the buttons on the right happen to be. */}
+      {/* Three columns rather than a flex row, so the links sit on the
+          centre of the page whatever the name on the left or the button on
+          the right happen to be. */}
       <nav className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6">
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -90,7 +107,7 @@ export default function Navbar() {
         </button>
 
         <div
-          className="relative hidden items-center md:flex"
+          className="relative hidden items-center gap-0.5 rounded-full border border-white/10 bg-white/[0.03] p-1 md:flex"
           onMouseLeave={() => setHovered(null)}
         >
           {NAV_ITEMS.map((item) => (
@@ -99,16 +116,17 @@ export default function Navbar() {
               onClick={() => scrollTo(item.id)}
               onMouseEnter={() => setHovered(item.id)}
               onFocus={() => setHovered(item.id)}
+              aria-current={active === item.id ? "true" : undefined}
               className={cn(
-                "relative px-3.5 py-2 text-sm transition-colors duration-200",
-                marked === item.id ? "text-fg" : "text-fg-muted",
+                LINK,
+                marked === item.id ? "text-fg" : "text-fg-subtle",
               )}
             >
               {marked === item.id && (
                 <motion.span
                   layoutId="nav-pill"
                   aria-hidden
-                  className="absolute inset-0 -z-10 rounded-full bg-ink-800"
+                  className="absolute inset-0 -z-10 rounded-full bg-white/[0.09] ring-1 ring-inset ring-white/15"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
@@ -117,25 +135,17 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center justify-end gap-3">
-          {/* The way out for anyone who would rather just read the thing.
-              Phrased as a question because it is an offer, not a mode
-              switch someone is looking for. */}
+        {/* The way out for anyone who would rather just read the thing. */}
+        <div className="flex justify-end">
           <button
             onClick={() => setPlain(!plain)}
             aria-pressed={plain}
-            className="hidden rounded-full border border-ink-700 px-3.5 py-1.5 text-sm text-fg-muted transition-colors duration-200 hover:border-ink-600 hover:text-fg lg:block"
+            className={cn(
+              LINK,
+              "hidden border border-white/10 text-fg-subtle hover:border-white/20 hover:text-fg sm:block",
+            )}
           >
-            {plain
-              ? "Back to the interactive version"
-              : "Prefer a more straightforward read?"}
-          </button>
-
-          <button
-            onClick={() => scrollTo("connect")}
-            className="rounded-full bg-fg px-4 py-1.5 text-sm font-medium text-ink-950 transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-          >
-            Contact
+            {plain ? "Interactive" : "Simpler read"}
           </button>
         </div>
       </nav>
