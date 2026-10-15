@@ -210,7 +210,7 @@ export default function Experience() {
             transition={{ duration: 0.45, ease: EASE }}
             className="absolute inset-y-0 right-0 z-10 flex w-[46%] items-center"
           >
-            <div className="max-h-full overflow-y-auto px-6 py-24 pr-12">
+            <div className="max-h-full max-w-xl overflow-y-auto px-6 py-24 pr-12">
               <Detail role={current} inScene onBack={() => setFocused(null)} />
             </div>
           </motion.div>
