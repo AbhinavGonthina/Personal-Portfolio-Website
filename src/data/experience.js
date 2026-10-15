@@ -208,3 +208,22 @@ export const experience = [
     tech: [],
   },
 ];
+
+/**
+ * The groups left to right across the skyline arc, which is not the order
+ * above: that one is reverse-chronological, this one is spatial. The 3D
+ * scene lays the buildings out in it and the detail panel's arrows step
+ * along it, so both have to read from the same list or the left arrow
+ * would walk off in some order of its own.
+ *
+ * `ground` is the word written on the pavement in front of each cluster.
+ */
+export const ARC_GROUPS = [
+  { id: "startup", ground: "STARTUPS" },
+  { id: "work", ground: "WORK" },
+  { id: "northeastern", ground: "NORTHEASTERN" },
+];
+
+export const arcOrder = ARC_GROUPS.flatMap(({ id }) =>
+  experience.filter((r) => r.category === id),
+);
