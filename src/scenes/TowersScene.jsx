@@ -155,6 +155,7 @@ function Building({
   mirrored,
 }) {
   const body = useRef();
+  const stage = useRef();
   const crown = useRef();
   const light = useRef();
   const [hovered, setHovered] = useState(false);
@@ -173,8 +174,12 @@ function Building({
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-6 * delta);
     const target = on ? 1 : dimmed ? 0.015 : IDLE;
-    if (body.current) {
-      const m = body.current.material;
+    // Both parts of the shaft, not just the lower one - the stepped-back
+    // upper stage has its own material and was staying dark while the rest
+    // of the building lit up.
+    for (const part of [body.current, stage.current]) {
+      if (!part) continue;
+      const m = part.material;
       m.emissiveIntensity += (target * 0.5 - m.emissiveIntensity) * k;
     }
     if (crown.current) {
@@ -188,28 +193,52 @@ function Building({
 
   const shaft = variant === "setback" ? height * 0.78 : height;
 
-  return (
-    <group position={[x, 0, z]} rotation={[0, rotY, 0]}>
-      <mesh
-        ref={body}
-        position={[0, shaft / 2, 0]}
-        raycast={mirrored ? null : undefined}
-        onPointerOver={(e) => {
-          if (mirrored) return;
+  // On the group rather than the shaft, so the crown, the sign, the mast
+  // and the upper stage are all part of the same target. With them on the
+  // shaft alone, pointing at the top of a building did nothing.
+  const events = mirrored
+    ? {}
+    : {
+        onPointerOver: (e) => {
           e.stopPropagation();
           setHovered(true);
           document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
+        },
+        onPointerOut: () => {
           setHovered(false);
           document.body.style.cursor = "";
-        }}
-        onClick={(e) => {
-          if (mirrored) return;
+        },
+        onClick: (e) => {
           e.stopPropagation();
           onFocus(role.id);
-        }}
-      >
+        },
+      };
+
+  // One invisible box per building, covering the shaft, the upper stage,
+  // the crown, the sign and the mast. Relying on the real meshes left dead
+  // spots - the sign plane and everything above it on the taller towers
+  // simply did not register - and chasing which child the ray happened to
+  // hit is not worth it when a single convex target is exact.
+  //
+  // `visible={false}` would be skipped by the raycaster, so it is a fully
+  // transparent material that writes neither colour nor depth instead.
+  const hitH = height + 1.9;
+
+  return (
+    <group position={[x, 0, z]} rotation={[0, rotY, 0]}>
+      {!mirrored && (
+        <mesh position={[0, hitH / 2, 0]} {...events}>
+          <boxGeometry args={[w * 1.25, hitH, d * 1.25]} />
+          <meshBasicMaterial
+            transparent
+            opacity={0}
+            depthWrite={false}
+            colorWrite={false}
+          />
+        </mesh>
+      )}
+
+      <mesh ref={body} position={[0, shaft / 2, 0]}>
         <boxGeometry args={[w, shaft, d]} />
         <meshStandardMaterial
           color="#09090b"
@@ -224,7 +253,7 @@ function Building({
       {/* A narrower upper stage, so one of the two industry towers reads
           differently from the other at a glance. */}
       {variant === "setback" && (
-        <mesh position={[0, shaft + (height - shaft) / 2, 0]}>
+        <mesh ref={stage} position={[0, shaft + (height - shaft) / 2, 0]}>
           <boxGeometry args={[w * 0.62, height - shaft, d * 0.62]} />
           <meshStandardMaterial
             color="#09090b"
