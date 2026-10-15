@@ -374,7 +374,13 @@ export default function TowersScene({
         />
       ))}
 
-      <gridHelper args={[90, 90, "#2a2a2a", "#161616"]} />
+      {/* Above the floor sheet, not below it. The sheet is transparent, so
+          it draws after everything opaque - leaving the grid under it meant
+          the grid was painted over and the ground went featureless black. */}
+      <gridHelper
+        args={[90, 90, "#3e3e3e", "#242424"]}
+        position={[0, 0.02, 0]}
+      />
 
       {/* The floor. A sheet of near-black over the mirrored towers rather
           than a true reflective material: MeshReflectorMaterial renders the
