@@ -145,6 +145,33 @@ function makeWindowTexture() {
   return tex;
 }
 
+/**
+ * Crowns have to read as equally lit whatever hue they are.
+ *
+ * One shared emissiveIntensity does not do that. Brightness is the colour
+ * times the intensity, so Quak's near-white orange threw several times the
+ * light of Rainfall's navy at the same number, and because bloom keys off
+ * luminance the dark ones never crossed its threshold and never glowed at
+ * all.
+ *
+ * Two corrections. The colour is normalised so its brightest channel is
+ * 1.0, which restores a dark accent's vividness without shifting its hue.
+ * Then the intensity is scaled by the inverse of that colour's luminance,
+ * so a blue crown - blue contributes only 0.07 of perceived luminance
+ * against green's 0.72 - is driven hard enough to bloom like a red one.
+ */
+const CROWN_LUM = 0.42;
+
+function crownLight(hex) {
+  const c = new THREE.Color(hex);
+  const peak = Math.max(c.r, c.g, c.b) || 1;
+  c.multiplyScalar(1 / peak);
+  const lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  // Clamped: without a ceiling a pure blue would be driven to absurdity.
+  const gain = Math.min(4, Math.max(1, CROWN_LUM / Math.max(lum, 0.06)));
+  return { color: c, gain };
+}
+
 function Building({
   tower,
   windows,
@@ -162,6 +189,7 @@ function Building({
   const { role, x, z, rotY, height, w, d, variant } = tower;
   const on = focused || hovered;
   const logoAspect = logo ? logo.image.width / logo.image.height : 3;
+  const lit = useMemo(() => crownLight(role.accent), [role.accent]);
 
   const map = useMemo(() => {
     const m = windows.clone();
@@ -184,7 +212,8 @@ function Building({
     }
     if (crown.current) {
       const m = crown.current.material;
-      m.emissiveIntensity += (target * 5 - m.emissiveIntensity) * k;
+      const want = target * 3.4 * lit.gain;
+      m.emissiveIntensity += (want - m.emissiveIntensity) * k;
     }
     if (light.current) {
       light.current.intensity += (target * 9 - light.current.intensity) * k;
@@ -278,8 +307,8 @@ function Building({
         />
         <meshStandardMaterial
           color="#000000"
-          emissive={role.accent}
-          emissiveIntensity={IDLE * 5}
+          emissive={lit.color}
+          emissiveIntensity={IDLE * 3.4 * lit.gain}
           toneMapped={false}
         />
       </mesh>
@@ -289,8 +318,8 @@ function Building({
           <cylinderGeometry args={[0.02, 0.05, 1.7, 6]} />
           <meshStandardMaterial
             color="#000000"
-            emissive={role.accent}
-            emissiveIntensity={1.1}
+            emissive={lit.color}
+            emissiveIntensity={1.1 * lit.gain}
             toneMapped={false}
           />
         </mesh>
@@ -307,7 +336,7 @@ function Building({
       <pointLight
         ref={light}
         position={[0, height - 0.2, 0.9]}
-        color={role.accent}
+        color={lit.color}
         intensity={0}
         distance={9}
         decay={2}
