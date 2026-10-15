@@ -39,7 +39,28 @@ export const useFocused = () =>
     () => null,
   );
 
+const nearSubs = new Set();
+const nearSub = (fn) => {
+  nearSubs.add(fn);
+  return () => nearSubs.delete(fn);
+};
+
 export const setJourney = (v) => {
   journey = v;
+  nearSubs.forEach((fn) => fn());
 };
 export const getJourney = () => journey;
+
+/**
+ * For the few bits of DOM that have to know where the camera is.
+ *
+ * It is a boolean, not the number: subscribers fire every scroll frame
+ * but React bails out unless the answer actually flips, so this costs
+ * a comparison rather than a render.
+ */
+export const useJourneyNear = (from, to) =>
+  useSyncExternalStore(
+    nearSub,
+    () => journey >= from && journey <= to,
+    () => false,
+  );

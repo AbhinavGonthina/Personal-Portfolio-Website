@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
+import { profile } from "../data/profile";
 import { getJourney } from "../lib/stage";
 import { STOP, STOPS } from "../lib/stops";
 import { useTownMaterials } from "../lib/townMaterials";
@@ -915,7 +916,7 @@ function resolve(stop, out, cam, pointer, t) {
     return out;
   }
 
-  const { at, yaw, dist, centred } = stop.frame;
+  const { at, yaw, dist, centred, eye } = stop.frame;
   const nx = Math.sin(yaw);
   const nz = Math.cos(yaw);
   const rx = Math.cos(yaw);
@@ -928,7 +929,10 @@ function resolve(stop, out, cam, pointer, t) {
 
   out.px = at[0] + nx * dist + rx * halfW * 0.46;
   out.pz = at[2] + nz * dist + rz * halfW * 0.46;
-  out.py = at[1] + (centred ? 0 : 0.25);
+  // Standing, always. The camera's own height is eye level and the
+  // subject's height is what it looks at - a board four metres up is
+  // seen by looking up at it, not by floating to meet it.
+  out.py = eye ?? at[1] + (centred ? 0 : 0.25);
   out.lx = at[0] + rx * halfW * 0.4;
   out.lz = at[2] + rz * halfW * 0.4;
   out.ly = at[1];
@@ -962,8 +966,25 @@ function Rig({ target, narrow }) {
       const sway = lerp(a.sway ?? 0.1, b.sway ?? 0.1, f);
       const extra = a.street || b.street ? 0 : state.pointer.x * sway;
 
-      for (const key of ["px", "py", "pz", "lx", "ly", "lz"]) {
-        SHOT[key] = lerp(A[key], B[key], f);
+      // A stop can name a point to go through on the way in. Without
+      // it the camera takes the straight line, which for the house
+      // means cutting the corner and phasing through a side wall
+      // instead of walking up the path and through the door.
+      const via = b.via;
+      if (via) {
+        const u = 1 - f;
+        const q = (a0, v0, b0) => u * u * a0 + 2 * u * f * v0 + f * f * b0;
+        SHOT.px = q(A.px, via[0], B.px);
+        SHOT.py = q(A.py, via[1], B.py);
+        SHOT.pz = q(A.pz, via[2], B.pz);
+        const vl = b.viaLook ?? via;
+        SHOT.lx = q(A.lx, vl[0], B.lx);
+        SHOT.ly = q(A.ly, vl[1], B.ly);
+        SHOT.lz = q(A.lz, vl[2], B.lz);
+      } else {
+        for (const key of ["px", "py", "pz", "lx", "ly", "lz"]) {
+          SHOT[key] = lerp(A[key], B[key], f);
+        }
       }
       // Swings the aim point around the camera rather than sliding the
       // whole shot sideways, so a nudge reads as turning your head.
@@ -1037,6 +1058,49 @@ function useNear(from, to) {
     if (want !== on) setOn(want);
   });
   return on;
+}
+
+/**
+ * The name, standing on the pavement where the camera first looks.
+ *
+ * The same extruded lettering the clusters use, so the landing speaks
+ * the skyline's language before you have scrolled anywhere. It fades
+ * out as the camera leaves, because by then you are looking at a
+ * hoarding that says it again.
+ */
+const NAME_H = 0.76;
+
+function Nameplate() {
+  const mats = useRef([]);
+  const lines = useMemo(() => {
+    const [first, ...rest] = profile.name.toUpperCase().split(" ");
+    return [first, rest.join(" ")].map((t) => makeTextTexture(t));
+  }, []);
+  useEffect(() => () => lines.forEach((l) => l.tex.dispose()), [lines]);
+
+  useFrame((_, delta) => {
+    const k = 1 - Math.exp(-5 * delta);
+    const want = 1 - Math.min(1, Math.max(0, (getJourney() - 0.12) / 0.5));
+    for (const m of mats.current) if (m) m.opacity += (want - m.opacity) * k;
+  });
+
+  mats.current.length = 0;
+  return (
+    <group position={[-7.4, 0, 16]} rotation={[0, 0.16, 0]}>
+      {lines.map((l, i) => (
+        <group key={i} position={[0, NAME_H * (1.56 - i) * 1.18, 0]}>
+          <ExtrudedText
+            tex={l.tex}
+            aspect={l.aspect}
+            height={NAME_H}
+            depth={0.3}
+            layers={14}
+            matRef={(el) => el && mats.current.push(el)}
+          />
+        </group>
+      ))}
+    </group>
+  );
 }
 
 /**
@@ -1170,6 +1234,7 @@ export default function TownScene({
 
       <Rig target={target} narrow={narrow} />
       <Distant />
+      <Nameplate />
       <Town
         town={town}
         screen={screen}

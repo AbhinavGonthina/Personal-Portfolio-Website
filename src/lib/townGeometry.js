@@ -34,7 +34,7 @@ export const TOWN = {
  * because the About section's words belong painted on it rather than
  * floating in a panel over the top.
  */
-export const BOARD = { w: 7.4, h: 3.4, y: 2.5, pad: 0.2 };
+export const BOARD = { w: 7.6, h: 3.5, y: 2.4, pad: 0.2 };
 export const BOARD_PHOTO = BOARD.h - BOARD.pad * 2;
 
 export function billboard() {
