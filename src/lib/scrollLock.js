@@ -1,55 +1,62 @@
 import { useEffect } from "react";
 
 /**
- * Two ways of stopping the page, because they are stopping it for
- * different reasons.
+ * Two ways of stopping the page, because they stop it for different
+ * reasons.
  *
  * `useScrollLock` is indefinite and airtight: the body stops being
  * scrollable at all. That is what a focused building needs, since the
  * page must not move until you come back out.
  *
- * `holdScroll` is a short pause that still lets the page be scrolled
- * in code. It cancels the input instead of the overflow, which is the
- * only way to park the scroll exactly on a stop while the user is
- * mid-fling - with overflow hidden, scrollTo does nothing.
+ * `holdScroll` is a short pause on going *forward* only. It cancels
+ * the input rather than the overflow, so the page can still be
+ * scrolled in code and so going back up is never blocked - the pause
+ * is there to stop you overshooting a section you have only just
+ * arrived at, not to trap you in it.
  */
 
-const SCROLL_KEYS = new Set([
-  "ArrowUp",
-  "ArrowDown",
-  "PageUp",
-  "PageDown",
-  "Home",
-  "End",
-  " ",
-]);
+const FORWARD_KEYS = new Set(["ArrowDown", "PageDown", "End", " ", "Spacebar"]);
+const BACK_KEYS = new Set(["ArrowUp", "PageUp", "Home"]);
 
 let holdUntil = 0;
 let holding = false;
+let touchFrom = 0;
 
 const swallow = (e) => {
   if (performance.now() > holdUntil) return;
-  if (e.type === "keydown" && !SCROLL_KEYS.has(e.key)) return;
-  e.preventDefault();
+  if (e.type === "wheel") {
+    if (e.deltaY > 0) e.preventDefault();
+    return;
+  }
+  if (e.type === "keydown") {
+    if (FORWARD_KEYS.has(e.key) && !BACK_KEYS.has(e.key)) e.preventDefault();
+    return;
+  }
+  if (e.type === "touchstart") {
+    touchFrom = e.touches[0]?.clientY ?? 0;
+    return;
+  }
+  // A finger moving up the screen scrolls the page down.
+  if (touchFrom - (e.touches[0]?.clientY ?? 0) > 0) e.preventDefault();
 };
+
+const EVENTS = ["wheel", "touchstart", "touchmove", "keydown"];
 
 function release() {
   if (!holding) return;
   holding = false;
-  window.removeEventListener("wheel", swallow, { capture: true });
-  window.removeEventListener("touchmove", swallow, { capture: true });
-  window.removeEventListener("keydown", swallow, { capture: true });
+  for (const type of EVENTS) {
+    window.removeEventListener(type, swallow, { capture: true });
+  }
 }
 
-/** Ignores scroll input for `ms`, leaving programmatic scrolling alone. */
+/** Ignores forward scroll input for `ms`. Programmatic scrolling is untouched. */
 export function holdScroll(ms) {
   holdUntil = Math.max(holdUntil, performance.now() + ms);
   if (holding) return;
   holding = true;
   const opts = { capture: true, passive: false };
-  window.addEventListener("wheel", swallow, opts);
-  window.addEventListener("touchmove", swallow, opts);
-  window.addEventListener("keydown", swallow, opts);
+  for (const type of EVENTS) window.addEventListener(type, swallow, opts);
   const tick = () => {
     if (performance.now() > holdUntil) release();
     else requestAnimationFrame(tick);

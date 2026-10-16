@@ -69,6 +69,15 @@
     scroll-behavior: smooth;
   }
 
+  /* Tailwind's preflight leaves buttons on the browser default, which
+     is an arrow. Every button on this site is a real control, so they
+     all get the hand - once here rather than a class on each one. */
+  button:not(:disabled),
+  summary,
+  [role="button"] {
+    cursor: pointer;
+  }
+
   /* Anyone who asked the OS to calm animations gets no scroll animation and
      no transitions, site-wide. Cheaper and more reliable than remembering it
      per component. */
