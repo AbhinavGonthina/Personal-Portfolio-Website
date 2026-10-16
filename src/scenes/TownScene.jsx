@@ -14,6 +14,7 @@ import Motes from "./motes";
 import Car from "./arrival";
 import { ARRIVAL_END, arrivalShot } from "../lib/arrivalPath";
 import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
+import { markLanded } from "../lib/welcome";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
@@ -1212,7 +1213,7 @@ const WELCOME_H = 0.92;
 // High enough to be seen falling, brief enough to be over before
 // anyone wonders what they are waiting for.
 const DROP_FROM = 15;
-const DROP_FOR = 3.2;
+const DROP_FOR = 2.1;
 
 function Welcome() {
   const mats = useRef([]);
@@ -1232,7 +1233,12 @@ function Welcome() {
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
-    if (!arriving) age.current = Math.min(DROP_FOR, age.current + delta);
+    if (!arriving) {
+      age.current = Math.min(DROP_FOR, age.current + delta);
+      // The hint underneath waits on this rather than on a timer of
+      // its own that happens to be about as long.
+      if (age.current >= DROP_FOR) markLanded();
+    }
 
     if (sheet.current) {
       // Eased, so it decelerates into the ground rather than landing

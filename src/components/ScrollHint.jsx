@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useJourneyNear } from "../lib/stage";
 import { useArriving } from "../lib/arrival";
+import { useWelcomeLanded } from "../lib/welcome";
 
 /**
  * The one instruction on the whole site.
@@ -10,16 +11,18 @@ import { useArriving } from "../lib/arrival";
  * in the town. In the upper half, so it is nowhere near the lettering
  * on the pavement.
  *
- * It arrives after the sign has finished landing and goes the moment
+ * It arrives when the sign has finished landing - the frame loop
+ * says so, rather than a timer here guessing - and goes the moment
  * you do what it asks.
  */
 export default function ScrollHint() {
   const atStart = useJourneyNear(0, 0.08);
   const arriving = useArriving();
+  const landed = useWelcomeLanded();
 
   return (
     <AnimatePresence>
-      {atStart && !arriving && (
+      {atStart && !arriving && landed && (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -29,7 +32,7 @@ export default function ScrollHint() {
           // you had already done what it asked - and `exit` nested
           // inside `transition` is not a thing motion reads.
           exit={{ opacity: 0, y: -6, transition: { duration: 0.3 } }}
-          transition={{ duration: 0.5, delay: 2.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="pointer-events-none fixed inset-x-0 bottom-12 z-20 flex flex-col items-center gap-3"
         >
           <p className="font-mono text-sm uppercase tracking-[0.3em] text-fg-muted">
