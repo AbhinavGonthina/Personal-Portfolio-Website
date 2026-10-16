@@ -46,7 +46,7 @@ export const TOWN = {
   // turn right, and they are there - so they have to be looking the
   // way you will be looking, which is a quarter turn clockwise off
   // the house's own facing.
-  mail: { x: -13.92, z: 12.64, yaw: HOUSE_YAW + Math.PI / 2 },
+  mail: { x: -12.53, z: 12.81, yaw: HOUSE_YAW + Math.PI / 2 },
   billboard: { x: 13.5, z: 6.0, yaw: -0.28 },
 };
 
@@ -413,25 +413,31 @@ export const MAIL_BODY = { w: 0.58, h: 0.48, d: 0.88 };
 export function mailrail(count) {
   const base = [];
   const span = (count - 1) * MAIL_GAP;
-  const len = span + 1.5;
-
   // A low garden wall rather than a pair of legs, because that is
   // what a row of boxes at the end of a drive actually stands on.
   // Built in courses with a hair between them, so it reads as laid
   // rather than poured.
-  const n = Math.max(4, Math.round(len / 0.86));
-  const pw = len / n;
+  //
+  // It runs a good deal further towards the house than away from it,
+  // which puts the boxes at the near end of the wall instead of in
+  // the middle: the one on the end used to sit close enough to the
+  // house to have it looming over the shot.
+  const x0 = -(span / 2 + 1.35);
+  const x1 = span / 2 + 3.55;
+  const wall = x1 - x0;
+  const n = Math.max(4, Math.round(wall / 0.86));
+  const pw = wall / n;
   for (let i = 0; i < n; i++) {
     base.push(
       box(pw - 0.045, 0.98 + rnd(i, 5.5) * 0.03, 0.46, [
-        -len / 2 + pw * (i + 0.5),
+        x0 + pw * (i + 0.5),
         0.49,
         0,
       ]),
     );
   }
   // The capping course the boxes sit on, proud of the wall either side.
-  base.push(box(len + 0.14, 0.1, 0.58, [0, 1.05, 0]));
+  base.push(box(wall + 0.14, 0.1, 0.58, [(x0 + x1) / 2, 1.05, 0]));
   return { base: merge(base) };
 }
 
