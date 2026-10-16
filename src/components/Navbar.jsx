@@ -102,7 +102,14 @@ export default function Navbar() {
       {/* Three columns rather than a flex row, so the links sit on the
           centre of the page whatever the name on the left or the button on
           the right happen to be. */}
-      <nav className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6">
+      <nav
+        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6"
+        // The bar itself runs to the edge of the window. Its contents
+        // stand off the gap the scroll lock leaves where the scrollbar
+        // was, so opening a building does not nudge everything in here
+        // half a scrollbar to the right.
+        style={{ paddingRight: "calc(1.5rem + var(--lock-gap, 0px))" }}
+      >
         <button
           onClick={() => {
             setFocused(null);

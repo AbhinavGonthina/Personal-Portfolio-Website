@@ -34,8 +34,11 @@ const HW = CAR.wide / 2;
 
 /** The camera's seat, and the screen it is looking at, in car-local space. */
 export const SEAT = [0.46, 1.34, 0.95];
-export const SCREEN_AT = [0.46, 1.45, -0.255];
-export const SCREEN = { w: 0.44, h: 0.28 };
+export const SCREEN_AT = [0.46, 1.45, -0.25];
+// Matched to the 640x420 the screen is painted at, and small enough
+// that the headrest frames it on all four sides. It used to be wider
+// and taller than the thing it was supposed to be mounted in.
+export const SCREEN = { w: 0.4, h: 0.262 };
 
 /** Where the right-hand rear door is hinged, and how long the leaf is. */
 export const HINGE = [HW - 0.02, 0, 0.1];
@@ -123,10 +126,10 @@ export function car() {
   for (const s of [-1, 1]) {
     const x = s * 0.46;
     trim.push(box(0.6, 0.14, 0.52, [x, 0.6, -0.72]));
-    trim.push(box(0.62, 0.63, 0.16, [x, 0.945, -0.38], [-0.07, 0, 0]));
-    base.push(box(0.045, 0.12, 0.045, [x - 0.12, 1.29, -0.36]));
-    base.push(box(0.045, 0.12, 0.045, [x + 0.12, 1.29, -0.36]));
-    trim.push(box(0.44, 0.26, 0.15, [x, 1.45, -0.34]));
+    trim.push(box(0.62, 0.59, 0.16, [x, 0.925, -0.38], [-0.07, 0, 0]));
+    base.push(box(0.045, 0.1, 0.045, [x - 0.13, 1.24, -0.36]));
+    base.push(box(0.045, 0.1, 0.045, [x + 0.13, 1.24, -0.36]));
+    trim.push(box(0.52, 0.36, 0.15, [x, 1.45, -0.34]));
   }
 
   // The rear bench, which is what you are sitting on. Same way round.

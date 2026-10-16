@@ -395,7 +395,7 @@ export function paintSkills(groups) {
  * quad that scales costs nothing. This is the contract between the
  * track, which is painted, and the fill, which is not.
  */
-export const HEADREST_BAR = { x: 0.11, y: 0.685, w: 0.78, h: 0.03 };
+export const HEADREST_BAR = { x: 0.11, y: 0.737, w: 0.78, h: 0.03 };
 
 /**
  * The screen on the back of the headrest in front of you.
@@ -404,6 +404,12 @@ export const HEADREST_BAR = { x: 0.11, y: 0.685, w: 0.78, h: 0.03 };
  * faint grid for a floor, ticks at the corners instead of a border,
  * a tracked mono eyebrow over a hairline rule, and one accent. The
  * same shapes the section headings and the signage use, drawn small.
+ *
+ * The block sits in the middle of the panel. Laid out from the top
+ * down it left ninety pixels of nothing under the bar and a third of
+ * that above the eyebrow, which read as a readout that had slipped.
+ * These numbers are the same layout shifted so the two margins
+ * match; `HEADREST_BAR` moves with them.
  */
 export function paintHeadrest(label, note) {
   const W = 640;
@@ -456,13 +462,13 @@ export function paintHeadrest(label, note) {
   g.fillStyle = "#6fe3f5";
   g.font = `500 20px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = "7px";
-  g.fillText(note.toUpperCase(), pad, 96);
+  g.fillText(note.toUpperCase(), pad, 118);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
   // The hairline under the eyebrow: the same mark every section
   // heading on the site carries.
   g.fillStyle = "#6fe3f5";
-  g.fillRect(pad, 114, 52, 2);
+  g.fillRect(pad, 136, 52, 2);
 
   // Shrunk to fit rather than wrapped. "You have arrived" is half
   // again as long as "Loading" and a second line would push the bar
@@ -473,7 +479,7 @@ export function paintHeadrest(label, note) {
     g.font = `600 ${size}px ${SANS}`;
     size -= 2;
   } while (g.measureText(label).width > W - pad * 2 && size > 28);
-  g.fillText(label, pad, 212);
+  g.fillText(label, pad, 234);
 
   // The track. The fill that runs along it is a quad in the scene.
   const bx = HEADREST_BAR.x * W;

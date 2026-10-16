@@ -1303,14 +1303,16 @@ function Towers({ layout, windows, frame, byUrl, focused, onFocus }) {
  * Mirrored, non-interactive copies of the towers, foreshortened. A
  * full-length mirror reads as a second skyline hanging downward.
  *
- * Its own component so the visibility gate can use a frame-loop hook:
- * there is no point mirroring eight buildings into a pavement nobody
- * can see from the establishing shot, or from inside a house.
+ * Drawn wherever the towers are, which is everywhere. Gating this on
+ * how close the camera was saved a few draw calls and cost something
+ * worse: the whole pavement came alive as you walked towards it, so
+ * the reflection read as an effect switching on rather than as what
+ * the street is made of. The towers themselves are never gated, and
+ * frustum culling already drops the ones behind you.
  */
 function Reflections({ layout, windows, frame, byUrl, focused }) {
-  const on = useNear(0.6, STOP.experience + 0.7);
   return (
-    <group scale={[1, -0.45, 1]} visible={on}>
+    <group scale={[1, -0.45, 1]}>
       {layout.map((tower) => (
         <Building
           key={`r-${tower.role.id}`}
@@ -1376,14 +1378,22 @@ function Town({ town, screen, skills, board, marks }) {
   // agree with each other.
   const open = useNear(STOP.experience + 0.45, STOP.contact + 0.4);
   const inside = useNear(STOP.experience + 0.45, STOP.contact - 0.25);
+  // The room has to exist before you reach the door, so `inside`
+  // starts early and ends late. The ground cannot share that gate:
+  // the same margin that builds the room in good time also took the
+  // street out from under you half way along the path to the house,
+  // and put it back while you were still in the doorway on the way
+  // out. This one turns over within a few hundredths of the stop at
+  // either end, by which point the walls are all you can see anyway.
+  const walled = useNear(STOP.skills - 0.05, STOP["projects-hold"] + 0.08);
   const mail = useNear(STOP["projects-hold"] + 0.2, STOPS.length);
   const mailLive = useNear(STOP.contact - 0.35, STOPS.length);
 
   return (
     <>
-      {/* The floor lives here so it can see the same gate the rest of
-          the interior does. */}
-      <Ground grid={!inside} />
+      {/* The floor lives here so it can see the same gates the rest of
+          the town does - though not the same one as the room. */}
+      <Ground grid={!walled} />
       <Dressing mats={town} visible />
       <Billboard mats={town} visible board={board} />
       <House mats={town} visible open={open} />
