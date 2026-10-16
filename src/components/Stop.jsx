@@ -1,4 +1,3 @@
-import Marker from "./Marker";
 import { cn } from "../lib/cn";
 
 /**
@@ -52,8 +51,10 @@ export default function Stop({
         tall ? "h-[188vh] min-h-[1240px]" : "h-[94vh] min-h-[620px]",
       )}
     >
-      <Marker>{title}</Marker>
-      <div className="sr-only">{children}</div>
+      <div className="sr-only">
+        <h2>{title}</h2>
+        {children}
+      </div>
       {/* A second marker one viewport down. The camera holds between
           this and the top of the section, so scrolling it advances
           what is on the screen rather than moving the shot. */}

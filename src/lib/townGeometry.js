@@ -20,9 +20,19 @@ import { ball, box, cone, cyl, HALF, merge, place, plane, rnd } from "./geo";
  * room has to feel like a room at that scale.
  */
 
+/**
+ * The house faces east, toward the city, so its door is the thing you
+ * meet coming the other way. Walking over from the skyline you turn to
+ * face it before you go in, which is what a person does and what the
+ * camera was conspicuously not doing when it slid in through a wall.
+ */
+const HOUSE_YAW = Math.PI / 2 - 0.12;
+
 export const TOWN = {
-  house: { x: -16.5, z: 6.5, yaw: 0.2 },
-  mail: { x: -13.2, z: 14.2, yaw: 0.12 },
+  house: { x: -19, z: 8, yaw: HOUSE_YAW },
+  // Further along the same path, so leaving the house and reaching the
+  // mailboxes is one walk in one direction.
+  mail: { x: -10.5, z: 9, yaw: HOUSE_YAW },
   billboard: { x: 13.5, z: 6.0, yaw: -0.28 },
 };
 

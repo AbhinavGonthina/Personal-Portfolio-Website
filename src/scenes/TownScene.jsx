@@ -988,11 +988,16 @@ function Rig({ target, narrow }) {
       }
       // Swings the aim point around the camera rather than sliding the
       // whole shot sideways, so a nudge reads as turning your head.
+      //
+      // Negated: the plain Y rotation turns the aim the other way, so
+      // the cursor went right and the view went left - the opposite of
+      // what it does in the middle of the skyline, where the same
+      // gesture already worked correctly.
       if (extra) {
         const dx = SHOT.lx - SHOT.px;
         const dz = SHOT.lz - SHOT.pz;
-        const c = Math.cos(extra);
-        const s2 = Math.sin(extra);
+        const c = Math.cos(-extra);
+        const s2 = Math.sin(-extra);
         SHOT.lx = SHOT.px + dx * c + dz * s2;
         SHOT.lz = SHOT.pz - dx * s2 + dz * c;
         SHOT.ly += state.pointer.y * sway * 1.4;
