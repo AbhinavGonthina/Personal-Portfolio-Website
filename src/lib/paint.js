@@ -209,10 +209,14 @@ const wrap = (g, text, maxW) => {
 /**
  * The right-hand half of the hoarding: who the face belongs to.
  *
- * Word for word and weight for weight what used to sit in the corner
- * of the landing page - the mono eyebrow, the name in Geist Sans, the
- * tagline, the currently line, the graduation line. It reads as a sign
- * because of where it is, not because it was rewritten as one.
+ * Same words as the landing page used to carry, laid out as a sign
+ * rather than as a page. Left-aligned prose on black read as a
+ * profile readme - a column of text that happens to be outdoors - so
+ * it is built now out of the marks the rest of the town is built
+ * from: the ground grid faint underneath, ticks at the corners, the
+ * hairline rule under the name that every section heading carries,
+ * and the two standing facts set as a labelled footer across the
+ * bottom instead of trailing off the end of a paragraph.
  *
  * Drawn at 2x, because at 1024 across a board that fills half the
  * screen the type was visibly soft.
@@ -223,65 +227,102 @@ export function paintBoard(profile, education) {
   const W = 1100 * S;
   const H = 880 * S;
   const [c, g] = canvas(W, H);
-  const pad = 70 * S;
+  const pad = 74 * S;
 
   g.fillStyle = "#000000";
   g.fillRect(0, 0, W, H);
+
+  // The ground grid, carried up onto the board.
+  g.strokeStyle = "#0d0d11";
+  g.lineWidth = 1 * S;
+  g.beginPath();
+  for (let x = 0; x <= W; x += 55 * S) {
+    g.moveTo(x, 0);
+    g.lineTo(x, H);
+  }
+  for (let y = 0; y <= H; y += 55 * S) {
+    g.moveTo(0, y);
+    g.lineTo(W, y);
+  }
+  g.stroke();
+
+  // Ticks at the corners rather than a border, like the readout in
+  // the car and the frames around everything else here.
+  g.strokeStyle = "#2e2e38";
+  g.lineWidth = 3 * S;
+  const m = 26 * S;
+  const t = 44 * S;
+  for (const [cx, sx] of [
+    [m, 1],
+    [W - m, -1],
+  ]) {
+    for (const [cy, sy] of [
+      [m, 1],
+      [H - m, -1],
+    ]) {
+      g.beginPath();
+      g.moveTo(cx + sx * t, cy);
+      g.lineTo(cx, cy);
+      g.lineTo(cx, cy + sy * t);
+      g.stroke();
+    }
+  }
+
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
 
   // Eyebrow: mono caps, wide tracking, the subtle grey.
   g.fillStyle = "#71717a";
-  g.font = `400 ${26 * S}px ${MONO}`;
+  g.font = `400 ${25 * S}px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = `${5 * S}px`;
   g.fillText(
     `${profile.role.toUpperCase()}  ·  ${profile.location.toUpperCase()}`,
     pad,
-    pad + 26 * S,
+    pad + 24 * S,
   );
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
   g.fillStyle = "#ffffff";
   g.font = `600 ${104 * S}px ${SANS}`;
-  g.fillText(profile.name, pad - 5 * S, pad + 150 * S);
+  g.fillText(profile.name, pad - 5 * S, pad + 142 * S);
+  g.fillRect(pad, pad + 176 * S, 104 * S, 3 * S);
 
   g.fillStyle = "#a1a1aa";
-  g.font = `400 ${40 * S}px ${SANS}`;
-  let y = pad + 250 * S;
+  g.font = `400 ${38 * S}px ${SANS}`;
+  let y = pad + 256 * S;
   for (const line of wrap(g, profile.tagline, W - pad * 2)) {
     g.fillText(line, pad, y);
-    y += 58 * S;
+    y += 54 * S;
   }
 
-  y += 44 * S;
-  g.font = `400 ${26 * S}px ${MONO}`;
-  if ("letterSpacing" in g) g.letterSpacing = `${4 * S}px`;
-  g.fillStyle = "#71717a";
-  g.fillText("CURRENTLY", pad, y);
-  const w = g.measureText("CURRENTLY").width;
-  if ("letterSpacing" in g) g.letterSpacing = "0px";
-  g.fillStyle = "#a1a1aa";
-  g.font = `400 ${34 * S}px ${SANS}`;
-  // The first line has the label beside it and the rest of the board
-  // to itself, so it wraps against two different widths. Run at one
-  // width and the sentence walks off the right-hand edge.
-  const head = pad + w + 14 * S;
-  const rest = wrap(g, `— ${profile.currently}`, W - head - pad);
-  g.fillText(rest[0] ?? "", head, y);
-  for (let i = 1; i < rest.length; i++) {
-    y += 46 * S;
-    g.fillText(rest[i], pad, y);
-  }
+  // Two standing facts, set as a footer. A rule across the board and
+  // a labelled column each - a plaque, not the last paragraph.
+  const base = H - pad + 28 * S;
+  g.fillStyle = "#2b2b34";
+  g.fillRect(pad, base - 186 * S, W - pad * 2, 2 * S);
 
-  y += 66 * S;
-  g.fillStyle = "#71717a";
-  g.font = `400 ${26 * S}px ${MONO}`;
-  if ("letterSpacing" in g) g.letterSpacing = `${2 * S}px`;
-  g.fillText(
-    `Graduating ${education.graduation}  ·  GPA ${education.gpa}`,
-    pad,
-    y,
-  );
+  const col = [pad, pad + (W - pad * 2) * 0.52];
+  const label = ["CURRENTLY", "GRADUATING"];
+  const body = [
+    profile.currently,
+    `${education.graduation}  ·  GPA ${education.gpa}`,
+  ];
+  for (let i = 0; i < 2; i++) {
+    g.fillStyle = "#6fe3f5";
+    g.font = `400 ${23 * S}px ${MONO}`;
+    if ("letterSpacing" in g) g.letterSpacing = `${4 * S}px`;
+    g.fillText(label[i], col[i], base - 132 * S);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+    g.fillStyle = "#d4d4d8";
+    g.font = `400 ${30 * S}px ${SANS}`;
+    const width = (i === 0 ? (W - pad * 2) * 0.46 : W - col[1] - pad) | 0;
+    let ly = base - 86 * S;
+    for (const line of wrap(g, body[i], width)) {
+      g.fillText(line, col[i], ly);
+      ly += 40 * S;
+    }
+  }
 
   return finish(c);
 }
@@ -345,51 +386,108 @@ export function paintSkills(groups) {
 /* ------------------------------------------------------------------ */
 
 /**
- * The screen on the back of the headrest in front of you, which is
- * the only thing to look at for the first few seconds of a visit.
+ * Where the progress bar sits on the headrest screen, as fractions of
+ * the plane measured from its left edge and its top.
  *
- * Styled as the seat-back display it is pretending to be: a status
- * line, a big label, and a progress bar that fills while you wait.
+ * The bar is geometry, not paint. A bar drawn into the canvas has to
+ * be redrawn and re-uploaded every time it moves, which for something
+ * that moves for three solid seconds is a texture upload a frame; a
+ * quad that scales costs nothing. This is the contract between the
+ * track, which is painted, and the fill, which is not.
  */
-export function paintHeadrest(label, note, progress) {
+export const HEADREST_BAR = { x: 0.11, y: 0.685, w: 0.78, h: 0.03 };
+
+/**
+ * The screen on the back of the headrest in front of you.
+ *
+ * Dressed like the rest of the town rather than like a web page: a
+ * faint grid for a floor, ticks at the corners instead of a border,
+ * a tracked mono eyebrow over a hairline rule, and one accent. The
+ * same shapes the section headings and the signage use, drawn small.
+ */
+export function paintHeadrest(label, note) {
   const W = 640;
   const H = 420;
   const [c, g] = canvas(W, H);
+  const pad = 58;
 
-  g.fillStyle = "#06080f";
+  g.fillStyle = "#04060b";
   g.fillRect(0, 0, W, H);
-  g.strokeStyle = "#1b2133";
-  g.lineWidth = 6;
-  g.strokeRect(3, 3, W - 6, H - 6);
 
-  g.textAlign = "center";
-  g.textBaseline = "middle";
+  // The grid under everything, at the same spacing and nearly the same
+  // tone as the one the town is standing on.
+  g.strokeStyle = "#0e1118";
+  g.lineWidth = 1;
+  g.beginPath();
+  for (let x = 0; x <= W; x += 40) {
+    g.moveTo(x + 0.5, 0);
+    g.lineTo(x + 0.5, H);
+  }
+  for (let y = 0; y <= H; y += 40) {
+    g.moveTo(0, y + 0.5);
+    g.lineTo(W, y + 0.5);
+  }
+  g.stroke();
+
+  // Corner ticks. A full border makes a card; four corners make a
+  // readout.
+  g.strokeStyle = "#27304a";
+  g.lineWidth = 3;
+  const t = 26;
+  for (const [cx, sx] of [
+    [20, 1],
+    [W - 20, -1],
+  ]) {
+    for (const [cy, sy] of [
+      [20, 1],
+      [H - 20, -1],
+    ]) {
+      g.beginPath();
+      g.moveTo(cx + sx * t, cy);
+      g.lineTo(cx, cy);
+      g.lineTo(cx, cy + sy * t);
+      g.stroke();
+    }
+  }
+
+  g.textAlign = "left";
+  g.textBaseline = "alphabetic";
 
   g.fillStyle = "#6fe3f5";
-  g.font = `500 22px ${MONO}`;
-  if ("letterSpacing" in g) g.letterSpacing = "6px";
-  g.fillText(note.toUpperCase(), W / 2, 86);
+  g.font = `500 20px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = "7px";
+  g.fillText(note.toUpperCase(), pad, 96);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-  g.fillStyle = "#ffffff";
-  g.font = `600 56px ${SANS}`;
-  g.fillText(label, W / 2, 180);
-
-  // The bar. Rounded, inset, and it only ever moves forward.
-  const bw = W - 160;
-  g.strokeStyle = "#242b40";
-  g.lineWidth = 4;
-  g.beginPath();
-  g.roundRect(80, 248, bw, 14, 7);
-  g.stroke();
+  // The hairline under the eyebrow: the same mark every section
+  // heading on the site carries.
   g.fillStyle = "#6fe3f5";
-  g.beginPath();
-  g.roundRect(80, 248, Math.max(14, bw * progress), 14, 7);
-  g.fill();
+  g.fillRect(pad, 114, 52, 2);
 
-  g.fillStyle = "#5a6480";
-  g.font = `400 20px ${MONO}`;
-  g.fillText("ABHINAV GONTHINA · BOSTON", W / 2, 338);
+  // Shrunk to fit rather than wrapped. "You have arrived" is half
+  // again as long as "Loading" and a second line would push the bar
+  // off the bottom of a screen this size.
+  g.fillStyle = "#f4f4f5";
+  let size = 58;
+  do {
+    g.font = `600 ${size}px ${SANS}`;
+    size -= 2;
+  } while (g.measureText(label).width > W - pad * 2 && size > 28);
+  g.fillText(label, pad, 212);
+
+  // The track. The fill that runs along it is a quad in the scene.
+  const bx = HEADREST_BAR.x * W;
+  const by = HEADREST_BAR.y * H;
+  const bw = HEADREST_BAR.w * W;
+  const bh = HEADREST_BAR.h * H;
+  g.strokeStyle = "#1d2436";
+  g.lineWidth = 2;
+  g.strokeRect(bx - 1, by - 1, bw + 2, bh + 2);
+  // Ticks along it, so a part-filled bar reads as a distance.
+  g.fillStyle = "#151b29";
+  for (let i = 1; i < 8; i++) {
+    g.fillRect(bx + (bw * i) / 8, by + 2, 1, bh - 4);
+  }
 
   return finish(c);
 }
