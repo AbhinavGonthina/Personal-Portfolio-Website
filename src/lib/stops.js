@@ -39,7 +39,6 @@ export const STOPS = [
     // everything else.
     id: "landing",
     ...shot([-1.5, EYE + 0.25, 30], [-1, 2.6, 2]),
-    sway: 0.14,
   },
   {
     // Square on to the hoarding. The board carries its own words, so
@@ -53,7 +52,6 @@ export const STOPS = [
       centred: true,
       eye: EYE,
     },
-    sway: 0.05,
   },
   {
     // The one stop that is not a framed object: you stand in the
@@ -61,7 +59,9 @@ export const STOPS = [
     id: "experience",
     title: "Experience",
     street: true,
+    // Looking about is the activity here, not a garnish on a shot.
     sway: 0.62,
+    rise: 0.22,
   },
   {
     // Inside, turned to the left wall and the servers.
@@ -81,7 +81,6 @@ export const STOPS = [
     },
     via: DOORSTEP,
     viaLook: DOORWAY,
-    sway: 0.05,
   },
   {
     // Turned to the right wall and the desk.
@@ -94,7 +93,6 @@ export const STOPS = [
       centred: true,
       eye: EYE_IN,
     },
-    sway: 0.05,
   },
   {
     // Held: the camera does not move across the second half of the
@@ -108,7 +106,6 @@ export const STOPS = [
       centred: true,
       eye: EYE_IN,
     },
-    sway: 0.05,
   },
   {
     // Back out through the same door, then down the path.
@@ -123,7 +120,6 @@ export const STOPS = [
     },
     via: DOORSTEP,
     viaLook: toWorld(TOWN.mail, [0, 1.3, 0]),
-    sway: 0.06,
   },
 ];
 
