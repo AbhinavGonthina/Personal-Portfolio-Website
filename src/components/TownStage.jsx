@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { DIM, MON, PULL, useWall } from "../lib/fourthWall";
+import { LOOK, MON, PULL, useWall } from "../lib/fourthWall";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
@@ -288,7 +288,12 @@ export default function TownStage({ refs }) {
         // own ancestors' boxes, and #root then swallows every click
         // meant for the scene. Stacking it at zero under a z-10 main
         // paints the same and stays hit-testable.
-        "town-stage fixed inset-0 z-0",
+        "town-stage fixed inset-0",
+        // Over the page while the room is up, under it otherwise.
+        // The page is the wall above the desk: during the tilt the
+        // screen has to cover it, and once the tilt is over it has
+        // to be the other way round.
+        wall > 0 ? "z-20" : "z-0",
         wall > 0 ? "" : "transition-opacity duration-500",
         live ? "opacity-100" : "opacity-0",
         grab && wall <= 0 ? "pointer-events-auto" : "pointer-events-none",
@@ -302,8 +307,11 @@ export default function TownStage({ refs }) {
       style={
         wall > 0
           ? {
-              opacity: live ? 1 - DIM(wall) : 0,
-              "--shrink": `translateY(${(MON.mid - 0.5) * 100 * PULL(wall)}vh) scale(${1 - (1 - MON.scale) * PULL(wall)})`,
+              opacity: live ? 1 : 0,
+              // Receding into the monitor, then leaving by the
+              // bottom of the frame with the rest of the room as the
+              // view tilts up off it.
+              "--shrink": `translateY(${(MON.mid - 0.5) * 100 * PULL(wall) + 100 * LOOK(wall)}vh) scale(${1 - (1 - MON.scale) * PULL(wall)})`,
             }
           : undefined
       }
