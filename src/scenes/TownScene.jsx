@@ -1215,12 +1215,24 @@ const WELCOME_H = 0.92;
 const DROP_FROM = 15;
 const DROP_FOR = 2.1;
 
-function Welcome() {
+/**
+ * When the sign starts falling if you arrived by car.
+ *
+ * Timed so it finishes half a second before the sequence hands over,
+ * which puts the whole fall in the part where you are already out of
+ * the car and facing the town. Waiting for the handover meant
+ * standing in front of an empty street while a sign you could not
+ * see yet got ready to drop.
+ */
+const DROP_AT = ARRIVAL_END - DROP_FOR - 0.5;
+
+function Welcome({ clock }) {
   const mats = useRef([]);
   const sheet = useRef();
   // It drops when you turn and see the town, not when the page
   // loads. During the arrival you are facing a headrest, and a sign
-  // landing behind you is a sign nobody saw.
+  // landing behind you is a sign nobody saw - so it waits, but only
+  // until you are out of the car, not until the sequence is over.
   const arriving = useArriving();
   // Accumulated delta rather than a timestamp off the shared clock.
   // The clock belongs to the Canvas and has been running since it was
@@ -1233,7 +1245,7 @@ function Welcome() {
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
-    if (!arriving) {
+    if (!arriving || clock.current.t >= DROP_AT) {
       age.current = Math.min(DROP_FOR, age.current + delta);
       // The hint underneath waits on this rather than on a timer of
       // its own that happens to be about as long.
@@ -1465,7 +1477,7 @@ export default function TownScene({
       <Distant />
       <Motes />
       <Lamps />
-      <Welcome />
+      <Welcome clock={clock} />
       <Town
         town={town}
         screen={screen}
