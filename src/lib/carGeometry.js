@@ -33,8 +33,8 @@ const HL = CAR.len / 2;
 const HW = CAR.wide / 2;
 
 /** The camera's seat, and the screen it is looking at, in car-local space. */
-export const SEAT = [0.46, 1.32, 0.82];
-export const SCREEN_AT = [0.46, 1.36, -0.48];
+export const SEAT = [0.46, 1.34, 0.95];
+export const SCREEN_AT = [0.46, 1.45, -0.255];
 export const SCREEN = { w: 0.44, h: 0.28 };
 
 /** Where the right-hand rear door is hinged, and how long the leaf is. */
@@ -105,30 +105,37 @@ export function car() {
   // Dashboard and wheel, right forward under the screen. They used to
   // sit a hand's width off the front seats, which from behind meant a
   // steering wheel hanging through the driver's back.
-  trim.push(box(CAR.wide - 0.14, 0.26, 0.3, [0, 1.15, -1.08]));
-  base.push(cyl(0.16, 0.16, 0.04, 14, [-0.44, 1.14, -0.86], [-0.4, 0, 0]));
-  base.push(cyl(0.03, 0.03, 0.22, 8, [-0.44, 1.06, -0.96], [-0.4, 0, 0]));
+  trim.push(box(CAR.wide - 0.14, 0.26, 0.26, [0, 1.04, -1.14]));
+  base.push(cyl(0.16, 0.16, 0.04, 14, [-0.44, 1.06, -0.92], [-0.4, 0, 0]));
+  base.push(cyl(0.03, 0.03, 0.2, 8, [-0.44, 0.99, -1.01], [-0.4, 0, 0]));
   // Instrument spill along the top of the dash. Kept thin: a basic
   // material with bloom behind it is the brightest thing in the scene
   // whatever size it is drawn at.
-  lit.push(box(0.34, 0.012, 0.07, [-0.34, 1.286, -1.04]));
+  lit.push(box(0.34, 0.012, 0.07, [-0.34, 1.176, -1.1]));
 
-  // Front seats. The right-hand one is the thing you spend the first
-  // three seconds looking at, so its headrest carries the screen.
+  // Front seats, facing the front.
+  //
+  // They used to have the cushion behind the backrest, which from the
+  // row behind is a seat someone would be sitting in backwards. The
+  // cushion runs forward from the squab now, the recline leans the
+  // top away towards the windscreen, and the headrest stands clear on
+  // two posts instead of sinking into the shoulders.
   for (const s of [-1, 1]) {
     const x = s * 0.46;
-    trim.push(box(0.58, 0.14, 0.56, [x, 0.6, -0.34]));
-    trim.push(box(0.58, 0.7, 0.16, [x, 1.0, -0.62], [-0.1, 0, 0]));
-    trim.push(box(0.44, 0.3, 0.14, [x, 1.4, -0.56]));
-    base.push(box(0.04, 0.1, 0.04, [x - 0.11, 1.26, -0.56]));
-    base.push(box(0.04, 0.1, 0.04, [x + 0.11, 1.26, -0.56]));
+    trim.push(box(0.6, 0.14, 0.52, [x, 0.6, -0.72]));
+    trim.push(box(0.62, 0.63, 0.16, [x, 0.945, -0.38], [-0.07, 0, 0]));
+    base.push(box(0.045, 0.12, 0.045, [x - 0.12, 1.29, -0.36]));
+    base.push(box(0.045, 0.12, 0.045, [x + 0.12, 1.29, -0.36]));
+    trim.push(box(0.44, 0.26, 0.15, [x, 1.45, -0.34]));
   }
 
-  // The rear bench, which is what you are sitting on.
-  trim.push(box(CAR.wide - 0.26, 0.16, 0.62, [0, 0.6, 0.86]));
-  trim.push(box(CAR.wide - 0.26, 0.72, 0.16, [0, 1.02, 1.18], [-0.1, 0, 0]));
+  // The rear bench, which is what you are sitting on. Same way round.
+  trim.push(box(CAR.wide - 0.26, 0.16, 0.58, [0, 0.6, 0.8]));
+  trim.push(box(CAR.wide - 0.26, 0.72, 0.16, [0, 1.02, 1.22], [0.07, 0, 0]));
   for (const s of [-1, 1]) {
-    trim.push(box(0.4, 0.26, 0.12, [s * 0.46, 1.42, 1.14]));
+    base.push(box(0.045, 0.1, 0.045, [s * 0.46 - 0.11, 1.31, 1.2]));
+    base.push(box(0.045, 0.1, 0.045, [s * 0.46 + 0.11, 1.31, 1.2]));
+    trim.push(box(0.4, 0.24, 0.13, [s * 0.46, 1.45, 1.2]));
   }
 
   // Wheels, lamps, mirrors.
