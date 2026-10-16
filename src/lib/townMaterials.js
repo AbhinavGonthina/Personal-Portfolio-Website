@@ -37,6 +37,21 @@ export function useTownMaterials() {
         roughness: 0.6,
         metalness: 0.25,
       }),
+      // Interior walls, a good deal darker than the outside shells.
+      // Outdoors a surface has the sky to catch; in here the only
+      // light is a desk lamp and a rack, and the walls have to fall
+      // away for either of them to read as a light source at all.
+      room: new THREE.MeshStandardMaterial({
+        color: "#23232c",
+        roughness: 0.92,
+        metalness: 0.02,
+      }),
+      // Floorboards: matte, warm, and nothing like the grid outside.
+      boards: new THREE.MeshStandardMaterial({
+        color: "#3a2f26",
+        roughness: 0.95,
+        metalness: 0,
+      }),
       door: new THREE.MeshStandardMaterial({
         color: "#6b5440",
         roughness: 0.75,

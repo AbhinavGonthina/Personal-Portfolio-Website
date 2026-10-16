@@ -228,14 +228,16 @@ export const WALL_PANEL = { w: 2.3, h: 1.71, x: -0.95, y: 1.72 };
 export function interior() {
   const base = [];
   const lit = [];
-  // The rack indicators, kept apart so they can blink on their own.
+  // The rack indicators, kept apart so they can blink on their own,
+  // and the floorboards, which want a warmer matte than the walls.
   const led = [];
+  const floor = [];
   const hw = R.w / 2;
   const hd = R.d / 2;
 
-  base.push(box(R.w, 0.04, R.d, [0, 0.1, 0]));
+  floor.push(box(R.w, 0.04, R.d, [0, 0.1, 0]));
   for (let i = 0; i < 9; i++) {
-    base.push(box(R.w, 0.01, 0.025, [0, 0.122, -hd + 0.3 + i * 0.62]));
+    floor.push(box(R.w, 0.01, 0.025, [0, 0.122, -hd + 0.3 + i * 0.62]));
   }
   base.push(box(2.2, 0.02, 1.6, [0.1, 0.13, 0.9]));
 
@@ -369,7 +371,12 @@ export function interior() {
     );
   }
 
-  return { base: merge(base), lit: merge(lit), led: merge(led) };
+  return {
+    base: merge(base),
+    lit: merge(lit),
+    led: merge(led),
+    floor: merge(floor),
+  };
 }
 
 /* ---------------------------------------------------------------- */
