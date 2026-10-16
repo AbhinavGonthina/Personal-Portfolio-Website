@@ -3,7 +3,6 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
-import { profile } from "../data/profile";
 import { getJourney } from "../lib/stage";
 import { STOP, STOPS } from "../lib/stops";
 import { ACCENT, useTownMaterials } from "../lib/townMaterials";
@@ -1158,24 +1157,51 @@ function Lamps() {
 }
 
 /**
- * The name, standing on the pavement where the camera first looks.
+ * WELCOME, drifting down onto the pavement.
  *
- * The same extruded lettering the clusters use, so the landing speaks
- * the skyline's language before you have scrolled anywhere. It fades
- * out as the camera leaves, because by then you are looking at a
- * hoarding that says it again.
+ * It falls the way a sheet of paper does rather than the way a brick
+ * does: slowly, swinging side to side, tipping as it goes, and
+ * losing its wobble as it settles. The sway and the tilt are both
+ * scaled by how far it still has to fall, so they damp out on their
+ * own rather than needing a second animation to stop them.
+ *
+ * The same extruded lettering the clusters use, so the landing
+ * speaks the skyline's language before you have scrolled anywhere.
+ * It fades out as the camera leaves.
  */
-const NAME_H = 0.76;
+const WELCOME_H = 0.92;
+// High enough to be seen falling, brief enough to be over before
+// anyone wonders what they are waiting for.
+const DROP_FROM = 15;
+const DROP_FOR = 3.2;
 
-function Nameplate() {
+function Welcome() {
   const mats = useRef([]);
-  const lines = useMemo(() => {
-    const [first, ...rest] = profile.name.toUpperCase().split(" ");
-    return [first, rest.join(" ")].map((t) => makeTextTexture(t));
-  }, []);
-  useEffect(() => () => lines.forEach((l) => l.tex.dispose()), [lines]);
+  const sheet = useRef();
+  // Accumulated delta rather than a timestamp off the shared clock.
+  // The clock belongs to the Canvas and has been running since it was
+  // created, so subtracting a captured start from it made the fall
+  // depend on exactly when this component happened to mount - and in
+  // practice it was over before the scene was on screen.
+  const age = useRef(0);
+  const made = useMemo(() => makeTextTexture("WELCOME"), []);
+  useEffect(() => () => made.tex.dispose(), [made]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
+    const t = state.clock.elapsedTime;
+    age.current = Math.min(DROP_FOR, age.current + delta);
+
+    if (sheet.current) {
+      // Eased, so it decelerates into the ground rather than landing
+      // at full speed.
+      const p = age.current / DROP_FOR;
+      const left = Math.pow(1 - p, 1.7);
+      sheet.current.position.y = DROP_FROM * left;
+      sheet.current.position.x = Math.sin(t * 1.15) * left * 2.4;
+      sheet.current.rotation.z = Math.sin(t * 1.5) * left * 0.42;
+      sheet.current.rotation.x = Math.sin(t * 0.9 + 1) * left * 0.45;
+    }
+
     const k = 1 - Math.exp(-5 * delta);
     const want = 1 - Math.min(1, Math.max(0, (getJourney() - 0.12) / 0.5));
     for (const m of mats.current) if (m) m.opacity += (want - m.opacity) * k;
@@ -1183,19 +1209,21 @@ function Nameplate() {
 
   mats.current.length = 0;
   return (
-    <group position={[-7.4, 0, 16]} rotation={[0, 0.16, 0]}>
-      {lines.map((l, i) => (
-        <group key={i} position={[0, NAME_H * (1.56 - i) * 1.18, 0]}>
+    // On the camera's own view axis at this depth, so it lands in
+    // the middle of the frame rather than off to one side.
+    <group position={[-1.2, 0, 15]} rotation={[0, 0.03, 0]}>
+      <group ref={sheet}>
+        <group position={[0, WELCOME_H * 0.62, 0]}>
           <ExtrudedText
-            tex={l.tex}
-            aspect={l.aspect}
-            height={NAME_H}
-            depth={0.3}
-            layers={14}
+            tex={made.tex}
+            aspect={made.aspect}
+            height={WELCOME_H}
+            depth={0.22}
+            layers={12}
             matRef={(el) => el && mats.current.push(el)}
           />
         </group>
-      ))}
+      </group>
     </group>
   );
 }
@@ -1370,7 +1398,7 @@ export default function TownScene({
       <Distant />
       <Motes />
       <Lamps />
-      <Nameplate />
+      <Welcome />
       <Town
         town={town}
         screen={screen}

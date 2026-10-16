@@ -450,7 +450,9 @@ export function dressing() {
   const base = [];
   const lit = [];
 
-  for (const z of [-19, 17]) base.push(box(86, 0.14, 0.45, [0, 0.07, z]));
+  // No kerbs. Eighty-six units of grey box either side of the road
+  // read from the landing shot as a bar laid across the picture, and
+  // the grid already tells you where the ground is.
 
   for (let i = 0; i < 12; i++) {
     const x = -36 + i * 6.6;

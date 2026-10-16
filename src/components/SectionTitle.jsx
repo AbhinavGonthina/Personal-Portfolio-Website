@@ -42,12 +42,10 @@ export default function SectionTitle() {
             key={title}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{
-              duration: 0.34,
-              ease: EASE,
-              exit: { duration: 0.16 },
-            }}
+            // The exit carries its own transition; nesting `exit`
+            // inside `transition` is not a thing motion reads.
+            exit={{ opacity: 0, y: -6, transition: { duration: 0.16 } }}
+            transition={{ duration: 0.34, ease: EASE }}
             className="w-fit rounded-lg border border-white/[0.07] bg-black/25 px-4 py-3 backdrop-blur-[2px]"
           >
             <h2
