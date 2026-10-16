@@ -16,16 +16,25 @@ import { useSyncExternalStore } from "react";
 const KEY = "plain-read";
 const subscribers = new Set();
 
+/** Below this, the town does not get built at all. */
+export const NARROW = "(max-width: 767px)";
+
 function initial() {
   if (typeof window === "undefined") return false;
   const q = new URLSearchParams(window.location.search).get("plain");
   if (q !== null) return q !== "0" && q !== "false";
   try {
-    return window.localStorage.getItem(KEY) === "1";
+    const saved = window.localStorage.getItem(KEY);
+    if (saved !== null) return saved === "1";
   } catch {
     // Private browsing, or storage blocked. Not worth failing over.
-    return false;
   }
+  // On a phone this is the site, not a fallback from it. The town
+  // wants a wide frame, a pointer to look around with and a GPU to
+  // draw it; a row of towers squeezed into a portrait viewport is a
+  // row of specks. An explicit choice, in the URL or in storage,
+  // still wins over this.
+  return window.matchMedia(NARROW).matches;
 }
 
 let plain = initial();
