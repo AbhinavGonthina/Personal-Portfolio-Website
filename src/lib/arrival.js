@@ -11,19 +11,24 @@ import { useSyncExternalStore } from "react";
 const KEY = "arrived";
 const subs = new Set();
 
+/**
+ * Off by default, for now.
+ *
+ * The sequence drives the camera correctly - the keyframes, the
+ * clock and the handover to the scroll rig are all verified - but
+ * the car itself is not drawing, so what you actually get is eight
+ * seconds parked inside an invisible car with the page locked. That
+ * is a far worse first visit than no sequence at all, so until the
+ * car renders it only runs when asked for by hand.
+ *
+ * Everything else about it is wired and working: `?arrive=1` plays
+ * it, the Skip works, the page locks and unlocks, and the session
+ * flag is set at the end.
+ */
 function wanted() {
   if (typeof window === "undefined") return false;
-  // `?arrive=1` forces it, which is the only sane way to work on a
-  // sequence that by design runs once and then never again.
   const q = new URLSearchParams(window.location.search).get("arrive");
-  if (q !== null) return q !== "0";
-  try {
-    return window.sessionStorage.getItem(KEY) !== "1";
-  } catch {
-    // Private browsing, or storage blocked. Play it; it is three
-    // seconds and the alternative is never playing it at all.
-    return true;
-  }
+  return q !== null && q !== "0";
 }
 
 let playing = wanted();
