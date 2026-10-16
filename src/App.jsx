@@ -3,6 +3,8 @@ import Navbar from "./components/Navbar";
 import ScrollHint from "./components/ScrollHint";
 import SectionTitle from "./components/SectionTitle";
 import TownStage from "./components/TownStage";
+import FourthWall from "./components/FourthWall";
+import { PAGE, useWall } from "./lib/fourthWall";
 import Hero from "./sections/Hero";
 import About from "./sections/About";
 import Experience from "./sections/Experience";
@@ -23,6 +25,7 @@ import Connect from "./sections/Connect";
  * This order has to match `lib/stops.js`.
  */
 export default function App() {
+  const wall = useWall();
   const hero = useRef(null);
   const about = useRef(null);
   const experience = useRef(null);
@@ -46,9 +49,16 @@ export default function App() {
       <TownStage refs={refs} />
       <SectionTitle />
       <ScrollHint />
+      <FourthWall />
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
-      <main className="pointer-events-none relative z-10">
+      {/* While the sequence is playing the page is what is on the
+          tablet, so it does not appear until the tablet has the
+          screen. */}
+      <main
+        className="pointer-events-none relative z-10"
+        style={wall > 0 && wall < 1 ? { opacity: PAGE(wall) } : undefined}
+      >
         <Hero ref={hero} />
         <About ref={about} />
         <Experience ref={experience} />

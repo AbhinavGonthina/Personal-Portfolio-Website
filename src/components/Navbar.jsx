@@ -3,7 +3,8 @@ import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
-import { setPlain, usePlain } from "../lib/plain";
+import { usePlain } from "../lib/plain";
+import { CHROME, runWall, useWall } from "../lib/fourthWall";
 import { setFocused, useStopIndex } from "../lib/stage";
 import { beginJump } from "../lib/scrollLock";
 import { STOPS } from "../lib/stops";
@@ -50,6 +51,7 @@ const LINK =
 
 export default function Navbar() {
   const plain = usePlain();
+  const wall = useWall();
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
 
@@ -112,6 +114,10 @@ export default function Navbar() {
 
   return (
     <header
+      // It is part of what is on the screen, so it goes when the
+      // screen turns out to be a monitor - and comes back when the
+      // tablet is put down.
+      style={wall > 0 && wall < 1 ? { opacity: 1 - CHROME(wall) } : undefined}
       className={cn(
         "sticky top-0 z-50 transition-colors duration-300",
         scrolled
@@ -183,7 +189,7 @@ export default function Navbar() {
         {/* The way out for anyone who would rather just read the thing. */}
         <div className="flex justify-end">
           <button
-            onClick={() => setPlain(!plain)}
+            onClick={() => runWall(!plain)}
             aria-pressed={plain}
             className={cn(
               LINK,

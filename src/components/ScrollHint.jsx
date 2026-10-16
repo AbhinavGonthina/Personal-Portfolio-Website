@@ -3,6 +3,7 @@ import { useJourneyNear } from "../lib/stage";
 import { useArriving } from "../lib/arrival";
 import { useWelcomeLanded } from "../lib/welcome";
 import { usePlain } from "../lib/plain";
+import { useWall } from "../lib/fourthWall";
 
 /**
  * The one instruction on the whole site.
@@ -21,10 +22,11 @@ export default function ScrollHint() {
   const arriving = useArriving();
   const landed = useWelcomeLanded();
   const plain = usePlain();
+  const wall = useWall();
 
   return (
     <AnimatePresence>
-      {atStart && !arriving && landed && !plain && (
+      {atStart && !arriving && landed && !plain && wall <= 0 && (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
