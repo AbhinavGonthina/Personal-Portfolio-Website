@@ -41,13 +41,12 @@ const HOUSE_YAW = Math.PI / 2 - 0.12;
 
 export const TOWN = {
   house: { x: -19, z: 8, yaw: HOUSE_YAW },
-  // Off the left-hand side of the path, turned a quarter turn out of
-  // the house's own facing. Stand in front of the house, turn ninety
-  // degrees left, and you are looking straight down the row - which
-  // is where a line of boxes goes. Sharing the house's facing put
-  // them broadside across the front door with the house behind them,
-  // like something installed in the middle of the lawn.
-  mail: { x: -14.2, z: 14.12, yaw: HOUSE_YAW - Math.PI / 2 },
+  // On the wall down the left-hand side of the garden, facing back
+  // across the path. You come out of the front door walking forwards,
+  // turn right, and they are there - so they have to be looking the
+  // way you will be looking, which is a quarter turn clockwise off
+  // the house's own facing.
+  mail: { x: -13.92, z: 12.64, yaw: HOUSE_YAW + Math.PI / 2 },
   billboard: { x: 13.5, z: 6.0, yaw: -0.28 },
 };
 
@@ -414,13 +413,25 @@ export const MAIL_BODY = { w: 0.58, h: 0.48, d: 0.88 };
 export function mailrail(count) {
   const base = [];
   const span = (count - 1) * MAIL_GAP;
-  base.push(box(span + 1.3, 0.13, 0.18, [0, 0.98, 0]));
-  for (const s of [-1, 1]) {
-    base.push(cyl(0.085, 0.1, 1.05, 8, [s * (span / 2 + 0.55), 0.52, 0]));
+  const len = span + 1.5;
+
+  // A low garden wall rather than a pair of legs, because that is
+  // what a row of boxes at the end of a drive actually stands on.
+  // Built in courses with a hair between them, so it reads as laid
+  // rather than poured.
+  const n = Math.max(4, Math.round(len / 0.86));
+  const pw = len / n;
+  for (let i = 0; i < n; i++) {
+    base.push(
+      box(pw - 0.045, 0.98 + rnd(i, 5.5) * 0.03, 0.46, [
+        -len / 2 + pw * (i + 0.5),
+        0.49,
+        0,
+      ]),
+    );
   }
-  for (let i = 0; i < count; i++) {
-    base.push(box(0.09, 0.3, 0.09, [-span / 2 + i * MAIL_GAP, 1.2, 0]));
-  }
+  // The capping course the boxes sit on, proud of the wall either side.
+  base.push(box(len + 0.14, 0.1, 0.58, [0, 1.05, 0]));
   return { base: merge(base) };
 }
 
@@ -572,11 +583,6 @@ export function dressing() {
     base.push(cyl(0.08, 0.12, 4.8, 8, [x, 2.4, -18.3]));
     base.push(box(0.09, 0.09, 1.3, [x, 4.75, -17.8]));
     lit.push(ball(0.15, [x, 4.65, -17.25], null, [1.4, 0.6, 1]));
-  }
-  for (let i = 0; i < 12; i++) {
-    base.push(
-      box(0.8, 0.6 + rnd(i, 5.5) * 0.2, 0.7, [-20 + i * 0.84, 0.3, 11.6]),
-    );
   }
 
   // The wood. A jittered grid over everything behind and beside the

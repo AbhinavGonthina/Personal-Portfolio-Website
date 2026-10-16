@@ -24,6 +24,8 @@ import {
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
 import { ACCENT } from "../lib/townMaterials";
+import { makeTextTexture } from "../lib/canvasText";
+import { ExtrudedText } from "./street";
 
 /**
  * The buildings of the town that are not towers.
@@ -322,6 +324,12 @@ function Mailbox({ x, link, mats, label, live }) {
 export function Mailboxes({ mats, visible, labels, live }) {
   const rail = useBuilt(() => mailrail(socials.length));
   const span = (socials.length - 1) * MAIL_GAP;
+  // The last thing in the town, standing in front of the wall the
+  // boxes are on. Extruded rather than painted, like the word that
+  // falls at the other end of the walk - the two ends of the site
+  // say their piece the same way.
+  const thanks = useMemo(() => makeTextTexture("THANK YOU"), []);
+  useEffect(() => () => thanks.tex.dispose(), [thanks]);
 
   return (
     <group
@@ -330,6 +338,15 @@ export function Mailboxes({ mats, visible, labels, live }) {
       rotation={yawOf(TOWN.mail)}
     >
       <Shell geo={rail.base} mat={mats.post} />
+      <group position={[0, 0.02, 0.62]}>
+        <ExtrudedText
+          tex={thanks.tex}
+          aspect={thanks.aspect}
+          height={0.46}
+          depth={0.12}
+          layers={8}
+        />
+      </group>
       {visible &&
         socials.map((s, i) => (
           <Mailbox

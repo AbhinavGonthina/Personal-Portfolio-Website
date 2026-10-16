@@ -119,7 +119,11 @@ export const STOPS = [
       eye: EYE,
     },
     via: DOORSTEP,
-    viaLook: toWorld(TOWN.mail, [0, 1.3, 0]),
+    // Looking straight down the path on the way out, not already
+    // swung round to the boxes. You leave the house walking forwards
+    // and then turn to them; turning on the threshold is how you walk
+    // out of a door sideways.
+    viaLook: toWorld(TOWN.house, [0, EYE, 16]),
   },
 ];
 
