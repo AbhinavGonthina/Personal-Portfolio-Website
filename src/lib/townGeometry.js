@@ -1,4 +1,15 @@
-import { ball, box, cone, cyl, HALF, merge, place, plane, rnd } from "./geo";
+import {
+  ball,
+  box,
+  cone,
+  cyl,
+  HALF,
+  merge,
+  place,
+  plane,
+  prism,
+  rnd,
+} from "./geo";
 
 /**
  * Everything in the town that is not a tower.
@@ -30,9 +41,10 @@ const HOUSE_YAW = Math.PI / 2 - 0.12;
 
 export const TOWN = {
   house: { x: -19, z: 8, yaw: HOUSE_YAW },
-  // Further along the same path, so leaving the house and reaching the
-  // mailboxes is one walk in one direction.
-  mail: { x: -10.5, z: 9, yaw: HOUSE_YAW },
+  // At the far end of the path and off to its left, where a row of
+  // boxes actually stands. Dead ahead of the front door they read as
+  // something installed in the middle of the lawn.
+  mail: { x: -8.96, z: 12.43, yaw: HOUSE_YAW },
   billboard: { x: 13.5, z: 6.0, yaw: -0.28 },
 };
 
@@ -141,19 +153,23 @@ export function house() {
         [0, 0, -s * slope],
       ),
     );
-    // Gables as angled slabs rather than an extrusion: mergeGeometries
-    // will not mix indexed and un-indexed buffers.
-    for (const z of [-hd + T / 2, hd - T / 2]) {
-      base.push(
-        box(
-          len * 0.54,
-          0.46,
-          T,
-          [s * hw * 0.5, HOUSE.h + rise * 0.26, z],
-          [0, 0, -s * slope],
-        ),
-      );
-    }
+  }
+  // The gable ends, filled. They were a pair of angled slabs per side,
+  // which covered the bottom third of each triangle and left the rest
+  // of it open - from the front the house had a roof with nothing
+  // under it. A triangle is not a box, so it is extruded.
+  for (const z of [hd - T / 2, -hd - T / 2]) {
+    base.push(
+      prism(
+        [
+          [-hw, 0],
+          [hw, 0],
+          [0, rise],
+        ],
+        T,
+        [0, HOUSE.h, z],
+      ),
+    );
   }
   base.push(box(0.5, 1.3, 0.5, [hw * 0.5, HOUSE.h + rise * 0.7, -hd * 0.5]));
 
@@ -192,11 +208,11 @@ export function house() {
   // beside it. An unlit path at night is a row of grey rectangles.
   for (let i = 0; i < 8; i++) {
     const z = hd + 1.7 + i * 0.92;
-    base.push(box(0.85, 0.03, 0.55, [i * 0.3, 0.02, z]));
+    base.push(box(0.85, 0.03, 0.55, [0, 0.02, z]));
     if (i % 2 === 0) {
       const side = i % 4 === 0 ? -1 : 1;
-      base.push(cyl(0.035, 0.045, 0.3, 6, [i * 0.3 + side * 0.72, 0.15, z]));
-      lit.push(ball(0.07, [i * 0.3 + side * 0.72, 0.33, z], null, [1, 0.8, 1]));
+      base.push(cyl(0.035, 0.045, 0.3, 6, [side * 0.72, 0.15, z]));
+      lit.push(ball(0.07, [side * 0.72, 0.33, z], null, [1, 0.8, 1]));
     }
   }
 
@@ -451,7 +467,7 @@ export function mailflag() {
 export const ROAD = { z: 34.2, half: 4.5, from: -92, to: 92 };
 
 /** The clearing: no tree stands inside this, or it would block the town. */
-const CLEARING = { x: 12, from: 13, to: 31.5 };
+const CLEARING = { x: 12, from: 11, to: 31.5 };
 
 /**
  * One tree. Three kinds, so a wood of two hundred of them does not
