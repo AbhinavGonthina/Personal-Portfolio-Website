@@ -34,7 +34,10 @@ const HW = CAR.wide / 2;
 
 /** The camera's seat, and the screen it is looking at, in car-local space. */
 export const SEAT = [0.46, 1.34, 0.95];
-export const SCREEN_AT = [0.46, 1.45, -0.25];
+// Level with the eye, not above it. The screen sat eleven centimetres
+// high on a headrest that was itself near the roof, so the readout
+// was something you looked up at from the back seat.
+export const SCREEN_AT = [0.46, 1.33, -0.25];
 // Matched to the 640x420 the screen is painted at, and small enough
 // that the headrest frames it on all four sides. It used to be wider
 // and taller than the thing it was supposed to be mounted in.
@@ -105,12 +108,12 @@ export function car() {
     box(CAR.wide - 0.26, 0.62, 0.03, [0, GLASS_Y, HL - 0.98], [-0.36, 0, 0]),
   );
 
-  // Dashboard and wheel, right forward under the screen. They used to
-  // sit a hand's width off the front seats, which from behind meant a
-  // steering wheel hanging through the driver's back.
+  // Dashboard only. There was a steering wheel on it, and with the
+  // seats low enough to put the screen at eye level there is no
+  // longer anything between it and the back seat - a disc hanging
+  // over the driver's shoulder reads as a fault, and from here you
+  // would never see a correctly placed one anyway.
   trim.push(box(CAR.wide - 0.14, 0.26, 0.26, [0, 1.04, -1.14]));
-  base.push(cyl(0.16, 0.16, 0.04, 14, [-0.44, 1.06, -0.92], [-0.4, 0, 0]));
-  base.push(cyl(0.03, 0.03, 0.2, 8, [-0.44, 0.99, -1.01], [-0.4, 0, 0]));
   // Instrument spill along the top of the dash. Kept thin: a basic
   // material with bloom behind it is the brightest thing in the scene
   // whatever size it is drawn at.
@@ -126,10 +129,10 @@ export function car() {
   for (const s of [-1, 1]) {
     const x = s * 0.46;
     trim.push(box(0.6, 0.14, 0.52, [x, 0.6, -0.72]));
-    trim.push(box(0.62, 0.59, 0.16, [x, 0.925, -0.38], [-0.07, 0, 0]));
-    base.push(box(0.045, 0.1, 0.045, [x - 0.13, 1.24, -0.36]));
-    base.push(box(0.045, 0.1, 0.045, [x + 0.13, 1.24, -0.36]));
-    trim.push(box(0.52, 0.36, 0.15, [x, 1.45, -0.34]));
+    trim.push(box(0.62, 0.42, 0.16, [x, 0.84, -0.38], [-0.07, 0, 0]));
+    base.push(box(0.045, 0.12, 0.045, [x - 0.13, 1.08, -0.36]));
+    base.push(box(0.045, 0.12, 0.045, [x + 0.13, 1.08, -0.36]));
+    trim.push(box(0.52, 0.4, 0.15, [x, 1.33, -0.34]));
   }
 
   // The rear bench, which is what you are sitting on. Same way round.
