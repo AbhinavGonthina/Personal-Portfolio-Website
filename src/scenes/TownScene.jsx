@@ -1213,6 +1213,10 @@ const DROP_FOR = 3.2;
 function Welcome() {
   const mats = useRef([]);
   const sheet = useRef();
+  // It drops when you turn and see the town, not when the page
+  // loads. During the arrival you are facing a headrest, and a sign
+  // landing behind you is a sign nobody saw.
+  const arriving = useArriving();
   // Accumulated delta rather than a timestamp off the shared clock.
   // The clock belongs to the Canvas and has been running since it was
   // created, so subtracting a captured start from it made the fall
@@ -1224,7 +1228,7 @@ function Welcome() {
 
   useFrame((state, delta) => {
     const t = state.clock.elapsedTime;
-    age.current = Math.min(DROP_FOR, age.current + delta);
+    if (!arriving) age.current = Math.min(DROP_FOR, age.current + delta);
 
     if (sheet.current) {
       // Eased, so it decelerates into the ground rather than landing

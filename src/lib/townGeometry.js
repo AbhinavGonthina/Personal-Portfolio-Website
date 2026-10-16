@@ -450,15 +450,27 @@ export function dressing() {
   const base = [];
   const lit = [];
 
-  // No kerbs. Eighty-six units of grey box either side of the road
-  // read from the landing shot as a bar laid across the picture, and
-  // the grid already tells you where the ground is.
+  // The road in. It runs out past where the car is parked and the
+  // woods close in either side of it, so the town reads as the end
+  // of a drive rather than as a place that was always just there.
+  base.push(box(7.4, 0.04, 46, [1.6, 0.03, 40], [0, 0.03, 0]));
+  for (let i = 0; i < 16; i++) {
+    base.push(box(0.16, 0.05, 1.5, [1.6, 0.05, 22 + i * 2.9]));
+  }
 
   for (let i = 0; i < 12; i++) {
     const x = -36 + i * 6.6;
     base.push(cyl(0.08, 0.12, 4.8, 8, [x, 2.4, -18.3]));
     base.push(box(0.09, 0.09, 1.3, [x, 4.75, -17.8]));
     lit.push(ball(0.15, [x, 4.65, -17.25], null, [1.4, 0.6, 1]));
+  }
+
+  // Lamps down the roadside, to lead the eye in.
+  for (let i = 0; i < 5; i++) {
+    const z = 26 + i * 8;
+    base.push(cyl(0.07, 0.1, 4.2, 7, [5.9, 2.1, z]));
+    base.push(box(0.08, 0.08, 1, [5.9, 4.15, z - 0.4]));
+    lit.push(ball(0.13, [5.9, 4.05, z - 0.8], null, [1.4, 0.6, 1]));
   }
 
   for (let i = 0; i < 12; i++) {
@@ -468,11 +480,23 @@ export function dressing() {
   }
 
   // Three kinds of tree, so a line of them does not look stamped.
+  // They now line the road as well as the park, which is what makes
+  // the drive in a drive through woods.
+  const spots = [];
   for (let i = 0; i < 16; i++) {
-    const x = 6 + rnd(i, 2.2) * 28;
-    const z = -16 + rnd(i, 9.7) * 32;
-    if (Math.hypot(x - 13.5, z - 6) < 6) continue;
-    if (Math.hypot(x, z) < 15) continue;
+    spots.push([6 + rnd(i, 2.2) * 28, -16 + rnd(i, 9.7) * 32]);
+  }
+  for (let i = 0; i < 26; i++) {
+    // Either side of the road, thinning out as it nears the town.
+    const side = i % 2 ? 1 : -1;
+    const along = 20 + (i / 26) * 44;
+    const off = 5.4 + rnd(i, 8.3) * 7;
+    spots.push([1.6 + side * off, along + rnd(i, 1.7) * 3]);
+  }
+
+  spots.forEach(([x, z], i) => {
+    if (Math.hypot(x - 13.5, z - 6) < 6) return;
+    if (Math.hypot(x, z) < 15) return;
     const kind = i % 3;
     const h = 2.3 + rnd(i, 4.4) * 2.8;
     base.push(
@@ -507,7 +531,7 @@ export function dressing() {
       }
       base.push(ball(0.33, [x, h + 0.28, z], null, [1.4, 0.7, 1.4]));
     }
-  }
+  });
 
   return { base: merge(base), lit: merge(lit) };
 }
