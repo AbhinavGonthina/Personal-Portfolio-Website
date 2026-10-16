@@ -41,10 +41,13 @@ const HOUSE_YAW = Math.PI / 2 - 0.12;
 
 export const TOWN = {
   house: { x: -19, z: 8, yaw: HOUSE_YAW },
-  // At the far end of the path and off to its left, where a row of
-  // boxes actually stands. Dead ahead of the front door they read as
-  // something installed in the middle of the lawn.
-  mail: { x: -8.96, z: 12.43, yaw: HOUSE_YAW },
+  // Off the left-hand side of the path, turned a quarter turn out of
+  // the house's own facing. Stand in front of the house, turn ninety
+  // degrees left, and you are looking straight down the row - which
+  // is where a line of boxes goes. Sharing the house's facing put
+  // them broadside across the front door with the house behind them,
+  // like something installed in the middle of the lawn.
+  mail: { x: -14.2, z: 14.12, yaw: HOUSE_YAW - Math.PI / 2 },
   billboard: { x: 13.5, z: 6.0, yaw: -0.28 },
 };
 
@@ -470,6 +473,16 @@ export const ROAD = { z: 34.2, half: 4.5, from: -92, to: 92 };
 const CLEARING = { x: 12, from: 11, to: 31.5 };
 
 /**
+ * Where the camera stands to read the mailboxes: `dist` out along the
+ * way they face. Out past the clearing and clear of the house, so
+ * without this the wood grows a tree in the middle of the shot.
+ */
+const MAIL_VIEW = {
+  x: TOWN.mail.x + 5 * Math.sin(TOWN.mail.yaw),
+  z: TOWN.mail.z + 5 * Math.cos(TOWN.mail.yaw),
+};
+
+/**
  * One tree. Three kinds, so a wood of two hundred of them does not
  * read as one shape stamped two hundred times, and the leafy kind is
  * kept for the near ones because a sphere costs five times a cone.
@@ -587,6 +600,7 @@ export function dressing() {
       if (Math.hypot(x - 13.5, z - 6) < 8) continue;
       if (Math.hypot(x + 19, z - 8) < 10) continue;
       if (Math.hypot(x - 11, z - 14.8) < 8) continue;
+      if (Math.hypot(x - MAIL_VIEW.x, z - MAIL_VIEW.z) < 6.5) continue;
       tree(base, n, x, z, z < 42);
     }
   }
