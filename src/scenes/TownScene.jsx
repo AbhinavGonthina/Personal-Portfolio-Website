@@ -1252,6 +1252,40 @@ function Reflections({ layout, windows, frame, byUrl, focused }) {
 }
 
 /**
+ * The outdoor lighting, and how much of it reaches inside.
+ *
+ * Indoors it falls to almost nothing. Out in the town a surface has
+ * the sky to catch; in the room the only light is a desk lamp and a
+ * rack of servers, and the walls have to fall away for either of them
+ * to read as a light source at all.
+ */
+function Sky() {
+  const amb = useRef();
+  const hemi = useRef();
+  const dir = useRef();
+  const inside = useNear(STOP.experience + 0.6, STOP.contact - 0.4);
+
+  useFrame((_, delta) => {
+    const k = 1 - Math.exp(-3 * delta);
+    const t = inside ? 0 : 1;
+    if (amb.current)
+      amb.current.intensity += (0.07 + t * 0.25 - amb.current.intensity) * k;
+    if (hemi.current)
+      hemi.current.intensity += (0.18 + t * 1 - hemi.current.intensity) * k;
+    if (dir.current)
+      dir.current.intensity += (0.08 + t * 0.78 - dir.current.intensity) * k;
+  });
+
+  return (
+    <>
+      <ambientLight ref={amb} intensity={0.3} />
+      <hemisphereLight ref={hemi} args={["#8d9ccb", "#0a0a14", 1.15]} />
+      <directionalLight ref={dir} position={[14, 18, 22]} intensity={0.85} />
+    </>
+  );
+}
+
+/**
  * Everything that is not a tower, with its visibility tied to where the
  * camera is. A group that is `visible={false}` is never submitted, so
  * the inside of the house costs nothing until you walk into it.
@@ -1270,6 +1304,9 @@ function Town({ town, screen, skills, board, marks }) {
 
   return (
     <>
+      {/* The floor lives here so it can see the same gate the rest of
+          the interior does. */}
+      <Ground grid={!inside} />
       <Dressing mats={town} visible />
       <Billboard mats={town} visible board={board} />
       <House mats={town} visible open={open} />
@@ -1322,12 +1359,12 @@ export default function TownScene({
           the background instead of everything past a hard plane vanishing
           at once. Matched to the page background so there is no seam. */}
       <fogExp2 attach="fog" args={["#000000", 0.019]} />
-      <ambientLight intensity={0.3} />
       {/* Sky and ground fill. One directional light leaves whichever
           side of a building the camera happens to be on in the dark,
-          and the camera visits all of them. */}
-      <hemisphereLight args={["#8d9ccb", "#0a0a14", 1.15]} />
-      <directionalLight position={[14, 18, 22]} intensity={0.85} />
+          and the camera visits all of them.
+          Indoors they all drop away: a room lit by the sky has no
+          shadows for a desk lamp to cut, and the lamp is the point. */}
+      <Sky />
 
       <Rig target={target} narrow={narrow} />
       <Distant />
@@ -1359,8 +1396,6 @@ export default function TownScene({
         focused={focused}
         onFocus={onFocus}
       />
-
-      <Ground />
 
       {/* Thresholded at 0.9 so bloom only catches the crowns and masts,
           which are the only things pushed past 1.0 - hence their

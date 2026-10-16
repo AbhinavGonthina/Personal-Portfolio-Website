@@ -154,7 +154,8 @@ export function Interior({ mats, visible, screen, skills }) {
       position={posOf(TOWN.house)}
       rotation={yawOf(TOWN.house)}
     >
-      <Shell geo={built.base} mat={mats.shell} />
+      <Shell geo={built.base} mat={mats.room} />
+      <Shell geo={built.floor} mat={mats.boards} />
       <Shell geo={built.lit} mat={mats.warm} />
       {built.led && (
         <mesh geometry={built.led}>

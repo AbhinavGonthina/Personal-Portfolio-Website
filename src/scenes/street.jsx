@@ -76,16 +76,19 @@ function makeGridTexture() {
   c.width = c.height = S;
   const g = c.getContext("2d");
 
-  g.strokeStyle = "#9fb4ff";
+  // Slate-cyan rather than electric blue: the floor is the one
+  // thing in frame at every stop, so it has to sit under the
+  // accents rather than compete with them.
+  g.strokeStyle = "#86b6cc";
   for (let i = 0; i <= CELLS; i++) {
     const p = Math.round((i / CELLS) * S) + 0.5;
     // Every fourth line heavier, so the floor has a grain as well as
-    // a grid and does not strobe when the camera moves.
-    // Quiet. Underfoot the texture is magnified several times over,
-    // and at anything stronger the floor stops being a surface and
-    // becomes the loudest thing in the frame.
-    g.lineWidth = i % 4 === 0 ? 2.5 : 1.25;
-    g.globalAlpha = i % 4 === 0 ? 0.26 : 0.13;
+    // a grid and does not strobe when the camera moves. Thin and
+    // quiet with it: underfoot the texture is magnified several times
+    // over, and at any real strength the floor stops being a surface
+    // and becomes the loudest thing in the frame.
+    g.lineWidth = i % 4 === 0 ? 1.7 : 0.9;
+    g.globalAlpha = i % 4 === 0 ? 0.34 : 0.17;
     g.beginPath();
     g.moveTo(p, 0);
     g.lineTo(p, S);
@@ -99,10 +102,13 @@ function makeGridTexture() {
   g.globalAlpha = 1;
   g.globalCompositeOperation = "destination-in";
   const fade = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  // A long tail rather than a cliff, so the grid dissolves into the
+  // fog instead of stopping on a visible ring.
   fade.addColorStop(0, "rgba(0,0,0,1)");
-  fade.addColorStop(0.3, "rgba(0,0,0,0.95)");
-  fade.addColorStop(0.58, "rgba(0,0,0,0.45)");
-  fade.addColorStop(0.85, "rgba(0,0,0,0)");
+  fade.addColorStop(0.24, "rgba(0,0,0,0.92)");
+  fade.addColorStop(0.46, "rgba(0,0,0,0.5)");
+  fade.addColorStop(0.66, "rgba(0,0,0,0.18)");
+  fade.addColorStop(0.86, "rgba(0,0,0,0)");
   g.fillStyle = fade;
   g.fillRect(0, 0, S, S);
 
@@ -112,9 +118,14 @@ function makeGridTexture() {
   return tex;
 }
 
-export function Ground({ opacity = 0.9 }) {
-  const grid = useMemo(makeGridTexture, []);
-  useEffect(() => () => grid.dispose(), [grid]);
+/**
+ * `grid` goes false indoors. A neon floor is the wrong surface to be
+ * standing on in someone's living room, and switching it off is what
+ * lets the floorboards in there read as a room.
+ */
+export function Ground({ opacity = 0.9, grid = true }) {
+  const lines = useMemo(makeGridTexture, []);
+  useEffect(() => () => lines.dispose(), [lines]);
 
   return (
     <>
@@ -133,10 +144,14 @@ export function Ground({ opacity = 0.9 }) {
 
       {/* The grid, above the sheet: the sheet is transparent, so it
           draws after everything opaque and would paint the grid out. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+      <mesh
+        visible={grid}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.02, 0]}
+      >
         <planeGeometry args={[GRID_SPAN, GRID_SPAN]} />
         <meshBasicMaterial
-          map={grid}
+          map={lines}
           transparent
           depthWrite={false}
           toneMapped={false}
