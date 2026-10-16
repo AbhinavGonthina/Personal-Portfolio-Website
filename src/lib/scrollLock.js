@@ -67,22 +67,27 @@ export function holdScroll(ms) {
 /**
  * Pins the page while something has taken over the view.
  *
- * The padding compensates for the scrollbar the lock removes. Without
- * it the whole layout jumps a dozen pixels sideways on the way in and
- * again on the way out.
+ * Taking the scrollbar away makes the viewport a dozen pixels wider,
+ * so something has to absorb that or the layout jumps on the way in
+ * and again on the way out. Padding the body did absorb it, and left
+ * every bar that spans the page - the navbar most visibly - stopping
+ * short of the edge in a strip of bare scene. So the gap is published
+ * instead, and the one element that must not move compensates for it
+ * itself. Everything else is either fixed, and never saw the padding,
+ * or invisible while the lock is on.
  */
 export function useScrollLock(locked) {
   useEffect(() => {
     if (!locked) return;
+    const root = document.documentElement;
     const body = document.body;
-    const gap = window.innerWidth - document.documentElement.clientWidth;
+    const gap = window.innerWidth - root.clientWidth;
     const overflow = body.style.overflow;
-    const padding = body.style.paddingRight;
     body.style.overflow = "hidden";
-    if (gap > 0) body.style.paddingRight = `${gap}px`;
+    if (gap > 0) root.style.setProperty("--lock-gap", `${gap}px`);
     return () => {
       body.style.overflow = overflow;
-      body.style.paddingRight = padding;
+      root.style.removeProperty("--lock-gap");
     };
   }, [locked]);
 }

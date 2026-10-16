@@ -264,7 +264,16 @@ export default function Experience({ ref }) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 40 }}
             transition={{ duration: 0.45, ease: EASE }}
-            className="pointer-events-auto absolute inset-y-0 right-0 z-10 flex w-[46%] items-center"
+            // Fixed, not absolute. Anchored to the section it moved
+            // with the scroll, so where the copy landed on screen
+            // depended on how far into Experience you happened to be
+            // when you clicked - and since the page is pinned while a
+            // building is open, there is nothing for it to track but
+            // the viewport. Fixed also ignores the padding the lock
+            // adds in place of the scrollbar, so the column runs to
+            // the real right-hand edge instead of stopping short of
+            // it in a strip of bare scene.
+            className="pointer-events-auto fixed inset-y-0 right-0 z-10 flex w-[46%] items-center"
           >
             {/* Something to read against. The skyline keeps moving behind
                 this column, so the copy was landing on lit windows. Two
