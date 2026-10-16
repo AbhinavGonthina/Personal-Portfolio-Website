@@ -6,10 +6,12 @@ import { ARC_GROUPS, experience } from "../data/experience";
 import { profile } from "../data/profile";
 import { getJourney } from "../lib/stage";
 import { STOP, STOPS } from "../lib/stops";
-import { useTownMaterials } from "../lib/townMaterials";
+import { ACCENT, useTownMaterials } from "../lib/townMaterials";
 import { Billboard, Dressing, House, Interior, Mailboxes } from "./town";
+import { box, cyl } from "../lib/geo";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
+import Motes from "./motes";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
@@ -1102,6 +1104,60 @@ function useNear(from, to) {
 }
 
 /**
+ * Street lighting around the arc.
+ *
+ * The towers were standing on a grid with nothing between them and
+ * it, which is what made the block read as models on a table. A ring
+ * of lamps at pavement height gives the ground something to catch
+ * and the buildings something to be lit by.
+ *
+ * One merged pair for the lot: posts in the structure tone, heads in
+ * amber.
+ */
+function makeLamps() {
+  const base = [];
+  const lit = [];
+  for (let i = 0; i < 10; i++) {
+    const a = (-96 + i * 21) * DEG;
+    const r = ARC_R + 4.4;
+    const x = Math.sin(a) * r;
+    const z = -Math.cos(a) * r;
+    base.push(cyl(0.07, 0.11, 4.2, 7, [x, 2.1, z]));
+    base.push(box(0.08, 0.08, 1.1, [x, 4.15, z + 0.4], [0, -a, 0]));
+    lit.push(
+      new THREE.SphereGeometry(0.15, 10, 8)
+        .scale(1.4, 0.6, 1)
+        .translate(x + Math.sin(a) * -0.0, 4.05, z + 0.85),
+    );
+  }
+  return {
+    base: mergeGeometries(base, false),
+    lit: mergeGeometries(lit, false),
+  };
+}
+
+function Lamps() {
+  const made = useMemo(makeLamps, []);
+  useEffect(
+    () => () => {
+      made.base.dispose();
+      made.lit.dispose();
+    },
+    [made],
+  );
+  return (
+    <group>
+      <mesh geometry={made.base}>
+        <meshStandardMaterial color="#3c3c48" roughness={0.7} metalness={0.2} />
+      </mesh>
+      <mesh geometry={made.lit}>
+        <meshBasicMaterial color={ACCENT.amber} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/**
  * The name, standing on the pavement where the camera first looks.
  *
  * The same extruded lettering the clusters use, so the landing speaks
@@ -1275,6 +1331,8 @@ export default function TownScene({
 
       <Rig target={target} narrow={narrow} />
       <Distant />
+      <Motes />
+      <Lamps />
       <Nameplate />
       <Town
         town={town}

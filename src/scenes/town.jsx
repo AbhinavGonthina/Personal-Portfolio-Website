@@ -23,6 +23,7 @@ import {
   mailrail,
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
+import { ACCENT } from "../lib/townMaterials";
 
 /**
  * The buildings of the town that are not towers.
@@ -135,6 +136,18 @@ export function House({ mats, visible, open }) {
  */
 export function Interior({ mats, visible, screen, skills }) {
   const built = useBuilt(interior);
+  const leds = useRef();
+
+  // The indicators breathe rather than blink. A hard flicker on a
+  // merged buffer would switch every light in the room at once, which
+  // reads as a fault rather than as a machine working.
+  useFrame((state) => {
+    if (!leds.current) return;
+    const t = state.clock.elapsedTime;
+    leds.current.opacity =
+      0.62 + Math.sin(t * 2.4) * 0.18 + Math.sin(t * 7.3) * 0.08;
+  });
+
   return (
     <group
       visible={visible}
@@ -143,6 +156,35 @@ export function Interior({ mats, visible, screen, skills }) {
     >
       <Shell geo={built.base} mat={mats.shell} />
       <Shell geo={built.lit} mat={mats.warm} />
+      {built.led && (
+        <mesh geometry={built.led}>
+          <meshBasicMaterial
+            ref={leds}
+            color={ACCENT.cyan}
+            transparent
+            opacity={0.7}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
+
+      {/* The two lights in the room. The lamp is what makes the desk
+          a place to work; the rim behind the racks lifts the skills
+          board off the wall it is hanging on. */}
+      <pointLight
+        position={[DESK.x - 0.24, 1.18, DESK.z - 1]}
+        color={ACCENT.amber}
+        intensity={visible ? 5 : 0}
+        distance={4.5}
+        decay={2}
+      />
+      <pointLight
+        position={[RACKS.x + 0.5, 1.5, -0.4]}
+        color={ACCENT.cyan}
+        intensity={visible ? 3.4 : 0}
+        distance={5}
+        decay={2}
+      />
 
       {/* The skills board, on the back wall. */}
       <mesh position={[WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]}>
@@ -189,6 +231,8 @@ function Mailbox({ x, link, mats, label, live }) {
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
   const flagRef = useRef();
+  const riseRef = useRef();
+  const markRef = useRef();
   const [over, setOver] = useState(false);
   const on = over && live;
 
@@ -202,6 +246,17 @@ function Mailbox({ x, link, mats, label, live }) {
       const want = on ? 0 : -1.3;
       flagRef.current.rotation.x += (want - flagRef.current.rotation.x) * k;
     }
+    // The whole box lifts a little and its mark brightens, so the one
+    // you are pointing at is obvious from the corner of the eye and
+    // not only when you look straight at the lid.
+    if (riseRef.current) {
+      const want = on ? 0.1 : 0;
+      riseRef.current.position.y += (want - riseRef.current.position.y) * k;
+    }
+    if (markRef.current) {
+      const want = on ? 1 : 0.72;
+      markRef.current.opacity += (want - markRef.current.opacity) * k;
+    }
   });
 
   useEffect(() => {
@@ -210,42 +265,53 @@ function Mailbox({ x, link, mats, label, live }) {
 
   return (
     <group position={[x, 1.12, 0]}>
-      <mesh
-        geometry={body}
-        material={mats.post}
-        onPointerOver={(e) => {
-          if (!live) return;
-          e.stopPropagation();
-          setOver(true);
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          setOver(false);
-          document.body.style.cursor = "";
-        }}
-        onClick={(e) => {
-          if (!live) return;
-          e.stopPropagation();
-          window.open(link, "_blank", "noopener,noreferrer");
-        }}
-      />
-      <group ref={lidRef} position={[0, MAIL_BODY.h * 0.55, -MAIL_BODY.d / 2]}>
+      <group ref={riseRef}>
         <mesh
-          geometry={lid}
+          geometry={body}
           material={mats.post}
-          position={[0, -MAIL_BODY.h * 0.55, MAIL_BODY.d / 2]}
+          onPointerOver={(e) => {
+            if (!live) return;
+            e.stopPropagation();
+            setOver(true);
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            setOver(false);
+            document.body.style.cursor = "";
+          }}
+          onClick={(e) => {
+            if (!live) return;
+            e.stopPropagation();
+            window.open(link, "_blank", "noopener,noreferrer");
+          }}
         />
+        <group
+          ref={lidRef}
+          position={[0, MAIL_BODY.h * 0.55, -MAIL_BODY.d / 2]}
+        >
+          <mesh
+            geometry={lid}
+            material={mats.post}
+            position={[0, -MAIL_BODY.h * 0.55, MAIL_BODY.d / 2]}
+          />
+        </group>
+        <group
+          ref={flagRef}
+          position={[MAIL_BODY.w / 2 + 0.04, MAIL_BODY.h * 0.3, -0.1]}
+        >
+          <mesh geometry={flag} material={on ? mats.warm : mats.cool} />
+        </group>
+        <mesh position={[0, MAIL_BODY.h * 0.32, MAIL_BODY.d / 2 + 0.01]}>
+          <planeGeometry args={[MAIL_BODY.w * 0.84, MAIL_BODY.w * 0.84]} />
+          <meshBasicMaterial
+            ref={markRef}
+            map={label}
+            transparent
+            opacity={0.72}
+            toneMapped={false}
+          />
+        </mesh>
       </group>
-      <group
-        ref={flagRef}
-        position={[MAIL_BODY.w / 2 + 0.04, MAIL_BODY.h * 0.3, -0.1]}
-      >
-        <mesh geometry={flag} material={on ? mats.warm : mats.cool} />
-      </group>
-      <mesh position={[0, MAIL_BODY.h * 0.32, MAIL_BODY.d / 2 + 0.01]}>
-        <planeGeometry args={[MAIL_BODY.w * 0.84, MAIL_BODY.w * 0.84]} />
-        <meshBasicMaterial map={label} transparent toneMapped={false} />
-      </mesh>
     </group>
   );
 }
