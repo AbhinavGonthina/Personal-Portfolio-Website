@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useStopIndex } from "../lib/stage";
+import { usePlain } from "../lib/plain";
 import { STOPS } from "../lib/stops";
 
 /**
@@ -30,6 +31,7 @@ for (const s of STOPS) {
 }
 
 export default function SectionTitle() {
+  const plain = usePlain();
   const i = useStopIndex();
   const title = STOPS[Math.min(STOPS.length - 1, Math.max(0, i))]?.title;
   const n = title ? ORDER.indexOf(title) + 1 : 0;
@@ -37,7 +39,7 @@ export default function SectionTitle() {
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-20 mx-auto w-full max-w-6xl px-6 pt-32">
       <AnimatePresence mode="wait">
-        {title && (
+        {title && !plain && (
           <motion.div
             key={title}
             initial={{ opacity: 0, y: 8 }}

@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useJourneyNear } from "../lib/stage";
 import { useArriving } from "../lib/arrival";
 import { useWelcomeLanded } from "../lib/welcome";
+import { usePlain } from "../lib/plain";
 
 /**
  * The one instruction on the whole site.
@@ -19,10 +20,11 @@ export default function ScrollHint() {
   const atStart = useJourneyNear(0, 0.08);
   const arriving = useArriving();
   const landed = useWelcomeLanded();
+  const plain = usePlain();
 
   return (
     <AnimatePresence>
-      {atStart && !arriving && landed && (
+      {atStart && !arriving && landed && !plain && (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}

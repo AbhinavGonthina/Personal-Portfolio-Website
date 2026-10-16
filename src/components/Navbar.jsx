@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
@@ -68,9 +68,45 @@ export default function Navbar() {
   // the stage pulls the page back, and the highlight was describing a
   // section the scene had already left. There is one number for where
   // you are in this town; the bar reads that one.
+  //
+  // The plain read has no camera, so there it goes back to measuring
+  // the sections - which is sound, because with nothing else moving
+  // there is no second opinion left to disagree with.
   const stop = useStopIndex();
-  const active =
-    NAV_FOR[STOPS[Math.min(STOPS.length - 1, Math.max(0, stop))]?.id] ?? null;
+  const sections = useRef([]);
+  const [measured, setMeasured] = useState(null);
+
+  useEffect(() => {
+    if (!plain) return;
+    sections.current = NAV_ITEMS.map(({ id }) => [
+      id,
+      document.getElementById(id),
+    ]).filter(([, el]) => el);
+  }, [plain]);
+
+  useMotionValueEvent(scrollY, "change", () => {
+    if (!plain) return;
+    // A line a quarter of the way down the viewport: the section
+    // crossing it is the one being read.
+    const line = window.innerHeight * 0.25;
+    let current = null;
+    for (const [id, el] of sections.current) {
+      if (el.getBoundingClientRect().top <= line) current = id;
+    }
+    // The last section is short and sits at the end of the document,
+    // so its top can never reach the line. At the bottom you are
+    // looking at it whatever the maths say.
+    const doc = document.documentElement;
+    if (window.scrollY + window.innerHeight >= doc.scrollHeight - 2) {
+      current = sections.current.at(-1)?.[0] ?? current;
+    }
+    setMeasured((prev) => (prev === current ? prev : current));
+  });
+
+  const active = plain
+    ? measured
+    : (NAV_FOR[STOPS[Math.min(STOPS.length - 1, Math.max(0, stop))]?.id] ??
+      null);
 
   const marked = hovered ?? active;
 
@@ -151,7 +187,10 @@ export default function Navbar() {
             aria-pressed={plain}
             className={cn(
               LINK,
-              "hidden border border-white/10 text-fg-subtle hover:border-white/20 hover:text-fg sm:block",
+              // Shown from the same width the town is built at.
+              // Below it the plain read is the only version there is,
+              // so a switch to the other one is a switch to nothing.
+              "hidden border border-white/10 text-fg-subtle hover:border-white/20 hover:text-fg md:block",
             )}
           >
             {plain ? "Interactive" : "Simpler read"}
