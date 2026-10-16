@@ -11,6 +11,9 @@ import { box, cyl } from "../lib/geo";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
 import Motes from "./motes";
+import Car from "./arrival";
+import { ARRIVAL_END, arrivalShot } from "../lib/arrivalPath";
+import { endArrival, isArriving, useArriving } from "../lib/arrival";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
@@ -960,12 +963,44 @@ function resolve(stop, out, cam, pointer, t) {
 
 const LOOK = { x: 0, y: 3, z: -2 };
 
-function Rig({ target, narrow }) {
+/**
+ * The arrival runs on its own clock, shared with the car so the door
+ * opens on the same beat the camera turns to look at it.
+ */
+function Rig({ target, narrow, clock }) {
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-2.6 * delta);
     const cam = state.camera;
     const halfFov = (cam.fov * DEG) / 2;
     const t = state.clock.elapsedTime;
+
+    // Arriving by car. The sequence owns the camera outright until
+    // it hands over, which it does by ending on the landing shot -
+    // so there is nothing to blend and nothing to argue about.
+    if (isArriving()) {
+      // Wall time from the first frame of the sequence, not summed
+      // deltas.
+      //
+      // R3F measures delta from when the Canvas was created, and
+      // this scene spends a second or two building merged geometry
+      // before its first frame, so the first delta was that whole
+      // gap and the sequence jumped straight past itself. Clamping
+      // the delta fixed that and introduced a worse bug: on a slow
+      // machine every honest frame gets docked too, and the arrival
+      // stretches to several times its length. Taking the baseline
+      // on the first frame of the sequence costs nothing and is
+      // right at any frame rate.
+      if (!clock.current.start) clock.current.start = performance.now();
+      clock.current.t = (performance.now() - clock.current.start) / 1000;
+      arrivalShot(clock.current.t, SHOT);
+      cam.position.set(SHOT.px, SHOT.py, SHOT.pz);
+      LOOK.x = SHOT.lx;
+      LOOK.y = SHOT.ly;
+      LOOK.z = SHOT.lz;
+      cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
+      if (clock.current.t >= ARRIVAL_END) endArrival();
+      return;
+    }
 
     if (!target) {
       // Scroll walks the camera from one stop to the next. Everything
@@ -1356,6 +1391,10 @@ export default function TownScene({
 }) {
   const layout = useLayout();
   const town = useTownMaterials();
+  // Shared between the rig and the car, so the door opens on the
+  // same beat the camera turns to look at it.
+  const clock = useRef({ start: 0, t: 0 });
+  const arriving = useArriving();
   const windows = useMemo(makeWindowTexture, []);
   const frame = useMemo(makeFrameTexture, []);
   const target = focused ? layout.find((t) => t.role.id === focused) : null;
@@ -1394,7 +1433,8 @@ export default function TownScene({
           shadows for a desk lamp to cut, and the lamp is the point. */}
       <Sky />
 
-      <Rig target={target} narrow={narrow} />
+      <Rig target={target} narrow={narrow} clock={clock} />
+      {arriving && <Car clock={clock} />}
       <Distant />
       <Motes />
       <Lamps />

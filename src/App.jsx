@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import Navbar from "./components/Navbar";
 import ScrollHint from "./components/ScrollHint";
+import SkipArrival from "./components/SkipArrival";
 import SectionTitle from "./components/SectionTitle";
 import TownStage from "./components/TownStage";
 import Hero from "./sections/Hero";
@@ -46,6 +47,7 @@ export default function App() {
       <TownStage refs={refs} />
       <SectionTitle />
       <ScrollHint />
+      <SkipArrival />
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
       <main className="pointer-events-none relative z-10">

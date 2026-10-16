@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useJourneyNear } from "../lib/stage";
+import { useArriving } from "../lib/arrival";
 
 /**
  * The one instruction on the whole site.
@@ -14,10 +15,11 @@ import { useJourneyNear } from "../lib/stage";
  */
 export default function ScrollHint() {
   const atStart = useJourneyNear(0, 0.08);
+  const arriving = useArriving();
 
   return (
     <AnimatePresence>
-      {atStart && (
+      {atStart && !arriving && (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -30,7 +32,7 @@ export default function ScrollHint() {
           transition={{ duration: 0.5, delay: 2.4, ease: [0.22, 1, 0.36, 1] }}
           className="pointer-events-none fixed inset-x-0 bottom-12 z-20 flex flex-col items-center gap-3"
         >
-          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-fg-subtle">
+          <p className="font-mono text-sm uppercase tracking-[0.3em] text-fg-muted">
             Scroll to continue
           </p>
           {/* A chevron easing down and back, the length of a slow
@@ -40,9 +42,9 @@ export default function ScrollHint() {
             aria-hidden
             animate={{ y: [0, 7, 0] }}
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-            className="text-fg-subtle"
+            className="text-fg-muted"
           >
-            <svg width="18" height="11" viewBox="0 0 18 11" fill="none">
+            <svg width="26" height="15" viewBox="0 0 18 11" fill="none">
               <path
                 d="M1 1l8 8 8-8"
                 stroke="currentColor"

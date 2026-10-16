@@ -1,13 +1,14 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
+import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
 import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
 import { skillGroups } from "../data/skills";
-import { holdScroll } from "../lib/scrollLock";
+import { holdScroll, useScrollLock } from "../lib/scrollLock";
 import { cn } from "../lib/cn";
 
 const TownScene = lazy(() => import("../scenes/TownScene"));
@@ -33,6 +34,7 @@ const TownScene = lazy(() => import("../scenes/TownScene"));
 export default function TownStage({ refs }) {
   const plain = usePlain();
   const focused = useFocused();
+  const arriving = useArriving();
   const [ready, setReady] = useState(false);
   const [live, setLive] = useState(false);
   const [grab, setGrab] = useState(false);
@@ -46,6 +48,11 @@ export default function TownStage({ refs }) {
   const was = useRef(0);
   const held = useRef(-1);
   const off = !!(plain || still);
+
+  // Nothing moves while the car is pulling up. The camera is on its
+  // own clock for those few seconds and scrolling would only put the
+  // journey somewhere the sequence is about to overwrite.
+  useScrollLock(arriving && !off);
 
   // Everything the town has to say is painted into a canvas texture
   // once and only repainted when what it shows changes.

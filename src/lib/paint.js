@@ -341,3 +341,55 @@ export function paintSkills(groups) {
 
   return finish(c);
 }
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * The screen on the back of the headrest in front of you, which is
+ * the only thing to look at for the first few seconds of a visit.
+ *
+ * Styled as the seat-back display it is pretending to be: a status
+ * line, a big label, and a progress bar that fills while you wait.
+ */
+export function paintHeadrest(label, note, progress) {
+  const W = 640;
+  const H = 420;
+  const [c, g] = canvas(W, H);
+
+  g.fillStyle = "#06080f";
+  g.fillRect(0, 0, W, H);
+  g.strokeStyle = "#1b2133";
+  g.lineWidth = 6;
+  g.strokeRect(3, 3, W - 6, H - 6);
+
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+
+  g.fillStyle = "#6fe3f5";
+  g.font = `500 22px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = "6px";
+  g.fillText(note.toUpperCase(), W / 2, 86);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+  g.fillStyle = "#ffffff";
+  g.font = `600 56px ${SANS}`;
+  g.fillText(label, W / 2, 180);
+
+  // The bar. Rounded, inset, and it only ever moves forward.
+  const bw = W - 160;
+  g.strokeStyle = "#242b40";
+  g.lineWidth = 4;
+  g.beginPath();
+  g.roundRect(80, 248, bw, 14, 7);
+  g.stroke();
+  g.fillStyle = "#6fe3f5";
+  g.beginPath();
+  g.roundRect(80, 248, Math.max(14, bw * progress), 14, 7);
+  g.fill();
+
+  g.fillStyle = "#5a6480";
+  g.font = `400 20px ${MONO}`;
+  g.fillText("ABHINAV GONTHINA · BOSTON", W / 2, 338);
+
+  return finish(c);
+}
