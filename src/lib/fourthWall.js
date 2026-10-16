@@ -5,9 +5,9 @@ import { setPlain } from "./plain";
  * Switching between the two readings, the long way round.
  *
  * The town pulls back until it turns out to be a monitor on a desk
- * with someone sitting at it; they reach for the tablet beside the
- * keyboard, lift it, and the tablet is the plain read. Going back
- * plays the same thing in reverse and sets you down at the landing.
+ * with someone sitting at it, and then that person looks up from it
+ * at the wall - which is the plain read. Going back lowers their
+ * eyes to the screen again and sets you down at the landing.
  *
  * It is one number. Everything that moves - how far the canvas has
  * shrunk, how solid the desk is, where the hand is, how big the
@@ -15,15 +15,32 @@ import { setPlain } from "./plain";
  * of `p`, running 0 at the town and 1 at the tablet. Driving it that
  * way means the reverse is free: run the same number back down.
  *
- * The switch itself happens at 0.8, by which point the tablet has
- * most of the screen and nothing of the page behind it is visible.
+ * The switch itself happens at 0.52, just before the view tilts, so
+ * the page is real content by the time it slides into frame.
  */
 
 const DUR = 2.6;
-const FLIP = 0.8;
+const FLIP = 0.52;
+
+/**
+ * `?wall=0.3` holds the sequence at three tenths of the way through
+ * instead of playing it - the only practical way to look hard at one
+ * beat of a two and a half second move, or to screenshot it.
+ */
+function frozen() {
+  if (typeof window === "undefined") return null;
+  const v = new URLSearchParams(window.location.search).get("wall");
+  const n = Number(v);
+  return v !== null && Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : null;
+}
+const HELD = frozen();
 
 const subs = new Set();
-let p = 0;
+let p = HELD ?? 0;
+// A held frame past the switch has to be past it in every sense, or
+// the wall you are looking up at is the interactive page's empty
+// scaffolding rather than the plain read.
+if (HELD !== null && HELD >= FLIP) setPlain(true);
 let dir = 0;
 let raf = 0;
 // Where the run started and when, in wall time.
@@ -65,6 +82,7 @@ function tick(now) {
  * playing, in the sense that it simply turns round where it stands.
  */
 export function runWall(toPlain) {
+  if (HELD !== null) return;
   const wants = toPlain ? 1 : -1;
   if (typeof window !== "undefined") {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -97,14 +115,6 @@ export const useWall = () =>
 
 /* ---------------------------------------------------------------- */
 
-/**
- * Where the town ends up once it is a monitor, as a fraction of the
- * viewport and a height to sit at. The bezel in the scene is drawn
- * from these same two numbers, so the picture lands inside its frame
- * rather than near it.
- */
-export const MON = { scale: 0.6, mid: 0.33 };
-
 const ease = (x) => {
   const t = Math.min(1, Math.max(0, x));
   return t * t * (3 - 2 * t);
@@ -113,19 +123,32 @@ const ease = (x) => {
 /** A window of `p`, eased, as its own 0..1. */
 export const span = (from, to) => (v) => ease((v - from) / (to - from));
 
-export const PULL = span(0, 0.42);
-export const DESK = span(0.06, 0.38);
-export const REACH = span(0.4, 0.58);
-export const LIFT = span(0.56, 0.9);
 /**
- * The page comes up underneath the tablet while the tablet still has
- * the screen, and the tablet is taken away after it. Both are nearly
- * black, so the handover is a cut nobody sees - and crossing them
- * over instead would put two half-transparent dark layers on top of
- * each other, which is a smear.
+ * The screen and the frame around it recede together, so the monitor
+ * arrives by getting further away rather than by being drawn on top
+ * of a picture that was already shrinking.
  */
-export const PAGE = span(0.8, 0.9);
-export const GONE = span(0.9, 1);
+export const PULL = span(0, 0.45);
+/** The room coming up out of the dark around it. */
+export const DESK = span(0.1, 0.42);
+/**
+ * Then you look up.
+ *
+ * Nothing in the room moves - no one reaches for anything, no one
+ * turns. The view tilts, the desk leaves by the bottom of the frame
+ * and the wall above it comes in from the top, and the wall is the
+ * plain read. It is the one move that needs no animation of the
+ * person at all, which is the only way a drawn figure stays
+ * convincing.
+ */
+export const LOOK = span(0.55, 1);
+export const PAGE = span(0.55, 0.68);
 /** The bar, the readout and the hint: all of them are the page. */
 export const CHROME = span(0, 0.16);
-export const DIM = span(0.66, 0.88);
+
+/**
+ * Where the town ends up once it is a monitor, as a fraction of the
+ * viewport and a height to sit at. The bezel is drawn from these
+ * same two numbers, so the picture lands inside its frame.
+ */
+export const MON = { scale: 0.6, mid: 0.33 };
