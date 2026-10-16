@@ -13,7 +13,7 @@ import { ExtrudedText, Ground } from "./street";
 import Motes from "./motes";
 import Car from "./arrival";
 import { ARRIVAL_END, arrivalShot } from "../lib/arrivalPath";
-import { endArrival, isArriving, useArriving } from "../lib/arrival";
+import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
@@ -963,6 +963,9 @@ function resolve(stop, out, cam, pointer, t) {
 
 const LOOK = { x: 0, y: 3, z: -2 };
 
+/** Non-null when `?at=` is pinning the arrival to one moment. */
+const HELD = frozenAt();
+
 /**
  * The arrival runs on its own clock, shared with the car so the door
  * opens on the same beat the camera turns to look at it.
@@ -991,14 +994,15 @@ function Rig({ target, narrow, clock }) {
       // on the first frame of the sequence costs nothing and is
       // right at any frame rate.
       if (!clock.current.start) clock.current.start = performance.now();
-      clock.current.t = (performance.now() - clock.current.start) / 1000;
+      clock.current.t =
+        HELD ?? (performance.now() - clock.current.start) / 1000;
       arrivalShot(clock.current.t, SHOT);
       cam.position.set(SHOT.px, SHOT.py, SHOT.pz);
       LOOK.x = SHOT.lx;
       LOOK.y = SHOT.ly;
       LOOK.z = SHOT.lz;
       cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
-      if (clock.current.t >= ARRIVAL_END) endArrival();
+      if (HELD === null && clock.current.t >= ARRIVAL_END) endArrival();
       return;
     }
 

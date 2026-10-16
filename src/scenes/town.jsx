@@ -208,6 +208,8 @@ export function Dressing({ mats, visible }) {
   const built = useBuilt(dressing);
   return (
     <group visible={visible}>
+      <Shell geo={built.road} mat={mats.road} />
+      <Shell geo={built.paint} mat={mats.paint} />
       <Shell geo={built.base} mat={mats.shell} />
       <Shell geo={built.lit} mat={mats.warm} />
     </group>

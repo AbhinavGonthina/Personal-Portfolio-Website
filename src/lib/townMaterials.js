@@ -52,6 +52,20 @@ export function useTownMaterials() {
         roughness: 0.95,
         metalness: 0,
       }),
+      // Tarmac, and the paint on it. The lines are given a little
+      // emissive so they still read as white at the far end of a road
+      // lit by six lamps.
+      road: new THREE.MeshStandardMaterial({
+        color: "#0d0e12",
+        roughness: 0.96,
+        metalness: 0.04,
+      }),
+      paint: new THREE.MeshStandardMaterial({
+        color: "#c9ccc4",
+        roughness: 0.85,
+        metalness: 0,
+        emissive: "#41433e",
+      }),
       door: new THREE.MeshStandardMaterial({
         color: "#6b5440",
         roughness: 0.75,

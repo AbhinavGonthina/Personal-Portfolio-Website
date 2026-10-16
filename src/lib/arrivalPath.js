@@ -1,9 +1,18 @@
-import { HEADREST, SEAT } from "./carGeometry";
+import { SCREEN_AT, SEAT } from "./carGeometry";
 import { STOPS } from "./stops";
 
-/** Where the car is parked, in world space. */
-export const CAR_PARK = { x: 1.35, z: 31.6, yaw: Math.PI - 0.12 };
+/**
+ * Where the car is parked, in world space.
+ *
+ * Turned a quarter turn, so the nose points down -X and the car is
+ * lying along the road rather than across it. That puts its right-hand
+ * side - the side you get out of - facing -Z, which is the town. You
+ * open the door and the city is already in front of you; there is no
+ * second turn to make.
+ */
+export const CAR_PARK = { x: -2.3, z: 32.56, yaw: Math.PI / 2 };
 
+/** Car-local to world. At this yaw it is just a swap of the two axes. */
 const toWorld = ([lx, ly, lz]) => [
   CAR_PARK.x + lx * Math.cos(CAR_PARK.yaw) + lz * Math.sin(CAR_PARK.yaw),
   ly,
@@ -12,20 +21,25 @@ const toWorld = ([lx, ly, lz]) => [
 
 const LAND = STOPS[0].free;
 
+/** When the door starts to swing, shared with the car itself. */
+export const DOOR_AT = 3.8;
+/** When the headrest stops saying it is loading. */
+export const ARRIVED_AT = 3.3;
+
 /**
- * pos, look, and how long to take getting there. The first frame is
- * where you wake up; the last is the landing shot, so the sequence
- * hands over to the scroll rig already in the right place.
+ * pos, look, and when to be there. The first frame is where you wake
+ * up; the last is the landing shot, so the sequence hands over to the
+ * scroll rig already standing in the right place.
  */
 const SHOTS = [
-  { at: 0, pos: SEAT, look: HEADREST, local: true },
-  { at: 3.4, pos: SEAT, look: HEADREST, local: true },
-  // Turn right, to the door.
-  { at: 4.5, pos: SEAT, look: [2.6, 1.05, -0.9], local: true },
-  // Out, and stand up.
-  { at: 6.0, pos: [1.9, 1.25, -0.75], look: [4.2, 1.3, -1.2], local: true },
-  { at: 7.1, pos: [2.5, 1.75, -1.3], look: [4.4, 1.6, -2.6], local: true },
-  // Turn to face the town. Both ends in world space now.
+  { at: 0, pos: SEAT, look: SCREEN_AT, local: true },
+  { at: 3.3, pos: SEAT, look: SCREEN_AT, local: true },
+  // Look right, through the door that has just opened.
+  { at: 4.5, pos: [0.72, 1.3, 0.8], look: [2.9, 1.1, 0.9], local: true },
+  // Slide out.
+  { at: 6.0, pos: [1.8, 1.34, 0.95], look: [4.4, 1.34, 0.6], local: true },
+  // Stand up, and the town is straight ahead.
+  { at: 7.1, pos: [2.5, 1.84, 0.82], look: [5.2, 1.7, 0.2], local: true },
   { at: 8.6, pos: LAND.pos, look: LAND.look },
 ];
 export const ARRIVAL_END = SHOTS[SHOTS.length - 1].at;
