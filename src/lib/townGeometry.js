@@ -159,13 +159,21 @@ export function house() {
 
   for (const s of [-1, 1]) {
     const x = s * (door / 2 + side / 2);
-    base.push(box(1.1, 0.9, 0.08, [x, 1.55, hd + 0.03]));
-    lit.push(plane(0.92, 0.72, [x, 1.55, hd + 0.08]));
-    base.push(box(0.05, 0.76, 0.03, [x, 1.55, hd + 0.09]));
+    // Clear of the wall, not flush with it.
+    //
+    // The wall is T thick and centred on hd, so its outer face is at
+    // hd + T/2 = hd + 0.08 - which is exactly where the lit pane sat.
+    // Two coplanar surfaces means the depth buffer picks a winner per
+    // pixel per frame, and the window stipples and crawls as the
+    // camera moves. Everything here now stands in front of the wall
+    // with room to spare.
+    base.push(box(1.1, 0.9, 0.08, [x, 1.55, hd + 0.11]));
+    lit.push(plane(0.92, 0.72, [x, 1.55, hd + 0.16]));
+    base.push(box(0.05, 0.76, 0.03, [x, 1.55, hd + 0.175]));
   }
   for (const s of [-1, 1]) {
-    base.push(box(0.08, 0.9, 1, [s * (hw + 0.03), 1.55, -1]));
-    lit.push(plane(0.84, 0.72, [s * (hw + 0.08), 1.55, -1], [0, s * HALF, 0]));
+    base.push(box(0.08, 0.9, 1, [s * (hw + 0.11), 1.55, -1]));
+    lit.push(plane(0.84, 0.72, [s * (hw + 0.16), 1.55, -1], [0, s * HALF, 0]));
   }
 
   base.push(box(door + 1.8, 0.1, 1.3, [0, 0.05, hd + 0.65]));
