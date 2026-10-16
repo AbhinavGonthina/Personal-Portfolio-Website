@@ -338,7 +338,10 @@ export function Mailboxes({ mats, visible, labels, live }) {
       rotation={yawOf(TOWN.mail)}
     >
       <Shell geo={rail.base} mat={mats.post} />
-      <group position={[0, 0.02, 0.62]}>
+      {/* Clear of the ground rather than half sunk in it: the letters
+          are centred on their own origin, so putting the group at
+          zero buries the bottom half of every one of them. */}
+      <group position={[0, 0.62, 0.66]}>
         <ExtrudedText
           tex={thanks.tex}
           aspect={thanks.aspect}
