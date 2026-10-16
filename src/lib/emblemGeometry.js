@@ -31,49 +31,46 @@ import {
 
 /* ------------------------------------------------------------------ */
 
-/** An airliner: swept wings, winglets, underslung engines, lit cabin. */
+/**
+ * An airliner, seen as a shape rather than as a model.
+ *
+ * The first one was a scale drawing: a long thin fuselage, swept
+ * wings, engines on pylons. At the size this is actually seen it read
+ * as a red cigar. This one is stubbier and the wings are twice the
+ * chord, which is what makes it an aeroplane from across the street.
+ */
 function plane() {
   const base = [];
   const lit = [];
 
-  base.push(cyl(0.075, 0.08, 0.86, 12, [0, 0, 0], [HALF, 0, 0]));
-  base.push(cone(0.08, 0.2, 12, [0, 0, 0.52], [-HALF, 0, 0]));
-  // The tail cone is pushed up as well as back, which is what gives an
-  // airliner its tail-up stance.
-  base.push(cone(0.078, 0.3, 12, [0, 0.035, -0.54], [HALF, 0, 0]));
+  base.push(cyl(0.11, 0.115, 0.6, 14, [0, 0, 0], [HALF, 0, 0]));
+  base.push(cone(0.115, 0.26, 14, [0, 0, 0.42], [-HALF, 0, 0]));
+  base.push(cone(0.11, 0.3, 14, [0, 0.055, -0.42], [HALF, 0, 0]));
 
+  // One slab per side, wide in chord and only lightly swept. A narrow
+  // wing disappears at this distance; a broad one reads instantly.
   for (const side of [-1, 1]) {
-    // Swept and tapered: a box narrowed at the tip and yawed back.
     base.push(
-      box(0.52, 0.022, 0.2, [side * 0.3, -0.015, -0.03], [0, side * 0.34, 0]),
+      box(0.46, 0.035, 0.34, [side * 0.3, -0.02, -0.02], [0, side * 0.22, 0]),
     );
     base.push(
-      box(
-        0.03,
-        0.1,
-        0.09,
-        [side * 0.55, 0.05, -0.12],
-        [0, side * 0.34, -side * 0.2],
-      ),
+      box(0.04, 0.12, 0.16, [side * 0.52, 0.055, -0.08], [0, side * 0.22, 0]),
     );
     base.push(
-      cyl(0.045, 0.05, 0.19, 10, [side * 0.26, -0.07, 0.02], [HALF, 0, 0]),
-    );
-    base.push(
-      box(0.2, 0.018, 0.1, [side * 0.12, 0.06, -0.52], [0, side * 0.3, 0]),
+      box(0.22, 0.03, 0.16, [side * 0.15, 0.075, -0.44], [0, side * 0.26, 0]),
     );
   }
 
-  base.push(box(0.022, 0.21, 0.19, [0, 0.14, -0.5], [0.34, 0, 0]));
+  // Tall fin, because the silhouette needs something above the line.
+  base.push(box(0.035, 0.3, 0.26, [0, 0.21, -0.38], [0.3, 0, 0]));
 
-  // Cabin windows and the engine fans, the only parts meant to glow.
   for (const side of [-1, 1]) {
-    lit.push(box(0.012, 0.022, 0.5, [side * 0.072, 0.025, 0.06]));
+    lit.push(box(0.016, 0.03, 0.42, [side * 0.105, 0.03, 0.04]));
     lit.push(
-      cyl(0.032, 0.032, 0.012, 10, [side * 0.26, -0.07, 0.115], [HALF, 0, 0]),
+      cyl(0.055, 0.055, 0.14, 12, [side * 0.27, -0.1, 0.04], [HALF, 0, 0]),
     );
   }
-  lit.push(ball(0.02, [0, -0.05, 0.56]));
+  lit.push(ball(0.028, [0, -0.06, 0.5]));
 
   return { base: merge(base), lit: merge(lit) };
 }
@@ -91,8 +88,9 @@ function cloud() {
     ball(0.12, [0.03, Y + 0.14, -0.04], null, [1, 0.72, 0.8]),
     ball(0.1, [-0.15, Y + 0.11, 0.04], null, [1, 0.7, 0.82]),
   ];
-  // Staggered within the bundle, so one translation moves them all and
-  // they still do not fall in step.
+  // Rain, hanging rather than falling. Animated it drew the eye to a
+  // corner of the skyline and held it there, which is a lot of
+  // attention for a weather effect on a logo.
   const drops = [
     [-0.26, 0],
     [-0.12, -0.11],
@@ -101,9 +99,9 @@ function cloud() {
     [0.28, -0.16],
     [-0.04, -0.3],
     [0.22, -0.26],
-  ].map(([x, y]) => box(0.018, 0.11, 0.018, [x, Y + y - 0.2, 0]));
+  ].map(([x, y]) => box(0.018, 0.11, 0.018, [x, Y + y - 0.26, 0]));
 
-  return { base: merge(base), fall: merge(drops), fallSpan: 0.38 };
+  return { base: merge(base), lit: merge(drops) };
 }
 
 /**
@@ -359,54 +357,34 @@ function palm() {
 }
 
 /**
- * A husky's head.
+ * A paw print.
  *
- * The dark and lit materials are used as the dog's own markings rather
- * than as highlights: the skull, ears and crown are the base, and the
- * mask, muzzle, brow spots and ruffs are the bright one. Done the other
- * way it was a uniformly dark lump with glowing edges, which read as "an
- * animal, probably" instead of as a dog.
+ * It was a husky's head, built from a dozen overlapping spheres, and
+ * from the street it read as a lump. A paw is one silhouette with
+ * nothing to misread, it says the same thing, and it is the first half
+ * of the name.
  */
 function husky() {
   const base = [];
   const lit = [];
 
-  // Skull and the dark cap over it.
-  base.push(ball(0.3, [0, 0.04, 0], null, [1, 0.95, 0.92]));
-  base.push(ball(0.26, [0, 0.12, -0.05], null, [1, 0.85, 0.9]));
+  // Main pad: a rounded triangle, made by flattening a sphere and
+  // squaring off the bottom.
+  base.push(ball(0.3, [0, -0.12, 0], null, [1.15, 1, 0.42]));
+  base.push(box(0.46, 0.22, 0.25, [0, -0.2, 0]));
+  lit.push(ball(0.235, [0, -0.11, 0.06], null, [1.1, 0.95, 0.3]));
 
-  // The white mask: a wedge down the middle of the face, cheeks either
-  // side, and the muzzle in front.
-  lit.push(ball(0.13, [0, 0.07, 0.2], null, [0.72, 1.5, 0.75]));
-  for (const side of [-1, 1]) {
-    lit.push(ball(0.15, [side * 0.2, -0.05, 0.05], null, [0.78, 1.05, 0.95]));
-    // Brow spot, the mark that makes a husky read as a husky.
-    lit.push(ball(0.055, [side * 0.1, 0.14, 0.21], null, [1.2, 0.85, 0.6]));
+  // Four toes over it, the outer pair dropped and turned out.
+  const toes = [
+    [-0.33, 0.14, 0.9, -0.45],
+    [-0.13, 0.3, 1, -0.16],
+    [0.13, 0.3, 1, 0.16],
+    [0.33, 0.14, 0.9, 0.45],
+  ];
+  for (const [x, y, k, tilt] of toes) {
+    base.push(ball(0.125 * k, [x, y, 0], [0, 0, tilt], [1, 1.25, 0.46]));
+    lit.push(ball(0.085 * k, [x, y + 0.01, 0.05], [0, 0, tilt], [1, 1.2, 0.3]));
   }
-  lit.push(cone(0.115, 0.3, 12, [0, -0.08, 0.27], [HALF + 0.14, 0, 0]));
-  lit.push(ball(0.095, [0, -0.1, 0.22], null, [1, 0.8, 1]));
-
-  // Nose, eyes, mouth.
-  base.push(ball(0.05, [0, -0.055, 0.41], null, [1.15, 0.85, 0.85]));
-  for (const side of [-1, 1]) {
-    base.push(ball(0.042, [side * 0.115, 0.035, 0.235], null, [1, 1.15, 0.8]));
-  }
-  base.push(box(0.16, 0.014, 0.02, [0, -0.15, 0.32]));
-
-  // Ears: dark outside, bright inside.
-  for (const side of [-1, 1]) {
-    base.push(
-      cone(0.1, 0.27, 7, [side * 0.18, 0.29, -0.02], [-0.14, 0, side * 0.26]),
-    );
-    lit.push(
-      cone(0.05, 0.17, 6, [side * 0.18, 0.29, 0.03], [-0.14, 0, side * 0.26]),
-    );
-  }
-
-  // Ruff and collar.
-  base.push(ball(0.3, [0, -0.28, -0.02], null, [1.05, 0.42, 0.95]));
-  lit.push(ring(0.235, 0.03, [0, -0.25, 0], [HALF - 0.1, 0, 0]));
-  lit.push(ball(0.04, [0, -0.3, 0.21]));
 
   return { base: merge(base), lit: merge(lit) };
 }
