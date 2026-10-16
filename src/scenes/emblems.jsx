@@ -30,7 +30,6 @@ const SIZE = {
 
 export default function Emblem({ kind, mats, scale = 1 }) {
   const spin = useRef();
-  const fall = useRef();
   const sweep = useRef();
 
   const built = useMemo(() => EMBLEMS[kind]?.(), [kind]);
@@ -48,11 +47,6 @@ export default function Emblem({ kind, mats, scale = 1 }) {
       spin.current.rotation.y = t * 0.24;
       spin.current.position.y = Math.sin(t * 0.8) * 0.035;
     }
-    // Half a unit of fall, over and over. The drops are staggered inside
-    // the bundle, so one translation moves them all without them landing
-    // in step.
-    if (fall.current)
-      fall.current.position.y = -((t * 0.75) % (built.fallSpan ?? 0.5));
     // Clamped to the glass: the bar is built in the screen's own frame,
     // so sliding it along X can never take it off the side of a monitor
     // that has no way to clip.
@@ -67,10 +61,6 @@ export default function Emblem({ kind, mats, scale = 1 }) {
     <group ref={spin} scale={scale * (SIZE[kind] ?? 1)}>
       <mesh geometry={built.base} material={mats.base} />
       {built.lit && <mesh geometry={built.lit} material={mats.lit} />}
-
-      {built.fall && (
-        <mesh ref={fall} geometry={built.fall} material={mats.lit} />
-      )}
 
       {built.sweep && (
         <group position={built.sweepAt} rotation={built.sweepRot}>
