@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
 import { setPlain, usePlain } from "../lib/plain";
-import { setFocused } from "../lib/stage";
+import { setFocused, useStopIndex } from "../lib/stage";
+import { beginJump } from "../lib/scrollLock";
+import { STOPS } from "../lib/stops";
 
 /**
  * Dressed to match the skyline below it: small mono capitals with wide
@@ -15,9 +17,8 @@ import { setFocused } from "../lib/stage";
  * 1. A single pill slides between items via motion's shared-layout
  *    `layoutId`, rather than each item fading its own background. This is
  *    the whole trick - it reads as expensive and is almost free.
- * 2. The pill rests on whichever section you are actually looking at, and
- *    follows the pointer on hover. Tracked with an IntersectionObserver,
- *    so nothing runs per frame.
+ * 2. The pill rests on whichever stop the camera is at, and follows the
+ *    pointer on hover.
  * 3. The bar is bare at the top of the page and condenses into a bordered,
  *    blurred strip once you scroll - one boolean flipped at a threshold.
  */
@@ -26,7 +27,22 @@ const scrollTo = (id) => {
   // A focused building pins the page, so a nav link would do nothing
   // until you closed it by hand. Leaving is part of going somewhere.
   setFocused(null);
+  beginJump();
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+};
+
+/**
+ * Which nav item a camera stop belongs to. Two stops share Projects -
+ * the camera holds still across that section while the screen on the
+ * desk changes - and the landing belongs to none of them.
+ */
+const NAV_FOR = {
+  about: "about",
+  experience: "experience",
+  skills: "skills",
+  projects: "projects",
+  "projects-hold": "projects",
+  contact: "connect",
 };
 
 const LINK =
@@ -35,7 +51,6 @@ const LINK =
 export default function Navbar() {
   const plain = usePlain();
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState(null);
   const [hovered, setHovered] = useState(null);
 
   // One boolean, flipped at a threshold - not a value bound to scroll
@@ -43,40 +58,19 @@ export default function Navbar() {
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
-  // Which section the reader is in, measured rather than observed.
+  // Which stop the camera is at, taken from the camera rather than
+  // measured again here.
   //
-  // An IntersectionObserver was doing this and kept the highlight a
-  // section behind: it only reports what *changed*, so a callback can
-  // arrive holding nothing but the section being left, and reconstructing
-  // the full picture from a running map turned out to be just as much
-  // code and still wrong across fast scrolls. Four rect reads on a scroll
-  // that is already laying out is cheaper than being subtly broken.
-  const sections = useRef([]);
-  useEffect(() => {
-    sections.current = NAV_ITEMS.map(({ id }) => [
-      id,
-      document.getElementById(id),
-    ]).filter(([, el]) => el);
-  }, []);
-
-  useMotionValueEvent(scrollY, "change", () => {
-    // A line a quarter of the way down the viewport: the section crossing
-    // it is the one being read. Measuring at the middle lets a tall
-    // section claim the highlight long before you reach it.
-    const line = window.innerHeight * 0.25;
-    let current = null;
-    for (const [id, el] of sections.current) {
-      if (el.getBoundingClientRect().top <= line) current = id;
-    }
-    // The last section is short and sits at the end of the document, so
-    // its top can never reach the line - the page runs out of scroll
-    // first. At the bottom, you are looking at it whatever the maths say.
-    const doc = document.documentElement;
-    if (window.scrollY + window.innerHeight >= doc.scrollHeight - 2) {
-      current = sections.current.at(-1)?.[0] ?? current;
-    }
-    setActive((prev) => (prev === current ? prev : current));
-  });
+  // This used to read the section rects against a line a quarter of
+  // the way down the viewport, which is a second opinion about where
+  // you are - and a second opinion disagrees. Click a link and scroll
+  // away before the smooth scroll finishes, or flick hard enough that
+  // the stage pulls the page back, and the highlight was describing a
+  // section the scene had already left. There is one number for where
+  // you are in this town; the bar reads that one.
+  const stop = useStopIndex();
+  const active =
+    NAV_FOR[STOPS[Math.min(STOPS.length - 1, Math.max(0, stop))]?.id] ?? null;
 
   const marked = hovered ?? active;
 

@@ -8,7 +8,12 @@ import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
 import { skillGroups } from "../data/skills";
-import { holdScroll, useScrollLock } from "../lib/scrollLock";
+import {
+  holdScroll,
+  isJumping,
+  trackJump,
+  useScrollLock,
+} from "../lib/scrollLock";
 import { cn } from "../lib/cn";
 
 const TownScene = lazy(() => import("../scenes/TownScene"));
@@ -47,6 +52,14 @@ export default function TownStage({ refs }) {
   const raf = useRef(0);
   const was = useRef(0);
   const held = useRef(-1);
+  // Where the scroll is held, and until when. See the clamp in read().
+  const pin = useRef({ until: 0, y: 0 });
+  // The scroll position at the previous frame, to tell a link that
+  // has finished moving the page from one that is still in flight.
+  const prevY = useRef(-1);
+  // The section tops as last measured, so the scroll handler can
+  // clamp without laying the page out again on every event.
+  const tops = useRef([]);
   const off = !!(plain || still);
 
   // Nothing moves while the car is pulling up. The camera is on its
@@ -88,15 +101,32 @@ export default function TownStage({ refs }) {
       // Document-relative, not offsetTop: one of these markers lives
       // inside a positioned section, where offsetTop is measured from
       // the section rather than from the page.
-      const y = window.scrollY;
-      const tops = els.map((el) => el.getBoundingClientRect().top + y);
+      const raw = window.scrollY;
+      const at = els.map((el) => el.getBoundingClientRect().top + raw);
+      tops.current = at;
+
+      // A stop holds you for a second, and holding the position is
+      // the only way to do it. Cancelling the input is not enough:
+      // the momentum behind a flick is already in flight, arrives as
+      // scroll events rather than wheel events, and carries you
+      // straight through the section you have only just reached.
+      // Backwards is never held, so this only ever clamps forwards.
+      let y = raw;
+      // A link in flight is done once it has moved the page and come
+      // to rest.
+      trackJump(y !== prevY.current);
+      prevY.current = y;
+      if (performance.now() < pin.current.until && y > pin.current.y) {
+        y = pin.current.y;
+        window.scrollTo({ top: y, behavior: "instant" });
+      }
       let j = 0;
-      if (y >= tops[tops.length - 1]) j = tops.length - 1;
+      if (y >= at[at.length - 1]) j = at.length - 1;
       else {
-        for (let i = 0; i < tops.length - 1; i++) {
-          if (y < tops[i + 1]) {
-            const span = Math.max(1, tops[i + 1] - tops[i]);
-            j = i + Math.max(0, (y - tops[i]) / span);
+        for (let i = 0; i < at.length - 1; i++) {
+          if (y < at[i + 1]) {
+            const span = Math.max(1, at[i + 1] - at[i]);
+            j = i + Math.max(0, (y - at[i]) / span);
             break;
           }
         }
@@ -120,13 +150,25 @@ export default function TownStage({ refs }) {
       // amount of cancelling input afterwards can undo. Only on the
       // way down, and only when a section would actually have been
       // missed.
+      // Coming back up re-arms the stops you have come back past.
+      //
+      // The pause is once per arrival, not once per page: without
+      // this, walking down to Projects and scrolling back to the top
+      // left every stop behind you already spent, so the next flick
+      // went through all of them without being held once. That is the
+      // skip - not a frame carrying too far, which was already
+      // caught, but a second run down a page that had stopped
+      // defending itself.
+      if (j < held.current) held.current = Math.floor(j + 1e-6);
+
       const prev = was.current;
       const from = Math.floor(prev + 1e-6);
       let to = Math.floor(j + 1e-6);
-      if (j > prev && to > from) {
+      if (j > prev && to > from && !isJumping()) {
         const n = from + 1;
-        if (to > n && n < tops.length) {
-          window.scrollTo({ top: tops[n], behavior: "instant" });
+        if (to > n && n < at.length) {
+          y = at[n];
+          window.scrollTo({ top: y, behavior: "instant" });
           j = n;
           to = n;
           setJourney(j);
@@ -136,6 +178,10 @@ export default function TownStage({ refs }) {
         // to meter every pass.
         if (n !== held.current) {
           held.current = n;
+          // Pinned where you arrived, not at the top of the section:
+          // the pause is there to stop you overshooting, not to tidy
+          // up the position you chose.
+          pin.current = { until: performance.now() + 1000, y };
           holdScroll(1000);
         }
       }
@@ -164,6 +210,37 @@ export default function TownStage({ refs }) {
       );
     };
     const onScroll = () => {
+      // The two guards are enforced here, on the event itself, and
+      // not in the frame callback below.
+      //
+      // That callback is throttled to the renderer, and the renderer
+      // is slowest exactly when a flick is longest - a frame spent
+      // drawing eight towers twice is a frame in which the page can
+      // travel three sections unwatched. Clamping on the event costs
+      // a comparison against numbers measured on the last frame and
+      // cannot be starved.
+      //
+      // The cap is the next stop down. You can never be more than one
+      // stop ahead of where the camera is, which makes skipping a
+      // section impossible rather than merely unlikely; at any honest
+      // frame rate the camera keeps up and you never feel it. On top
+      // of that sits the second you are held for on arrival. Neither
+      // applies to a link, which crosses stops because you asked it
+      // to, and neither ever stops you going back up.
+      const at = tops.current;
+      if (at.length > 1 && !isJumping()) {
+        const next = Math.min(
+          at.length - 1,
+          Math.floor(was.current + 1e-6) + 1,
+        );
+        let cap = at[next];
+        if (performance.now() < pin.current.until) {
+          cap = Math.min(cap, pin.current.y);
+        }
+        if (window.scrollY > cap) {
+          window.scrollTo({ top: cap, behavior: "instant" });
+        }
+      }
       if (!raf.current) raf.current = requestAnimationFrame(read);
     };
     read();

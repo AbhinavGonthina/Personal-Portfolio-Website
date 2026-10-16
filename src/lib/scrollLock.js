@@ -50,6 +50,38 @@ function release() {
   }
 }
 
+let jumpUntil = 0;
+let jumpMoved = false;
+
+/**
+ * A link is taking you somewhere, so get out of the way.
+ *
+ * Crossing four stops at once is the thing the arrival pause exists
+ * to prevent - when a flick does it by accident. When a nav link does
+ * it you asked for it, and a pause that pins the page one section in
+ * turns the link into a link to somewhere else. The stage checks this
+ * before arming either the pause or the pin.
+ */
+export function beginJump(ms = 2500) {
+  jumpUntil = performance.now() + ms;
+  jumpMoved = false;
+}
+
+export const isJumping = () => performance.now() < jumpUntil;
+
+/**
+ * Called once a frame while the page is being read, with whether the
+ * scroll moved since the last one. A jump ends when the page has
+ * moved and then stopped - not the first time it is found standing
+ * still, which is what it is doing in the frame right after the click
+ * while the smooth scroll has yet to start.
+ */
+export function trackJump(moving) {
+  if (!isJumping()) return;
+  if (moving) jumpMoved = true;
+  else if (jumpMoved) jumpUntil = 0;
+}
+
 /** Ignores forward scroll input for `ms`. Programmatic scrolling is untouched. */
 export function holdScroll(ms) {
   holdUntil = Math.max(holdUntil, performance.now() + ms);
