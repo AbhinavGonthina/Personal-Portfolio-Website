@@ -9,28 +9,32 @@ import { box, cyl, HALF, merge } from "./geo";
  * right, open the door, step out", and getting the handedness wrong
  * put the door on the left and the exit facing away from the town.
  *
- * Two numbers set everything else: the beltline, which is where the
- * bodywork stops and the glass starts, and the eye. The eye has to
- * sit well above the belt or the first thing you see on arriving is
- * the top of a door card filling the bottom half of the screen.
+ * Three numbers set everything else. BELT is where the bodywork stops
+ * and the glass starts, ROOFLINE is where the glass stops, and the eye
+ * sits between them with room to spare. Every pillar, rail and pane -
+ * on the shell and on the door that swings away from it - is measured
+ * off those two, so the opening in the body and the frame in the door
+ * meet instead of leaving a band of nothing between them.
  */
 
 const BELT = 1.0;
-const GLASS_Y = 1.33;
-const GLASS_H = 0.56;
+const ROOFLINE = 1.64;
+const GLASS_H = ROOFLINE - BELT - 0.06;
+const GLASS_Y = BELT + GLASS_H / 2;
+const RAIL_Y = ROOFLINE - 0.03;
 
 export const CAR = {
   len: 4.6,
   wide: 1.9,
-  roof: 1.66,
+  roof: ROOFLINE + 0.035,
 };
 
 const HL = CAR.len / 2;
 const HW = CAR.wide / 2;
 
 /** The camera's seat, and the screen it is looking at, in car-local space. */
-export const SEAT = [0.46, 1.32, 0.78];
-export const SCREEN_AT = [0.46, 1.36, -0.6];
+export const SEAT = [0.46, 1.32, 0.82];
+export const SCREEN_AT = [0.46, 1.36, -0.48];
 export const SCREEN = { w: 0.44, h: 0.28 };
 
 /** Where the right-hand rear door is hinged, and how long the leaf is. */
@@ -38,23 +42,20 @@ export const HINGE = [HW - 0.02, 0, 0.1];
 export const DOOR_LEN = 1.25;
 
 /** The glass in a side opening, and the rail over the top of it. */
-const pane = (x, z, len) => box(0.03, GLASS_H - 0.06, len, [x, GLASS_Y, z]);
-const rail = (x, z, len) =>
-  box(0.09, 0.06, len, [x, GLASS_Y + GLASS_H / 2 - 0.03, z]);
+const pane = (x, z, len) => box(0.03, GLASS_H, len, [x, GLASS_Y, z]);
+const rail = (x, z, len) => box(0.09, 0.06, len, [x, RAIL_Y, z]);
 
 /**
- * The shell, the cabin and everything bolted to them, as three merged
- * buffers: painted bodywork, glass, and the few surfaces that glow.
+ * The shell and everything bolted to it, as four merged buffers:
+ * painted bodywork, upholstery, clear glass, and the two front
+ * windows, which are not clear - see `tint` in the scene.
  */
 export function car() {
   const base = [];
+  const trim = [];
   const lit = [];
   const glass = [];
-  // Upholstery and headlining, kept apart from the bodywork. They are
-  // the nearest things to the camera for the first four seconds, and
-  // in the body's own paint - lit by a lamp a foot away - they read
-  // as poured concrete.
-  const trim = [];
+  const tint = [];
 
   // Floor pan, then the lower body as a tub rather than a solid block.
   // Solid was cheaper and looked fine from outside, but from the back
@@ -74,16 +75,17 @@ export function car() {
   base.push(box(CAR.wide - 0.08, 0.3, 1.2, [0, BELT + 0.15, -HL + 0.6]));
   base.push(box(CAR.wide - 0.08, 0.26, 0.8, [0, BELT + 0.13, HL - 0.4]));
 
-  // Six pillars and a roof. The openings between them are left as
-  // openings - a solid panel where the window should be is the whole
-  // difference between sitting in a car and sitting in a crate.
+  // Six pillars and a roof. Each runs from just under the belt to the
+  // roof, so there is no daylight where the body meets its own glass.
   for (const s of [-1, 1]) {
     const x = s * (HW - 0.05);
-    base.push(box(0.1, GLASS_H + 0.06, 0.16, [x, GLASS_Y, -HL + 1.15]));
-    base.push(box(0.09, GLASS_H + 0.06, 0.12, [x, GLASS_Y, 0.1]));
-    base.push(box(0.12, GLASS_H + 0.06, 0.18, [x, GLASS_Y, HL - 0.95]));
+    const h = ROOFLINE - BELT + 0.02;
+    const y = BELT - 0.01 + h / 2;
+    base.push(box(0.1, h, 0.16, [x, y, -HL + 1.15]));
+    base.push(box(0.09, h, 0.12, [x, y, 0.1]));
+    base.push(box(0.12, h, 0.18, [x, y, HL - 0.95]));
     base.push(rail(x, -0.55, 0.95));
-    glass.push(pane(s * (HW - 0.02), -0.55, 0.9));
+    tint.push(pane(s * (HW - 0.02), -0.55, 0.9));
   }
   // The left rear opening, which has no door that moves.
   base.push(rail(-HW + 0.04, 0.72, DOOR_LEN));
@@ -93,38 +95,40 @@ export function car() {
   trim.push(box(CAR.wide - 0.16, 0.03, 2.84, [0, CAR.roof - 0.06, 0.05]));
 
   // Windscreen and rear window, both raked.
-  glass.push(
-    box(CAR.wide - 0.22, 0.66, 0.03, [0, GLASS_Y, -HL + 1.2], [0.4, 0, 0]),
+  tint.push(
+    box(CAR.wide - 0.22, 0.68, 0.03, [0, GLASS_Y, -HL + 1.2], [0.4, 0, 0]),
   );
   glass.push(
-    box(CAR.wide - 0.26, 0.6, 0.03, [0, GLASS_Y, HL - 0.98], [-0.36, 0, 0]),
+    box(CAR.wide - 0.26, 0.62, 0.03, [0, GLASS_Y, HL - 0.98], [-0.36, 0, 0]),
   );
 
-  // Dashboard and wheel, and the glow off the instruments. The glow is
-  // kept small: a basic material with bloom behind it is the brightest
-  // thing in the scene whatever size it is drawn at.
-  trim.push(box(CAR.wide - 0.14, 0.26, 0.34, [0, 1.17, -HL + 1.38]));
-  base.push(cyl(0.16, 0.16, 0.04, 14, [-0.44, 1.2, -HL + 1.62], [-0.4, 0, 0]));
-  base.push(cyl(0.03, 0.03, 0.2, 8, [-0.44, 1.12, -HL + 1.54], [-0.4, 0, 0]));
-  lit.push(box(0.14, 0.03, 0.02, [-0.44, 1.23, -HL + 1.42], [0.42, 0, 0]));
-  lit.push(box(0.1, 0.025, 0.02, [0.26, 1.22, -HL + 1.42], [0.42, 0, 0]));
+  // Dashboard and wheel, right forward under the screen. They used to
+  // sit a hand's width off the front seats, which from behind meant a
+  // steering wheel hanging through the driver's back.
+  trim.push(box(CAR.wide - 0.14, 0.26, 0.3, [0, 1.15, -1.08]));
+  base.push(cyl(0.16, 0.16, 0.04, 14, [-0.44, 1.14, -0.86], [-0.4, 0, 0]));
+  base.push(cyl(0.03, 0.03, 0.22, 8, [-0.44, 1.06, -0.96], [-0.4, 0, 0]));
+  // Instrument spill along the top of the dash. Kept thin: a basic
+  // material with bloom behind it is the brightest thing in the scene
+  // whatever size it is drawn at.
+  lit.push(box(0.34, 0.012, 0.07, [-0.34, 1.286, -1.04]));
 
   // Front seats. The right-hand one is the thing you spend the first
   // three seconds looking at, so its headrest carries the screen.
   for (const s of [-1, 1]) {
     const x = s * 0.46;
-    trim.push(box(0.58, 0.14, 0.56, [x, 0.6, -0.5]));
-    trim.push(box(0.58, 0.7, 0.16, [x, 1.0, -0.78], [-0.1, 0, 0]));
-    trim.push(box(0.44, 0.3, 0.14, [x, 1.4, -0.72]));
-    base.push(box(0.04, 0.1, 0.04, [x - 0.11, 1.26, -0.72]));
-    base.push(box(0.04, 0.1, 0.04, [x + 0.11, 1.26, -0.72]));
+    trim.push(box(0.58, 0.14, 0.56, [x, 0.6, -0.34]));
+    trim.push(box(0.58, 0.7, 0.16, [x, 1.0, -0.62], [-0.1, 0, 0]));
+    trim.push(box(0.44, 0.3, 0.14, [x, 1.4, -0.56]));
+    base.push(box(0.04, 0.1, 0.04, [x - 0.11, 1.26, -0.56]));
+    base.push(box(0.04, 0.1, 0.04, [x + 0.11, 1.26, -0.56]));
   }
 
   // The rear bench, which is what you are sitting on.
-  trim.push(box(CAR.wide - 0.26, 0.16, 0.62, [0, 0.6, 0.82]));
-  trim.push(box(CAR.wide - 0.26, 0.72, 0.16, [0, 1.02, 1.14], [-0.1, 0, 0]));
+  trim.push(box(CAR.wide - 0.26, 0.16, 0.62, [0, 0.6, 0.86]));
+  trim.push(box(CAR.wide - 0.26, 0.72, 0.16, [0, 1.02, 1.18], [-0.1, 0, 0]));
   for (const s of [-1, 1]) {
-    trim.push(box(0.4, 0.26, 0.12, [s * 0.46, 1.42, 1.1]));
+    trim.push(box(0.4, 0.26, 0.12, [s * 0.46, 1.42, 1.14]));
   }
 
   // Wheels, lamps, mirrors.
@@ -135,7 +139,7 @@ export function car() {
     }
     lit.push(box(0.34, 0.13, 0.05, [s * 0.56, 0.88, -HL - 0.01]));
     lit.push(box(0.28, 0.1, 0.05, [s * 0.6, 0.92, HL + 0.01]));
-    base.push(box(0.16, 0.1, 0.06, [s * (HW + 0.09), 1.24, -HL + 1.3]));
+    base.push(box(0.16, 0.1, 0.06, [s * (HW + 0.09), 1.2, -HL + 1.3]));
   }
 
   return {
@@ -143,6 +147,7 @@ export function car() {
     trim: merge(trim),
     lit: merge(lit),
     glass: merge(glass),
+    tint: merge(tint),
   };
 }
 
@@ -151,28 +156,30 @@ export function car() {
  *
  * Both are built running from the origin along +Z, because the group
  * that holds them is the hinge: a door modelled around its own centre
- * swings a quarter of itself through the back seat.
+ * swings a quarter of itself through the back seat. The frame starts
+ * at the belt and ends at the roofline, the same two numbers the
+ * opening it fills is cut to.
  */
 export function carDoor() {
   const c = DOOR_LEN / 2;
+  const h = ROOFLINE - BELT + 0.02;
+  const y = BELT - 0.01 + h / 2;
   return {
     base: merge([
       // Skin below the belt, then a frame around the window.
-      box(0.1, 0.54, DOOR_LEN, [0, 0.73, c]),
-      box(0.09, 0.06, DOOR_LEN, [0.01, GLASS_Y + GLASS_H / 2 - 0.03, c]),
-      box(0.08, GLASS_H, 0.07, [0.01, GLASS_Y, 0.035]),
-      box(0.08, GLASS_H, 0.07, [0.01, GLASS_Y, DOOR_LEN - 0.035]),
+      box(0.1, 0.56, DOOR_LEN, [0, 0.74, c]),
+      box(0.09, 0.06, DOOR_LEN, [0.01, RAIL_Y, c]),
+      box(0.08, h, 0.07, [0.01, y, 0.035]),
+      box(0.08, h, 0.07, [0.01, y, DOOR_LEN - 0.035]),
       // Handle, on the outside.
       box(0.13, 0.05, 0.16, [0.06, BELT - 0.14, c - 0.44]),
     ]),
     trim: merge([
       // Armrest and door card, on the inside.
       box(0.1, 0.07, 0.42, [-0.05, BELT - 0.06, c - 0.1]),
-      box(0.08, 0.3, DOOR_LEN - 0.12, [-0.04, 0.84, c]),
+      box(0.08, 0.34, DOOR_LEN - 0.12, [-0.04, 0.81, c]),
     ]),
-    glass: merge([
-      box(0.03, GLASS_H - 0.1, DOOR_LEN - 0.18, [0.02, GLASS_Y - 0.02, c]),
-    ]),
+    glass: merge([box(0.03, GLASS_H, DOOR_LEN - 0.18, [0.02, GLASS_Y, c])]),
   };
 }
 

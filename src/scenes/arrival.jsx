@@ -10,7 +10,7 @@ import {
   carDoor,
   headrestScreen,
 } from "../lib/carGeometry";
-import { paintHeadrest } from "../lib/paint";
+import { HEADREST_BAR, paintHeadrest } from "../lib/paint";
 import { ACCENT } from "../lib/townMaterials";
 import { ARRIVED_AT, CAR_PARK, DOOR_AT } from "../lib/arrivalPath";
 
@@ -26,7 +26,7 @@ import { ARRIVED_AT, CAR_PARK, DOOR_AT } from "../lib/arrivalPath";
  * keyframes in car-local space that the rig reads, so the rig stays
  * the one thing that writes to the camera and the handover at the end
  * is an interpolation rather than a fight over who owns it. All this
- * component owns is the door.
+ * component owns is the door and the progress bar.
  *
  * Every material is double-sided. The camera spends the first four
  * seconds inside a closed box, and a single-sided shell seen from the
@@ -35,15 +35,47 @@ import { ARRIVED_AT, CAR_PARK, DOOR_AT } from "../lib/arrivalPath";
 
 const DOOR_OPEN = 1.15;
 
+/**
+ * How full the bar is, second by second.
+ *
+ * A table rather than a curve because loading bars do not move
+ * smoothly - they stall, jump, stall again - and the whole job of
+ * this one is to make three seconds of nothing look like three
+ * seconds of something. Interpolating between fixed points keeps it
+ * lurching without ever letting it run backwards.
+ */
+const STEPS = [
+  [0, 0.04],
+  [0.4, 0.17],
+  [0.85, 0.23],
+  [1.45, 0.51],
+  [1.9, 0.56],
+  [2.35, 0.77],
+  [2.8, 0.87],
+  [3.1, 0.93],
+  [ARRIVED_AT, 1],
+];
+
+function filled(t) {
+  if (t >= ARRIVED_AT) return 1;
+  let i = 0;
+  while (i < STEPS.length - 2 && t > STEPS[i + 1][0]) i++;
+  const [ta, pa] = STEPS[i];
+  const [tb, pb] = STEPS[i + 1];
+  const f = Math.min(1, Math.max(0, (t - ta) / (tb - ta)));
+  return pa + (pb - pa) * (f * f * (3 - 2 * f));
+}
+
 export default function Car({ clock }) {
   const built = useMemo(car, []);
   const door = useMemo(carDoor, []);
   const bezel = useMemo(headrestScreen, []);
   const hinge = useRef();
+  const bar = useRef();
   const [arrived, setArrived] = useState(false);
 
-  // Two textures, swapped once. Repainting the bar every frame would
-  // mean a canvas upload every frame for a four-second progress bar.
+  // Two textures, swapped once. The bar that moves between them is
+  // geometry, so neither of these is ever redrawn.
   //
   // Nothing here is disposed. The car is built once per session and
   // thrown away when the sequence ends, and a cleanup that runs on
@@ -51,8 +83,8 @@ export default function Car({ clock }) {
   // dispose the buffers out from under the mount that keeps.
   const screens = useMemo(
     () => [
-      paintHeadrest("Loading", "En route", 0.35),
-      paintHeadrest("You have arrived", "Destination", 1),
+      paintHeadrest("Loading", "En route"),
+      paintHeadrest("You have arrived", "Destination"),
     ],
     [],
   );
@@ -60,6 +92,7 @@ export default function Car({ clock }) {
   useFrame((_, delta) => {
     const t = clock.current.t;
     if (!arrived && t > ARRIVED_AT) setArrived(true);
+    if (bar.current) bar.current.scale.x = Math.max(0.001, filled(t));
     if (hinge.current) {
       const k = 1 - Math.exp(-3.4 * delta);
       const want = t > DOOR_AT ? DOOR_OPEN : 0;
@@ -84,6 +117,13 @@ export default function Car({ clock }) {
     />
   );
 
+  // The bar track, in the plane's own coordinates. Anchored at its
+  // left end so scaling the group runs it rightward.
+  const bw = SCREEN.w * HEADREST_BAR.w;
+  const bh = SCREEN.h * HEADREST_BAR.h;
+  const bx = -SCREEN.w / 2 + HEADREST_BAR.x * SCREEN.w;
+  const by = SCREEN.h / 2 - (HEADREST_BAR.y + HEADREST_BAR.h / 2) * SCREEN.h;
+
   return (
     <group
       position={[CAR_PARK.x, 0, CAR_PARK.z]}
@@ -101,6 +141,20 @@ export default function Car({ clock }) {
           metalness={0.6}
           transparent
           opacity={0.6}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* The windscreen and the two front windows, which are nearly
+          opaque. Through clear glass the only thing ahead of a car
+          that is supposed to be arriving somewhere is a town standing
+          perfectly still. */}
+      <mesh geometry={built.tint}>
+        <meshStandardMaterial
+          color="#05070c"
+          roughness={0.18}
+          metalness={0.55}
+          transparent
+          opacity={0.96}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -138,6 +192,12 @@ export default function Car({ clock }) {
             toneMapped={false}
           />
         </mesh>
+        <group ref={bar} position={[bx, by, 0.024]}>
+          <mesh position={[bw / 2, 0, 0]}>
+            <planeGeometry args={[bw, bh]} />
+            <meshBasicMaterial color={ACCENT.cyan} toneMapped={false} />
+          </mesh>
+        </group>
       </group>
 
       {/* A reading light, so the inside of the car is not a black box.
