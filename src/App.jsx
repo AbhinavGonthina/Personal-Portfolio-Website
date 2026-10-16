@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import Navbar from "./components/Navbar";
+import SectionTitle from "./components/SectionTitle";
 import TownStage from "./components/TownStage";
 import Hero from "./sections/Hero";
 import About from "./sections/About";
@@ -42,6 +43,7 @@ export default function App() {
     <>
       <Navbar />
       <TownStage refs={refs} />
+      <SectionTitle />
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
       <main className="pointer-events-none relative z-10">

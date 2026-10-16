@@ -7,6 +7,7 @@ import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
 import { skillGroups } from "../data/skills";
+import { holdScroll } from "../lib/scrollLock";
 import { cn } from "../lib/cn";
 
 const TownScene = lazy(() => import("../scenes/TownScene"));
@@ -42,6 +43,8 @@ export default function TownStage({ refs }) {
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches,
   );
   const raf = useRef(0);
+  const was = useRef(0);
+  const held = useRef(-1);
   const off = !!(plain || still);
 
   // Everything the town has to say is painted into a canvas texture
@@ -93,6 +96,25 @@ export default function TownStage({ refs }) {
       }
       j = Math.min(STOPS.length - 1, j);
       setJourney(j);
+
+      // Crossing into a new stop costs you a second of scrolling.
+      //
+      // Only that. The page is not moved for you and nothing is
+      // snapped: you keep whatever position you scrolled to, and once
+      // the second is up you can carry on at whatever pace you like.
+      // The pause exists so a single flick cannot take you through
+      // three stops before the camera has finished arriving at the
+      // first - not to decide where you are allowed to stand.
+      //
+      // It cancels the input rather than the overflow, so anything
+      // else that wants to scroll the page in code still can.
+      const prev = was.current;
+      was.current = j;
+      const n = Math.floor(j);
+      if (n !== Math.floor(prev) && n !== held.current && n > 0) {
+        held.current = n;
+        holdScroll(1000);
+      }
 
       // The camera holds still across the Projects section; the screen
       // is what moves. One scroll of that section walks the whole list.

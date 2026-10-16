@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
+import LookHint from "../components/LookHint";
 import { usePlain } from "../lib/plain";
 import { setFocused, useFocused, useJourneyNear } from "../lib/stage";
 import { STOP } from "../lib/stops";
@@ -253,48 +254,7 @@ export default function Experience({ ref }) {
         className="pointer-events-auto sr-only z-20 focus-within:not-sr-only focus-within:absolute focus-within:inset-x-0 focus-within:top-20 focus-within:mx-auto focus-within:flex focus-within:max-w-6xl focus-within:gap-8 focus-within:px-6"
       />
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 mx-auto w-full max-w-6xl px-6 pt-20">
-        <h2 className="relative w-fit text-3xl font-semibold tracking-tight">
-          {/* Only once a building is focused. In the skyline view the
-              camera keeps the sky behind the heading clear, but flying in
-              brings a lit facade up behind it. */}
-          <span
-            aria-hidden
-            className="absolute -inset-x-8 -inset-y-6 -z-10 rounded-full transition-opacity duration-500"
-            style={{
-              opacity: focused ? 1 : 0,
-              background:
-                "radial-gradient(60% 70% at 40% 50%, rgba(7,10,20,0.92), transparent 75%)",
-            }}
-          />
-          Experience
-        </h2>
-        {/* Short rule under the heading - against a black skyline the
-            title otherwise floats with nothing holding it to the page. */}
-        <div className="mt-3 h-px w-16 bg-fg" />
-      </div>
-
-      <AnimatePresence>
-        {!focused && atArc && (
-          <motion.p
-            key="hint"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.4, ease: EASE }}
-            className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex flex-col items-center gap-2 text-center font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle"
-          >
-            <span>Click a building to read about the experience</span>
-            {/* From the pavement you cannot see the whole block at once, so
-                say plainly that there is more either side. */}
-            <span className="flex items-center gap-2 opacity-70">
-              <span aria-hidden>&larr;</span>
-              Move your cursor to look around
-              <span aria-hidden>&rarr;</span>
-            </span>
-          </motion.p>
-        )}
-      </AnimatePresence>
+      <LookHint show={!focused && atArc} />
 
       <AnimatePresence>
         {current && (

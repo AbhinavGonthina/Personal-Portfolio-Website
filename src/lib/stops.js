@@ -45,6 +45,7 @@ export const STOPS = [
     // Square on to the hoarding. The board carries its own words, so
     // the camera does not have to leave room for a column of copy.
     id: "about",
+    title: "Who I am",
     frame: {
       at: toWorld(TOWN.billboard, [0, 4.2, 0]),
       yaw: TOWN.billboard.yaw,
@@ -58,6 +59,7 @@ export const STOPS = [
     // The one stop that is not a framed object: you stand in the
     // middle of the arc and look around.
     id: "experience",
+    title: "Experience",
     street: true,
     sway: 0.62,
   },
@@ -69,6 +71,7 @@ export const STOPS = [
     // `via` bends the path out to the doorstep first, so you walk up
     // the path, face the door and go through it.
     id: "skills",
+    title: "Skills",
     frame: {
       at: toWorld(TOWN.house, [WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]),
       yaw: TOWN.house.yaw,
@@ -83,6 +86,7 @@ export const STOPS = [
   {
     // Turned to the right wall and the desk.
     id: "projects",
+    title: "Projects",
     frame: {
       at: toWorld(TOWN.house, [DESK.x - 0.06, DESK.y, DESK.z]),
       yaw: TOWN.house.yaw - Math.PI / 2,
@@ -96,6 +100,7 @@ export const STOPS = [
     // Held: the camera does not move across the second half of the
     // Projects section, the screen changes instead.
     id: "projects-hold",
+    title: "Projects",
     frame: {
       at: toWorld(TOWN.house, [DESK.x - 0.06, DESK.y, DESK.z]),
       yaw: TOWN.house.yaw - Math.PI / 2,
@@ -108,6 +113,7 @@ export const STOPS = [
   {
     // Back out through the same door, then down the path.
     id: "contact",
+    title: "Contact",
     frame: {
       at: toWorld(TOWN.mail, [0, 1.3, 0]),
       yaw: TOWN.mail.yaw,

@@ -58,6 +58,16 @@ export const getJourney = () => journey;
  * but React bails out unless the answer actually flips, so this costs
  * a comparison rather than a render.
  */
+export const useStopIndex = () =>
+  useSyncExternalStore(
+    nearSub,
+    // Rounded, so the title swaps at the midpoint between two stops -
+    // which is where the shot has stopped being one place and started
+    // being the next.
+    () => Math.round(journey),
+    () => 0,
+  );
+
 export const useJourneyNear = (from, to) =>
   useSyncExternalStore(
     nearSub,

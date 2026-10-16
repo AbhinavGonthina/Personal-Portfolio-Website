@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Marker from "../components/Marker";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { profile, RESUME_URL } from "../data/profile";
@@ -140,7 +139,6 @@ export default function Hero({ ref }) {
       ref={ref}
       className="pointer-events-none relative h-[94vh] min-h-[620px] w-full"
     >
-      <Marker>Welcome</Marker>
       <h1 className="sr-only">
         {profile.name} &mdash; {profile.role}
       </h1>
