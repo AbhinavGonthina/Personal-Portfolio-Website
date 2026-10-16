@@ -132,6 +132,17 @@ export default function TownStage({ refs }) {
         }
       }
       j = Math.min(STOPS.length - 1, j);
+      // Landing on a stop has to count as being at it.
+      //
+      // Section tops are fractional and scrollY is a whole number, so
+      // scrolling exactly onto a boundary lands a hair short of it -
+      // 2.999, not 3. Everything downstream counts stops with
+      // Math.floor, and a hair short is a whole stop short: the cap
+      // below stayed pinned to the boundary you were already on and
+      // the page could not be scrolled past it at all. Three pixels
+      // of tolerance, which is less than one line of the grid.
+      const whole = Math.round(j);
+      if (Math.abs(j - whole) < 0.004) j = whole;
       setJourney(j);
 
       // Reaching a stop costs you a second of going forward.
@@ -159,7 +170,13 @@ export default function TownStage({ refs }) {
       // skip - not a frame carrying too far, which was already
       // caught, but a second run down a page that had stopped
       // defending itself.
-      if (j < held.current) held.current = Math.floor(j + 1e-6);
+      //
+      // It takes a real retreat, not a hair of one. Pinned at a stop
+      // the journey sits a float's width either side of a whole
+      // number, and re-arming on that put the page in a loop: the
+      // pin clamps you, the clamp reads as going backwards, the stop
+      // re-arms, and About becomes the end of the site.
+      if (j < held.current - 0.25) held.current = Math.floor(j + 1e-6);
 
       const prev = was.current;
       const from = Math.floor(prev + 1e-6);
@@ -176,7 +193,9 @@ export default function TownStage({ refs }) {
         // Once per stop per visit: the point is to stop a flick
         // carrying you past a section the first time you see it, not
         // to meter every pass.
-        if (n !== held.current) {
+        // Never while one is still running: a pin that can replace
+        // itself is a pin that never ends.
+        if (n !== held.current && performance.now() >= pin.current.until) {
           held.current = n;
           // Pinned where you arrived, not at the top of the section:
           // the pause is there to stop you overshooting, not to tidy
