@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
+import { DIM, MON, PULL, useWall } from "../lib/fourthWall";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
@@ -60,7 +61,12 @@ export default function TownStage({ refs }) {
   // The section tops as last measured, so the scroll handler can
   // clamp without laying the page out again on every event.
   const tops = useRef([]);
-  const off = !!(plain || still);
+  const wall = useWall();
+  // Mounted while the sequence plays, whichever way it is going: the
+  // town is what the monitor is showing, and the monitor is on
+  // screen for most of it. Once it has finished and the tablet has
+  // won, there is nothing left to draw.
+  const off = !!((plain && (wall <= 0 || wall >= 1)) || still);
 
   // Nothing moves while the car is pulling up. The camera is on its
   // own clock for those few seconds and scrolling would only put the
@@ -282,10 +288,25 @@ export default function TownStage({ refs }) {
         // own ancestors' boxes, and #root then swallows every click
         // meant for the scene. Stacking it at zero under a z-10 main
         // paints the same and stays hit-testable.
-        "fixed inset-0 z-0 transition-opacity duration-500",
+        "town-stage fixed inset-0 z-0",
+        wall > 0 ? "" : "transition-opacity duration-500",
         live ? "opacity-100" : "opacity-0",
-        grab ? "pointer-events-auto" : "pointer-events-none",
+        grab && wall <= 0 ? "pointer-events-auto" : "pointer-events-none",
       )}
+      // The scale goes to the canvas element through a variable, not
+      // to anything React measures. R3F sizes the drawing buffer from
+      // its container's bounding rect, and a bounding rect carries
+      // its ancestors' transforms - so scaling any box above the
+      // canvas convinces the canvas it is that much smaller, and it
+      // stays that size after the transform is gone.
+      style={
+        wall > 0
+          ? {
+              opacity: live ? 1 - DIM(wall) : 0,
+              "--shrink": `translateY(${(MON.mid - 0.5) * 100 * PULL(wall)}vh) scale(${1 - (1 - MON.scale) * PULL(wall)})`,
+            }
+          : undefined
+      }
     >
       {ready && (
         <Suspense fallback={null}>

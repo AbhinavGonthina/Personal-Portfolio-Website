@@ -110,3 +110,13 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* The town shrinking into a monitor during the switch between the two
+   readings. Applied to the canvas itself rather than to any box above
+   it: the renderer sizes its drawing buffer from the container's
+   bounding rect, and that rect carries ancestor transforms. */
+.town-stage > div > canvas,
+.town-stage canvas {
+  transform: var(--shrink, none);
+  transform-origin: center center;
+}
