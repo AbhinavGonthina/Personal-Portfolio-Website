@@ -97,24 +97,42 @@ export default function TownStage({ refs }) {
       j = Math.min(STOPS.length - 1, j);
       setJourney(j);
 
-      // Crossing into a new stop costs you a second of scrolling.
+      // Reaching a stop costs you a second of going forward.
       //
-      // Only that. The page is not moved for you and nothing is
-      // snapped: you keep whatever position you scrolled to, and once
-      // the second is up you can carry on at whatever pace you like.
-      // The pause exists so a single flick cannot take you through
-      // three stops before the camera has finished arriving at the
-      // first - not to decide where you are allowed to stand.
+      // It fires when the scroll actually arrives at the stop - not a
+      // little before it, not on the way past - so the pause lands on
+      // the shot rather than somewhere in the approach to it. Going
+      // back up is never blocked, and nothing is moved for you: you
+      // keep the position you scrolled to and carry on at your own
+      // pace once the second is up.
       //
-      // It cancels the input rather than the overflow, so anything
-      // else that wants to scroll the page in code still can.
+      // A fast flick is the exception. If one frame carries the scroll
+      // across more than one boundary, the page is pulled back to the
+      // first of them - otherwise a flick skips whole sections, which
+      // is exactly what the pause exists to prevent and which no
+      // amount of cancelling input afterwards can undo. Only on the
+      // way down, and only when a section would actually have been
+      // missed.
       const prev = was.current;
-      was.current = j;
-      const n = Math.floor(j);
-      if (n !== Math.floor(prev) && n !== held.current && n > 0) {
-        held.current = n;
-        holdScroll(1000);
+      const from = Math.floor(prev + 1e-6);
+      let to = Math.floor(j + 1e-6);
+      if (j > prev && to > from) {
+        const n = from + 1;
+        if (to > n && n < tops.length) {
+          window.scrollTo({ top: tops[n], behavior: "instant" });
+          j = n;
+          to = n;
+          setJourney(j);
+        }
+        // Once per stop per visit: the point is to stop a flick
+        // carrying you past a section the first time you see it, not
+        // to meter every pass.
+        if (n !== held.current) {
+          held.current = n;
+          holdScroll(1000);
+        }
       }
+      was.current = j;
 
       // The camera holds still across the Projects section; the screen
       // is what moves. One scroll of that section walks the whole list.
