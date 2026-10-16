@@ -44,6 +44,29 @@ export const ring = (r, t, pos, rot, scale) =>
 export const plane = (w, h, pos, rot, scale) =>
   at(new THREE.PlaneGeometry(w, h), pos, rot, scale);
 
+/**
+ * A flat polygon given in XY, extruded along +Z from `pos`.
+ *
+ * For the shapes a box cannot be: a gable end is a triangle, and
+ * covering one with angled slabs leaves a hole at the apex however
+ * many slabs you use. `merge` levels the batch down when this lands
+ * among boxes, so it costs the house's buffer its index and nothing
+ * else.
+ */
+export const prism = (points, depth, pos, rot, scale) => {
+  const shape = new THREE.Shape();
+  shape.moveTo(points[0][0], points[0][1]);
+  for (let i = 1; i < points.length; i++)
+    shape.lineTo(points[i][0], points[i][1]);
+  shape.closePath();
+  return at(
+    new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false }),
+    pos,
+    rot,
+    scale,
+  );
+};
+
 export const merge = (parts) => {
   const keep = parts.filter(Boolean);
   if (!keep.length) return null;

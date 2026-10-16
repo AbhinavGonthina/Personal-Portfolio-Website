@@ -1386,7 +1386,10 @@ function Town({ town, screen, skills, board, marks }) {
   // out. This one turns over within a few hundredths of the stop at
   // either end, by which point the walls are all you can see anyway.
   const walled = useNear(STOP.skills - 0.05, STOP["projects-hold"] + 0.08);
-  const mail = useNear(STOP["projects-hold"] + 0.2, STOPS.length);
+  // Clicking them is still gated on being there - you should not be
+  // able to open a link on a mailbox from across the town - but they
+  // are part of the garden, and a garden that assembles itself as you
+  // approach is a garden you have caught in the act.
   const mailLive = useNear(STOP.contact - 0.35, STOPS.length);
 
   return (
@@ -1398,7 +1401,7 @@ function Town({ town, screen, skills, board, marks }) {
       <Billboard mats={town} visible board={board} />
       <House mats={town} visible open={open} />
       <Interior mats={town} visible={inside} screen={screen} skills={skills} />
-      <Mailboxes mats={town} visible={mail} labels={marks} live={mailLive} />
+      <Mailboxes mats={town} visible labels={marks} live={mailLive} />
     </>
   );
 }
