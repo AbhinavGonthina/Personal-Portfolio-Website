@@ -174,8 +174,22 @@ export function house() {
   }
   base.push(box(door + 2, 0.12, 1.45, [0, 2.15, hd + 0.72]));
   lit.push(ball(0.08, [0, 1.95, hd + 0.2]));
+  // A lantern either side of the door.
+  for (const s of [-1, 1]) {
+    base.push(box(0.1, 0.16, 0.1, [s * (door / 2 + 0.26), 1.85, hd + 0.12]));
+    lit.push(box(0.12, 0.2, 0.12, [s * (door / 2 + 0.26), 1.68, hd + 0.12]));
+  }
+
+  // Stepping stones out to the mailboxes, each with a ground light
+  // beside it. An unlit path at night is a row of grey rectangles.
   for (let i = 0; i < 8; i++) {
-    base.push(box(0.85, 0.03, 0.55, [i * 0.3, 0.02, hd + 1.7 + i * 0.92]));
+    const z = hd + 1.7 + i * 0.92;
+    base.push(box(0.85, 0.03, 0.55, [i * 0.3, 0.02, z]));
+    if (i % 2 === 0) {
+      const side = i % 4 === 0 ? -1 : 1;
+      base.push(cyl(0.035, 0.045, 0.3, 6, [i * 0.3 + side * 0.72, 0.15, z]));
+      lit.push(ball(0.07, [i * 0.3 + side * 0.72, 0.33, z], null, [1, 0.8, 1]));
+    }
   }
 
   return { base: merge(base), lit: merge(lit) };
@@ -214,6 +228,8 @@ export const WALL_PANEL = { w: 2.3, h: 1.71, x: -0.95, y: 1.72 };
 export function interior() {
   const base = [];
   const lit = [];
+  // The rack indicators, kept apart so they can blink on their own.
+  const led = [];
   const hw = R.w / 2;
   const hd = R.d / 2;
 
@@ -223,19 +239,33 @@ export function interior() {
   }
   base.push(box(2.2, 0.02, 1.6, [0.1, 0.13, 0.9]));
 
+  // Three racks, each a stack of bays with its own lights. The LEDs
+  // are their own buffer so the scene can pulse them without
+  // touching anything else in the room.
   for (let r = 0; r < 3; r++) {
     const z = -1.5 + r * 1.5;
     base.push(box(0.6, 2, 1.1, [RACKS.x, 1, z]));
     base.push(box(0.64, 0.07, 1.16, [RACKS.x, 2.02, z]));
+    // Recessed bay, so each unit sits in a shadow rather than on a
+    // flat face.
+    base.push(box(0.05, 1.78, 1.0, [RACKS.x + 0.28, 1.0, z]));
     for (let u = 0; u < 8; u++) {
       const y = 0.26 + u * 0.21;
       base.push(box(0.06, 0.16, 0.95, [RACKS.x + 0.31, y, z]));
-      lit.push(box(0.03, 0.04, 0.05, [RACKS.x + 0.345, y, z - 0.36]));
-      lit.push(box(0.03, 0.04, 0.05, [RACKS.x + 0.345, y, z - 0.28]));
+      // Two indicators and, on a third of the bays, a status bar.
+      led.push(box(0.03, 0.04, 0.05, [RACKS.x + 0.345, y, z - 0.36]));
+      led.push(box(0.03, 0.04, 0.05, [RACKS.x + 0.345, y, z - 0.28]));
       if (u % 3 === 0) {
-        lit.push(box(0.03, 0.02, 0.36, [RACKS.x + 0.345, y, z + 0.2]));
+        led.push(box(0.03, 0.022, 0.34, [RACKS.x + 0.345, y, z + 0.2]));
+      }
+      if (u % 4 === 1) {
+        led.push(box(0.03, 0.05, 0.14, [RACKS.x + 0.345, y, z + 0.34]));
       }
     }
+    // A glow strip up the edge of each rack. Cyan with the rest of
+    // the hardware - in the warm buffer it came out as an orange bar
+    // down a server, which belongs to the lamp side of the room.
+    led.push(box(0.025, 1.84, 0.035, [RACKS.x + 0.33, 1.0, z - 0.52]));
   }
   base.push(box(0.1, 0.1, R.d - 0.6, [RACKS.x - 0.2, 2.45, 0]));
 
@@ -318,7 +348,28 @@ export function interior() {
   lit.push(ball(0.12, [0.2, R.h - 0.34, 0.4], null, [1, 0.72, 1]));
   lit.push(box(0.035, 0.03, R.d - 1.2, [RACKS.x + 0.1, R.h - 0.12, 0]));
 
-  return { base: merge(base), lit: merge(lit) };
+  // A bezel around the monitor, so the screen has an edge to glow
+  // against rather than ending on the dark of the wall behind it.
+  for (const dy of [DESK_SCREEN.h / 2 + 0.02, -DESK_SCREEN.h / 2 - 0.02]) {
+    lit.push(
+      box(0.02, 0.016, DESK_SCREEN.w + 0.06, [
+        DESK.x - 0.045,
+        DESK.y + dy,
+        DESK.z,
+      ]),
+    );
+  }
+  for (const dz of [DESK_SCREEN.w / 2 + 0.02, -DESK_SCREEN.w / 2 - 0.02]) {
+    lit.push(
+      box(0.02, DESK_SCREEN.h + 0.05, 0.016, [
+        DESK.x - 0.045,
+        DESK.y,
+        DESK.z + dz,
+      ]),
+    );
+  }
+
+  return { base: merge(base), lit: merge(lit), led: merge(led) };
 }
 
 /* ---------------------------------------------------------------- */
