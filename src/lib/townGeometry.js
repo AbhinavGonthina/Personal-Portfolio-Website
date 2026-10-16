@@ -442,96 +442,153 @@ export function mailflag() {
 /* ---------------------------------------------------------------- */
 
 /**
- * Ground dressing. The trees are off to the right of the road now, and
- * no two are built the same way - the first pass was one shape at eight
- * scales, which from the landing shot read as a repeated stamp.
+ * The road the car is parked on.
+ *
+ * It runs along X, parallel with the frontage of the town, so you
+ * arrive alongside the place rather than driving at it. `z` is the
+ * centre line; the car stands in the near lane, kerbside.
+ */
+export const ROAD = { z: 34.2, half: 4.5, from: -92, to: 92 };
+
+/** The clearing: no tree stands inside this, or it would block the town. */
+const CLEARING = { x: 12, from: 13, to: 31.5 };
+
+/**
+ * One tree. Three kinds, so a wood of two hundred of them does not
+ * read as one shape stamped two hundred times, and the leafy kind is
+ * kept for the near ones because a sphere costs five times a cone.
+ */
+function tree(parts, i, x, z, near) {
+  const kind = near ? i % 3 : i % 2;
+  const h = 2.4 + rnd(i, 4.4) * 3.4;
+  parts.push(
+    cyl(0.1, 0.17, h, 6, [x, h / 2, z], [0, 0, (rnd(i, 6.6) - 0.5) * 0.12]),
+  );
+
+  if (kind === 0) {
+    // Conifer: a stack of skirts, narrowing.
+    const n = 4 + (i % 2);
+    for (let t = 0; t < n; t++) {
+      parts.push(cone(1.08 - t * 0.19, 1.15, 7, [x, h * 0.58 + t * 0.62, z]));
+    }
+  } else if (kind === 1) {
+    // Bare and branchy, which is what gives a wood its depth.
+    for (let b = 0; b < 5; b++) {
+      const a = (b / 5) * Math.PI * 2 + rnd(i, 3.3);
+      parts.push(
+        cyl(
+          0.03,
+          0.05,
+          1.2,
+          5,
+          [x + Math.cos(a) * 0.36, h * 0.84 + b * 0.12, z + Math.sin(a) * 0.36],
+          [0, -a, 0.72],
+        ),
+      );
+    }
+    parts.push(cone(0.62, 1.5, 7, [x, h + 0.5, z]));
+  } else {
+    parts.push(ball(0.92, [x, h + 0.4, z], null, [1, 1.2, 1]));
+    parts.push(ball(0.6, [x + 0.46, h + 1, z - 0.2], null, [1, 1.05, 1]));
+    parts.push(ball(0.5, [x - 0.4, h + 0.86, z + 0.3], null, [1, 1, 1]));
+  }
+}
+
+/**
+ * Ground dressing: the road, the woods either side of it, the park
+ * railing and the roadside lamps.
+ *
+ * The wood is a jittered grid rather than a scatter of hand-placed
+ * spots. A scatter of twenty reads as twenty trees standing on an
+ * empty plane; a grid of two hundred, thinned where it would block
+ * something and jittered so no two rows line up, reads as a wood the
+ * town was cut out of. It is all one merged buffer either way.
  */
 export function dressing() {
   const base = [];
   const lit = [];
+  const road = [];
+  const paint = [];
+  const len = ROAD.to - ROAD.from;
+  const mid = (ROAD.to + ROAD.from) / 2;
 
-  // The road in. It runs out past where the car is parked and the
-  // woods close in either side of it, so the town reads as the end
-  // of a drive rather than as a place that was always just there.
-  base.push(box(7.4, 0.04, 46, [1.6, 0.03, 40], [0, 0.03, 0]));
-  for (let i = 0; i < 16; i++) {
-    base.push(box(0.16, 0.05, 1.5, [1.6, 0.05, 22 + i * 2.9]));
+  // The road itself, and the markings. Black slab, solid white at the
+  // kerbs, broken white down the middle.
+  road.push(box(len, 0.05, ROAD.half * 2, [mid, 0.035, ROAD.z]));
+  for (const s of [-1, 1]) {
+    paint.push(
+      box(len - 1, 0.02, 0.16, [mid, 0.065, ROAD.z + s * (ROAD.half - 0.5)]),
+    );
+  }
+  for (let i = 0; i < Math.floor(len / 5.4); i++) {
+    paint.push(
+      box(2.6, 0.02, 0.17, [ROAD.from + 1.4 + i * 5.4, 0.065, ROAD.z]),
+    );
   }
 
+  // Lamps along the near kerb, spaced to miss the spot you end up
+  // standing on when you step out of the car.
+  for (let i = 0; i < 7; i++) {
+    const x = -48 + i * 16;
+    base.push(cyl(0.07, 0.1, 4.2, 7, [x, 2.1, ROAD.z - ROAD.half - 0.7]));
+    base.push(box(0.08, 0.08, 1, [x, 4.15, ROAD.z - ROAD.half - 1.1]));
+    lit.push(
+      ball(0.13, [x, 4.05, ROAD.z - ROAD.half - 1.5], null, [1.4, 0.6, 1]),
+    );
+  }
+
+  // The railing along the front of the park.
   for (let i = 0; i < 12; i++) {
     const x = -36 + i * 6.6;
     base.push(cyl(0.08, 0.12, 4.8, 8, [x, 2.4, -18.3]));
     base.push(box(0.09, 0.09, 1.3, [x, 4.75, -17.8]));
     lit.push(ball(0.15, [x, 4.65, -17.25], null, [1.4, 0.6, 1]));
   }
-
-  // Lamps down the roadside, to lead the eye in.
-  for (let i = 0; i < 5; i++) {
-    const z = 26 + i * 8;
-    base.push(cyl(0.07, 0.1, 4.2, 7, [5.9, 2.1, z]));
-    base.push(box(0.08, 0.08, 1, [5.9, 4.15, z - 0.4]));
-    lit.push(ball(0.13, [5.9, 4.05, z - 0.8], null, [1.4, 0.6, 1]));
-  }
-
   for (let i = 0; i < 12; i++) {
     base.push(
       box(0.8, 0.6 + rnd(i, 5.5) * 0.2, 0.7, [-20 + i * 0.84, 0.3, 11.6]),
     );
   }
 
-  // Three kinds of tree, so a line of them does not look stamped.
-  // They now line the road as well as the park, which is what makes
-  // the drive in a drive through woods.
-  const spots = [];
-  for (let i = 0; i < 16; i++) {
-    spots.push([6 + rnd(i, 2.2) * 28, -16 + rnd(i, 9.7) * 32]);
-  }
-  for (let i = 0; i < 26; i++) {
-    // Either side of the road, thinning out as it nears the town.
-    const side = i % 2 ? 1 : -1;
-    const along = 20 + (i / 26) * 44;
-    const off = 5.4 + rnd(i, 8.3) * 7;
-    spots.push([1.6 + side * off, along + rnd(i, 1.7) * 3]);
-  }
-
-  spots.forEach(([x, z], i) => {
-    if (Math.hypot(x - 13.5, z - 6) < 6) return;
-    if (Math.hypot(x, z) < 15) return;
-    const kind = i % 3;
-    const h = 2.3 + rnd(i, 4.4) * 2.8;
-    base.push(
-      cyl(0.1, 0.16, h, 7, [x, h / 2, z], [0, 0, (rnd(i, 6.6) - 0.5) * 0.12]),
-    );
-
-    if (kind === 0) {
-      base.push(ball(0.88, [x, h + 0.42, z], null, [1, 1.2, 1]));
-      base.push(ball(0.58, [x + 0.44, h + 1, z - 0.2], null, [1, 1.05, 1]));
-      base.push(ball(0.48, [x - 0.38, h + 0.86, z + 0.3], null, [1, 1, 1]));
-    } else if (kind === 1) {
-      for (let t = 0; t < 4; t++) {
-        base.push(cone(1 - t * 0.2, 1.05, 8, [x, h * 0.62 + t * 0.6, z]));
+  // The wood. A jittered grid over everything behind and beside the
+  // town, skipping the road, the clearing in front of it, and the
+  // ground the town is standing on.
+  let n = 0;
+  for (let gx = 0; gx < 26; gx++) {
+    for (let gz = 0; gz < 12; gz++) {
+      n++;
+      const x = -78 + gx * 6.24 + (rnd(n, 2.2) - 0.5) * 4.4;
+      const z = 14 + gz * 5.6 + (rnd(n, 9.7) - 0.5) * 4;
+      // Off the tarmac and off the verges.
+      if (Math.abs(z - ROAD.z) < ROAD.half + 1.8) continue;
+      // Out of the way of the shot down the road into the town.
+      if (Math.abs(x) < CLEARING.x && z > CLEARING.from && z < CLEARING.to) {
+        continue;
       }
-    } else {
-      for (let bch = 0; bch < 5; bch++) {
-        const a = (bch / 5) * Math.PI * 2 + rnd(i, 3.3);
-        base.push(
-          cyl(
-            0.028,
-            0.045,
-            1.15,
-            5,
-            [
-              x + Math.cos(a) * 0.34,
-              h * 0.86 + bch * 0.11,
-              z + Math.sin(a) * 0.34,
-            ],
-            [0, -a, 0.72],
-          ),
-        );
-      }
-      base.push(ball(0.33, [x, h + 0.28, z], null, [1.4, 0.7, 1.4]));
+      // And clear of the hoarding, the house, and the two spots the
+      // camera stands on to look at them - a tree a metre from the
+      // lens is a grey wall across the shot.
+      if (Math.hypot(x - 13.5, z - 6) < 8) continue;
+      if (Math.hypot(x + 19, z - 8) < 10) continue;
+      if (Math.hypot(x - 11, z - 14.8) < 8) continue;
+      tree(base, n, x, z, z < 42);
     }
-  });
+  }
 
-  return { base: merge(base), lit: merge(lit) };
+  // The park, off to the right of the house, which was there before
+  // the road was and is a good deal thinner than the wood.
+  for (let i = 0; i < 14; i++) {
+    const x = 7 + rnd(i, 2.2) * 28;
+    const z = -16 + rnd(i, 9.7) * 26;
+    if (Math.hypot(x - 13.5, z - 6) < 7) continue;
+    if (Math.hypot(x, z) < 15) continue;
+    tree(base, 900 + i, x, z, true);
+  }
+
+  return {
+    base: merge(base),
+    lit: merge(lit),
+    road: merge(road),
+    paint: merge(paint),
+  };
 }

@@ -3,32 +3,43 @@ import { useSyncExternalStore } from "react";
 /**
  * Whether the arrival sequence is running.
  *
- * Once per session, not once per page load: a refresh while you are
- * reading the skills board should not put you back in the car. It
- * lives outside React because the camera rig reads it every frame and
- * the DOM reads it to know whether to lock the page.
+ * It lives outside React because the camera rig reads it every frame
+ * and the DOM reads it to know whether to lock the page.
  */
 const KEY = "arrived";
 const subs = new Set();
 
 /**
- * Off by default, for now.
+ * Once per session, not once per page load.
  *
- * The sequence drives the camera correctly - the keyframes, the
- * clock and the handover to the scroll rig are all verified - but
- * the car itself is not drawing, so what you actually get is eight
- * seconds parked inside an invisible car with the page locked. That
- * is a far worse first visit than no sequence at all, so until the
- * car renders it only runs when asked for by hand.
- *
- * Everything else about it is wired and working: `?arrive=1` plays
- * it, the Skip works, the page locks and unlocks, and the session
- * flag is set at the end.
+ * A refresh while you are reading the skills board should not put you
+ * back in the car, so the flag is written to sessionStorage when the
+ * sequence finishes. `?arrive=1` replays it anyway, and `?arrive=0`
+ * skips it.
  */
 function wanted() {
   if (typeof window === "undefined") return false;
   const q = new URLSearchParams(window.location.search).get("arrive");
-  return q !== null && q !== "0";
+  if (q !== null) return q !== "0";
+  try {
+    return window.sessionStorage.getItem(KEY) !== "1";
+  } catch {
+    // Private browsing, or storage turned off. Playing it again is a
+    // better failure than never playing it.
+    return true;
+  }
+}
+
+/**
+ * `?arrive=1&at=5` holds the sequence at five seconds instead of
+ * playing it, which is the only practical way to look hard at one
+ * beat of an eight second shot - or to screenshot it.
+ */
+export function frozenAt() {
+  if (typeof window === "undefined") return null;
+  const v = new URLSearchParams(window.location.search).get("at");
+  const n = Number(v);
+  return v !== null && Number.isFinite(n) ? n : null;
 }
 
 let playing = wanted();
