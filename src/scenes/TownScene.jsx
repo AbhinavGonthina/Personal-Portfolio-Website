@@ -875,6 +875,18 @@ function Distant() {
 }
 
 const ease = (p) => p * p * (3 - 2 * p);
+
+/**
+ * How far the cursor turns your head at a stop that is framing one
+ * thing: about eleven degrees each way across, seven up and down.
+ *
+ * Loose enough to look around a room and see what is beside the thing
+ * you came for, tight enough that pointing at a corner of the screen
+ * does not throw the subject off the other side. The skyline overrides
+ * both, because looking about is the whole activity there.
+ */
+const LOOK_YAW = 0.2;
+const LOOK_PITCH = 0.12;
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
@@ -905,14 +917,20 @@ function resolve(stop, out, cam, pointer, t) {
   }
 
   if (stop.street) {
-    const yaw = pointer.x * 0.62 + Math.sin(t * 0.07) * 0.03;
-    const pitch = 0.17 + pointer.y * 0.1 + Math.sin(t * 0.05) * 0.012;
-    out.px = Math.sin(yaw) * 1.1;
+    // Standing in the middle of the arc. The aim is left alone here -
+    // every stop gets the same look-around applied afterwards, so the
+    // only thing special about this one is that it also slides a
+    // little with the pointer, which is what gives the skyline its
+    // parallax.
+    // 0.7, which is what sin(0.62 * pointer) came to before the aim
+    // and the slide were separated - the same parallax, just no longer
+    // tangled up with the turn.
+    out.px = pointer.x * 0.7;
     out.py = 1.8 + Math.sin(t * 0.09) * 0.06;
     out.pz = 3.6;
-    out.lx = out.px + Math.sin(yaw) * 14;
-    out.ly = out.py + Math.tan(pitch) * 14;
-    out.lz = out.pz - Math.cos(yaw) * 14;
+    out.lx = out.px;
+    out.ly = out.py + Math.tan(0.17) * 14;
+    out.lz = out.pz - 14;
     return out;
   }
 
@@ -960,11 +978,10 @@ function Rig({ target, narrow }) {
       resolve(a, A, cam, state.pointer, t);
       resolve(b, B, cam, state.pointer, t);
 
-      // How much the cursor is allowed to turn your head, blended the
-      // same way: a lot in the middle of the street, almost none when
-      // the shot is framing something.
-      const sway = lerp(a.sway ?? 0.1, b.sway ?? 0.1, f);
-      const extra = a.street || b.street ? 0 : state.pointer.x * sway;
+      // How far the cursor can turn your head, blended between the two
+      // stops like everything else.
+      const sway = lerp(a.sway ?? LOOK_YAW, b.sway ?? LOOK_YAW, f);
+      const rise = lerp(a.rise ?? LOOK_PITCH, b.rise ?? LOOK_PITCH, f);
 
       // A stop can name a point to go through on the way in. Without
       // it the camera takes the straight line, which for the house
@@ -986,21 +1003,40 @@ function Rig({ target, narrow }) {
           SHOT[key] = lerp(A[key], B[key], f);
         }
       }
-      // Swings the aim point around the camera rather than sliding the
-      // whole shot sideways, so a nudge reads as turning your head.
+      // Look around. The same gesture everywhere: the aim swings about
+      // the camera in both axes, so a nudge reads as turning your head
+      // rather than sliding the whole shot. Only the amount differs -
+      // the middle of the skyline is somewhere you are meant to look
+      // about in, the rest are shots of one thing.
       //
-      // Negated: the plain Y rotation turns the aim the other way, so
-      // the cursor went right and the view went left - the opposite of
-      // what it does in the middle of the skyline, where the same
-      // gesture already worked correctly.
-      if (extra) {
+      // Done in spherical terms rather than as a flat Y rotation,
+      // which could only turn sideways and turned the wrong way at
+      // that: pointing right looked left.
+      {
         const dx = SHOT.lx - SHOT.px;
+        const dy = SHOT.ly - SHOT.py;
         const dz = SHOT.lz - SHOT.pz;
-        const c = Math.cos(-extra);
-        const s2 = Math.sin(-extra);
-        SHOT.lx = SHOT.px + dx * c + dz * s2;
-        SHOT.lz = SHOT.pz - dx * s2 + dz * c;
-        SHOT.ly += state.pointer.y * sway * 1.4;
+        const flat = Math.hypot(dx, dz);
+        const reach = Math.hypot(flat, dy) || 1;
+        // Azimuth decreases to the right, because x = sin(az) and the
+        // camera looks down -Z, where az is near PI.
+        const az =
+          Math.atan2(dx, dz) -
+          state.pointer.x * sway -
+          Math.sin(t * 0.07) * 0.02;
+        const el = Math.max(
+          -0.42,
+          Math.min(
+            0.52,
+            Math.atan2(dy, flat) +
+              state.pointer.y * rise +
+              Math.sin(t * 0.05) * 0.008,
+          ),
+        );
+        const out = Math.cos(el) * reach;
+        SHOT.lx = SHOT.px + Math.sin(az) * out;
+        SHOT.lz = SHOT.pz + Math.cos(az) * out;
+        SHOT.ly = SHOT.py + Math.sin(el) * reach;
       }
 
       cam.position.x += (SHOT.px - cam.position.x) * k;
