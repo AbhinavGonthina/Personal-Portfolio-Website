@@ -6,7 +6,6 @@ import {
   HALF,
   tint,
   merge,
-  place,
   plane,
   prism,
   puff,
@@ -607,12 +606,6 @@ export function mailshell() {
   return prism(hoodProfile(w / 2, h * 0.55), d - 0.04, [0, 0, -d / 2]);
 }
 
-/** The same for the door, as a sheet rather than a solid. */
-export function maildoorshell() {
-  const { w, h } = MAIL_BODY;
-  return prism(hoodProfile(w / 2 + 0.022, h * 0.55), 0.004, [0, 0, 0.05]);
-}
-
 export function mailbox() {
   const { w, h, d } = MAIL_BODY;
   const hw = w / 2;
@@ -667,33 +660,25 @@ export function mailbox() {
  * caller can rotate it without first having to move it.
  */
 export function maildoor() {
-  const { w, h, d } = MAIL_BODY;
+  const { w, h } = MAIL_BODY;
   const t = 0.05;
-  // Properly proud of the opening, not a hair proud of it. Cut to
-  // just under the body, the arch of the box stood above the arch
-  // of the door as a lip of itself all the way round the top; cut
-  // to a millimetre over, the two arcs met in a seam that read as
-  // the same lip. A door wants a margin, not a tie.
-  const r = w / 2 + 0.022;
-  const parts = [
-    box(w + 0.044, h * 0.55, t, [0, h * 0.275, 0]),
-    cyl(r, r, t, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
-  ];
-  // Built around its hinge, which is the bottom of the face.
+  // The same profile the hairline is traced from, so the panel and
+  // its own outline are the same shape by construction.
   //
+  // They were not. The panel's arch was a cylinder cut into
+  // fourteen segments around a whole circle, and the outline was
+  // fourteen segments around a half one - twice as fine. The line
+  // sat up to eight millimetres proud of the edge it was supposed
+  // to be drawn on, which at the top of the arch is a visible gap
+  // of empty sky between the two.
+  //
+  // Extruded from the hinge, which is the bottom of the face.
   // Hinged at the top it tipped towards the viewer and covered the
-  // opening it had just uncovered - from the front you saw a door
-  // at an angle and no hole at all. A mailbox door drops, and a
+  // opening it had just uncovered; a mailbox door drops, and a
   // door that drops takes itself out of the way of the thing it
-  // was shut over.
-  //
-  // Only the panel thickness sits forward of the hinge, so the
-  // caller puts the pivot on the front edge and the door swings
-  // about that edge. Carrying the box depth in here instead put the
-  // pivot back at the middle of the box, and the door swung out on
-  // a 0.46 radius arc and hung in the air in front of its own box.
-  void d;
-  place(parts, [0, 0, t / 2], null);
+  // was shut over. Only the panel thickness sits forward of the
+  // hinge, so the caller puts the pivot on the front edge.
+  const parts = [prism(hoodProfile(w / 2 + 0.022, h * 0.55), t, [0, 0, 0])];
   tint(parts, 0, MAIL_DOOR_C);
   return merge(parts);
 }
