@@ -1561,12 +1561,22 @@ function makeLamps() {
     const r = ARC_R + 4.4;
     const x = Math.sin(a) * r;
     const z = -Math.cos(a) * r;
+    // Inward, towards the middle of the arc and therefore towards
+    // the buildings. The arm was already turned by the lamp's own
+    // angle, but the head was hung at a fixed offset in world z -
+    // so every lamp aimed south whatever side of the ring it was
+    // standing on, and the ones out on the flanks lit the empty
+    // ground behind them.
+    const ix = -Math.sin(a);
+    const iz = Math.cos(a);
     base.push(cyl(0.07, 0.11, 4.2, 7, [x, 2.1, z]));
-    base.push(box(0.08, 0.08, 1.1, [x, 4.15, z + 0.4], [0, -a, 0]));
+    base.push(
+      box(0.08, 0.08, 1.1, [x + ix * 0.4, 4.15, z + iz * 0.4], [0, -a, 0]),
+    );
     lit.push(
       new THREE.SphereGeometry(0.15, 10, 8)
         .scale(1.4, 0.6, 1)
-        .translate(x + Math.sin(a) * -0.0, 4.05, z + 0.85),
+        .translate(x + ix * 0.85, 4.05, z + iz * 0.85),
     );
   }
   return {
