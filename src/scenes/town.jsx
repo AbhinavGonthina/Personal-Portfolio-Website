@@ -136,7 +136,7 @@ export function House({ mats, visible, open }) {
       position={posOf(TOWN.house)}
       rotation={yawOf(TOWN.house)}
     >
-      <Shell geo={built.base} mat={mats.shell} />
+      <Shell geo={built.base} mat={mats.painted} />
       <Shell geo={built.lit} mat={mats.warm} />
       <group ref={hinge} position={[-HOUSE.door / 2, 0, HOUSE.d / 2 + 0.06]}>
         <Shell geo={leaf} mat={mats.door} />
@@ -228,7 +228,7 @@ export function Dressing({ mats, visible }) {
       <Shell geo={built.paint} mat={mats.paint} />
       <Shell geo={built.base} mat={mats.shell} />
       {built.woods?.map((geo, i) => (
-        <Shell key={i} geo={geo} mat={mats.shell} />
+        <Shell key={i} geo={geo} mat={mats.painted} />
       ))}
       <Shell geo={built.lit} mat={mats.warm} />
     </group>
