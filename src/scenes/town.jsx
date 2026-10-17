@@ -315,7 +315,7 @@ function Mailbox({ x, link, mats, label, live }) {
     <group position={[x, 1.12, 0]}>
       <mesh
         geometry={body}
-        material={mats.post}
+        material={mats.painted}
         onPointerOver={(e) => {
           if (!live) return;
           e.stopPropagation();
@@ -378,7 +378,7 @@ export function Mailboxes({ mats, visible, labels, live, greet }) {
       position={posOf(TOWN.mail)}
       rotation={yawOf(TOWN.mail)}
     >
-      <Shell geo={rail.base} mat={mats.post} />
+      <Shell geo={rail.base} mat={mats.painted} />
       {/* Clear of the ground rather than half sunk in it: the letters
           are centred on their own origin, so putting the group at
           zero buries the bottom half of every one of them. */}

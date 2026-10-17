@@ -189,8 +189,8 @@ const T = 0.16;
  * most of what made the house read as one untouched block beside a
  * city of colour.
  */
-const HOUSE_WALL = "#4c4859";
-const HOUSE_ROOF = "#6d3a45";
+const HOUSE_WALL = "#474a67";
+const HOUSE_ROOF = "#7d3a4a";
 
 export function house() {
   const base = [];
@@ -524,8 +524,13 @@ export function mailrail(count) {
       ]),
     );
   }
-  // The capping course the boxes sit on, proud of the wall either side.
+  tint(base, 0, MAIL_RAIL_C);
+  // The capping course the boxes sit on, proud of the wall either
+  // side, and a shade lighter so the wall reads as courses rather
+  // than as one slab.
+  const cap = base.length;
   base.push(box(wall + 0.14, 0.1, 0.58, [(x0 + x1) / 2, 1.05, 0]));
+  tint(base, cap, MAIL_CAP_C);
   return { base: merge(base) };
 }
 
@@ -545,6 +550,14 @@ export function mailrail(count) {
  */
 const WALL = 0.045;
 const ARCH_SEG = 9;
+
+// Not grey. The town outside the house was the one part of the
+// place with no colour in it, and these stand in the foreground of
+// the last shot of the walk.
+const MAIL_BODY_C = "#39415e";
+const MAIL_DOOR_C = "#49537a";
+const MAIL_RAIL_C = "#2f3449";
+const MAIL_CAP_C = "#434a66";
 
 export function mailbox() {
   const { w, h, d } = MAIL_BODY;
@@ -582,6 +595,7 @@ export function mailbox() {
       ),
     );
   }
+  tint(parts, 0, MAIL_BODY_C);
   return merge(parts);
 }
 
@@ -626,6 +640,7 @@ export function maildoor() {
   // a 0.46 radius arc and hung in the air in front of its own box.
   void d;
   place(parts, [0, 0, t / 2], null);
+  tint(parts, 0, MAIL_DOOR_C);
   return merge(parts);
 }
 
@@ -857,14 +872,36 @@ export function dressing() {
   // is null, and null draws nothing, so the lamp posts and the
   // railing quietly left the town.
   const park = [];
-  for (let i = 0; i < 14; i++) {
-    const x = 7 + rnd(i, 2.2) * 28;
-    const z = -16 + rnd(i, 9.7) * 26;
-    if (Math.hypot(x - 13.5, z - 6) < 7) continue;
-    if (Math.hypot(x, z) < 15) continue;
-    tree(park, 900 + i, x, z, true);
+  for (let i = 0; i < 30; i++) {
+    const x = 6 + rnd(i, 2.2) * 42;
+    const z = -24 + rnd(i, 9.7) * 40;
+    if (Math.abs(x) > GROUND || Math.abs(z) > GROUND) continue;
+    if (Math.hypot(x - 13.5, z - 6) < 9) continue;
+    if (Math.hypot(x - 11, z - 14.8) < 8) continue;
+    const d0 = Math.hypot(x, z);
+    if (d0 < 15) continue;
+    // Detailed where you walk past them, silhouettes where you do
+    // not: these are filling ground, and ground at the back of the
+    // shot does not need five cones to say "tree".
+    tree(park, 900 + i, x, z, d0 < 28, d0 > 38);
   }
   woods.push(park);
+
+  // Behind the house, which is the other side of the map from the
+  // road and had nothing standing on it at all. Everything here is
+  // well clear of the house and of the path up to its door - the
+  // camera walks that path, and a tree on it is a wall.
+  const backlot = [];
+  for (let i = 0; i < 26; i++) {
+    const x = -54 + rnd(i, 3.1) * 44;
+    const z = -26 + rnd(i, 6.7) * 28;
+    if (Math.abs(x) > GROUND || Math.abs(z) > GROUND) continue;
+    if (Math.hypot(x + 19, z - 8) < 13) continue;
+    const d0 = Math.hypot(x, z);
+    if (d0 < 16) continue;
+    tree(backlot, 1200 + i, x, z, d0 < 30, d0 > 40);
+  }
+  woods.push(backlot);
 
   return {
     base: merge(base),
