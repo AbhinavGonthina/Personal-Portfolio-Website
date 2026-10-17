@@ -22,6 +22,7 @@ import {
   frameBox,
   frameStep,
   getSwitch,
+  sceneReady,
   OPEN,
   placePage,
   SHUT,
@@ -1267,6 +1268,44 @@ function crane(state, cam) {
  */
 const CLOSE = 0.42;
 
+/**
+ * Tells the switch when the town is actually ready to be looked at.
+ *
+ * `gl.compile` on the first frame rather than letting three compile
+ * each material the first time it happens to draw it: the cost is
+ * the same either way, and the question is only whether it is paid
+ * while the page is sitting still or while the camera is moving.
+ */
+const WARM_FAST = 60;
+const WARM_SETTLED = 2;
+const WARM_FRAMES = 30;
+
+function Warmup() {
+  const frames = useRef(0);
+  const calm = useRef(0);
+  const done = useRef(false);
+  useFrame((state, delta) => {
+    if (done.current) return;
+    frames.current += 1;
+    if (frames.current === 1) {
+      state.gl.compile(state.scene, state.camera);
+      return;
+    }
+    // Settled, not counted. A fixed number of frames was wrong in
+    // both directions: two was not enough to get the composer and
+    // the first real draws out of the way, and any number large
+    // enough for a slow machine is a wait a fast one does not need.
+    // Cheap frames in a row are the actual signal that the building
+    // is over, whatever it took to get there.
+    calm.current = delta * 1000 < WARM_FAST ? calm.current + 1 : 0;
+    if (calm.current >= WARM_SETTLED || frames.current >= WARM_FRAMES) {
+      done.current = true;
+      sceneReady();
+    }
+  });
+  return null;
+}
+
 function Frames() {
   const g = useRef();
   const parts = useRef([]);
@@ -1738,6 +1777,7 @@ export default function TownScene({
           shadows for a desk lamp to cut, and the lamp is the point. */}
       <Sky />
 
+      <Warmup />
       <Frames />
       {WATCH && <Perf />}
       <Rig target={target} narrow={narrow} clock={clock} />
