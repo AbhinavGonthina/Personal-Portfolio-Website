@@ -208,18 +208,6 @@ const wrap = (g, text, maxW) => {
   return out;
 };
 
-/** A rounded rectangle path, built by hand so nothing depends on
- *  `roundRect` being present. */
-function rrect(g, x, y, w, h, r) {
-  g.beginPath();
-  g.moveTo(x + r, y);
-  g.arcTo(x + w, y, x + w, y + h, r);
-  g.arcTo(x + w, y + h, x, y + h, r);
-  g.arcTo(x, y + h, x, y, r);
-  g.arcTo(x, y, x + w, y, r);
-  g.closePath();
-}
-
 /**
  * The board face, with the two lamps on the gantry actually falling
  * on it.
@@ -349,23 +337,6 @@ export function paintBoard(profile, education, lampAt) {
     if ("letterSpacing" in g) g.letterSpacing = "0px";
   };
 
-  /** One pill. Returns its width, so a row can lay itself out. */
-  const pill = (x, y, text, { size, space, ink, line, fill, h }) => {
-    mono(size, space);
-    const w = g.measureText(text).width + 36 * S;
-    rrect(g, x, y, w, h * S, (h * S) / 2);
-    if (fill) {
-      g.fillStyle = fill;
-      g.fill();
-    }
-    g.strokeStyle = line;
-    g.lineWidth = 1.5 * S;
-    g.stroke();
-    g.fillStyle = ink;
-    g.fillText(text, x + 18 * S, y + h * S * 0.5 + size * S * 0.36);
-    return w;
-  };
-
   // Eyebrow, in the accent. The board is a lit sign, so the small
   // type on it is lit too rather than being another shade of grey.
   g.fillStyle = ACC;
@@ -376,44 +347,46 @@ export function paintBoard(profile, education, lampAt) {
     pad + 44 * S,
   );
 
-  // The name, stacked.
-  const [first, ...rest] = profile.name.split(" ");
+  // The name, on one line. 110 is the largest size it fits the panel
+  // at - 932 of the 968 there are - and the size is chosen by that
+  // rather than by eye, because one line is the brief and the only
+  // question left was how much of it to use.
   g.fillStyle = "#ffffff";
-  sans(136, 600);
-  g.fillText(first, pad - 6 * S, pad + 224 * S);
-  g.fillText(rest.join(" "), pad - 6 * S, pad + 368 * S);
+  sans(110, 600);
+  g.fillText(profile.name, pad - 5 * S, pad + 190 * S);
 
   g.fillStyle = RULE;
-  g.fillRect(pad, pad + 412 * S, right - pad, 2 * S);
+  g.fillRect(pad, pad + 234 * S, right - pad, 2 * S);
 
-  // One sentence. The board carried five blocks before this and the
-  // whole of it had to run small to fit; a stranger reads the top
-  // two of five anyway, so the other three are gone and the two
-  // that are left are the size they should always have been.
   g.fillStyle = "#b6bcc8";
-  sans(44);
-  let y = pad + 482 * S;
+  sans(40);
+  let y = pad + 310 * S;
   for (const line of wrap(g, profile.pitch, right - pad)) {
     g.fillText(line, pad, y);
-    y += 60 * S;
+    y += 56 * S;
   }
 
-  // What he is after, which is the one thing on this board a stranger
-  // is looking for. Filled rather than outlined, because it is the
-  // only thing here that is an ask rather than a fact.
-  pill(
-    pad,
-    pad + 724 * S,
-    `${profile.seeking} · ${education.graduation}`.toUpperCase(),
-    {
-      size: 30,
-      space: 4,
-      ink: "#05050a",
-      line: ACC,
-      fill: ACC,
-      h: 58,
-    },
-  );
+  // Three standing facts across the foot of the board, a label over
+  // a value each. The columns are set rather than measured: the
+  // widths are known and fixed, and a layout that cannot reflow
+  // cannot reflow into something nobody looked at.
+  const stats = [
+    ["GPA", education.gpa, "#ffffff"],
+    ["GRADUATING", education.graduation, "#ffffff"],
+    ["SEEKING", profile.seeking, ACC],
+  ];
+  const COL = [0, 290, 580];
+  g.fillStyle = RULE;
+  g.fillRect(pad, pad + 672 * S, right - pad, 2 * S);
+  stats.forEach(([label, value, ink], i) => {
+    const cx = pad + COL[i] * S;
+    g.fillStyle = "#6f7788";
+    mono(26, 5);
+    g.fillText(label, cx, pad + 724 * S);
+    g.fillStyle = ink;
+    sans(40);
+    g.fillText(value, cx, pad + 786 * S);
+  });
 
   return finish(c);
 }
