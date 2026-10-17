@@ -23,6 +23,7 @@ import {
   frameStep,
   getSwitch,
   OPEN,
+  placePage,
   SHUT,
   SLIDE,
   WIDE,
@@ -987,50 +988,6 @@ function resolve(stop, out, cam, pointer, t) {
 
 const LOOK = { x: 0, y: 3, z: -2 };
 
-/**
- * Draws fewer pixels on a machine that cannot keep up.
- *
- * The scene is fragment-bound before it is anything else: bloom is a
- * full-screen blur over several passes, and every one of them costs
- * the square of the pixel ratio. A laptop at 2x is doing four times
- * the shading of the same window at 1x for a difference you have to
- * look for.
- *
- * So the ratio is measured rather than chosen. It steps down when a
- * second and a half of frames comes in under the bar, and it never
- * steps back up - a scene that oscillates between two resolutions is
- * worse than one that settled on the lower.
- */
-// Never below the display's own pixels. Going under that is the one
-// setting people notice immediately, and on a 1x screen there is
-// nothing here to win anyway.
-const FLOOR = 1;
-
-function Adapt() {
-  const n = useRef(0);
-  const t = useRef(0);
-  const tries = useRef(0);
-  const { gl, setDpr } = useThree();
-  useFrame((_, delta) => {
-    if (tries.current >= 3) return;
-    n.current++;
-    t.current += delta;
-    if (t.current < 1.5) return;
-    const fps = n.current / t.current;
-    n.current = 0;
-    t.current = 0;
-    const cur = gl.getPixelRatio();
-    if (fps < 45 && cur > FLOOR) {
-      tries.current++;
-      setDpr(Math.max(FLOOR, Math.round(cur * 80) / 100));
-    } else if (fps >= 45) {
-      // One good stretch and it stops watching.
-      tries.current = 3;
-    }
-  });
-  return null;
-}
-
 /** `?perf=1` prints what a frame costs, once a second. */
 const WATCH =
   typeof window !== "undefined" &&
@@ -1293,7 +1250,7 @@ function Frames() {
   useFrame((state) => {
     const grp = g.current;
     const q = parts.current;
-    if (!grp || !q[12]) return;
+    if (!grp || !q[7]) return;
     const sw = getSwitch();
     const shut = SHUT(sw);
     grp.visible = shut > 0;
@@ -1309,24 +1266,18 @@ function Frames() {
     const open = OPEN(sw);
     const D = FR.d;
 
-    // The first frame: the hole the town is seen through, closing in
-    // and then travelling off to the left.
+    // The first frame: the hole the town is seen through. It closes
+    // in, then travels off to the left.
     const aw = w * (1 - FR.shut * shut);
     const ah = h * (1 - FR.shut * shut);
     const ax = -slide * step;
-
-    // The second: a dark panel that arrives from the right and then
-    // opens out until it is the whole window.
-    const bw = aw + (w - aw) * open;
-    const bh = ah + (h - ah) * open;
-    const bx = (step - slide * step) * (1 - open);
 
     const put = (m, x, y, sx, sy, z) => {
       m.position.set(x, y, z);
       m.scale.set(Math.max(0.001, sx), Math.max(0.001, sy), 1);
     };
-    // Matte around the first frame. Oversized, so it still covers the
-    // window once the frame has travelled out of the middle of it.
+    // Matte around it. Oversized, so it still covers the window once
+    // the frame has travelled out of the middle of it.
     put(q[0], ax, ah + h * 1.5, w * 8, h * 3, -D);
     put(q[1], ax, -ah - h * 1.5, w * 8, h * 3, -D);
     put(q[2], ax - aw - w * 4, 0, w * 8, h * 8, -D);
@@ -1337,20 +1288,27 @@ function Frames() {
       put(q[i], x, y, sx, sy, -D + 0.02);
       q[i].material.opacity = o;
     };
-    line(4, ax, ah, aw * 2, e, shut * (1 - open));
-    line(5, ax, -ah, aw * 2, e, shut * (1 - open));
-    line(6, ax - aw, 0, e, ah * 2, shut * (1 - open));
-    line(7, ax + aw, 0, e, ah * 2, shut * (1 - open));
+    const fade = shut * (1 - open);
+    line(4, ax, ah, aw * 2, e, fade);
+    line(5, ax, -ah, aw * 2, e, fade);
+    line(6, ax - aw, 0, e, ah * 2, fade);
+    line(7, ax + aw, 0, e, ah * 2, fade);
 
-    // The second frame, nearer the eye so it covers the first.
-    put(q[8], bx, 0, bw * 2, bh * 2, -D + 0.04);
-    q[8].material.opacity = Math.min(1, slide * 1.6);
-    const o2 = Math.min(1, slide * 1.6) * (1 - open * 0.85);
-    line(9, bx, bh, bw * 2, e, o2);
-    line(10, bx, -bh, bw * 2, e, o2);
-    line(11, bx - bw, 0, e, bh * 2, o2);
-    line(12, bx + bw, 0, e, bh * 2, o2);
-    for (let i = 9; i <= 12; i++) q[i].position.z = -D + 0.05;
+    // The second frame is not drawn here at all - it is the page,
+    // put in its place by the DOM. Same geometry, so the two cannot
+    // drift apart: it arrives from the right as the first leaves,
+    // and opens out to the full window at the end.
+    const bw = aw + (w - aw) * open;
+    const bh = ah + (h - ah) * open;
+    const bx = (step - slide * step) * (1 - open);
+    // Only while the run is actually in flight. At either end the
+    // resting values are the switch's to write, and the scene is
+    // about to be torn down anyway.
+    if (sw > 0 && sw < 1) {
+      const vw = state.size.width;
+      const vh = state.size.height;
+      placePage(bw / w, (bx / w) * (vw / 2), ((1 - bh / h) / 2) * vh);
+    }
   });
 
   const grab = (i) => (el) => {
@@ -1365,11 +1323,7 @@ function Frames() {
           <meshBasicMaterial color="#04050a" toneMapped={false} />
         </mesh>
       ))}
-      <mesh key={8} ref={grab(8)}>
-        <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial color="#05070b" toneMapped={false} transparent />
-      </mesh>
-      {[4, 5, 6, 7, 9, 10, 11, 12].map((i) => (
+      {[4, 5, 6, 7].map((i) => (
         <mesh key={i} ref={grab(i)}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial
@@ -1713,7 +1667,17 @@ export default function TownScene({
   return (
     <Canvas
       frameloop={active ? "always" : "never"}
-      dpr={[1, 1.5]}
+      // Fixed, not measured.
+      //
+      // This used to step down on its own when frames came in slow,
+      // and stepping down calls setPixelRatio, which reallocates the
+      // drawing buffer and hands back one blank frame. That was the
+      // flicker to black after the car: the arrival is the heaviest
+      // thing the scene ever does, so the measurement always tripped
+      // right at the end of it. A ratio that never changes cannot
+      // blank anything, and 1.25 keeps most of what the measuring
+      // was buying on a high-density screen anyway.
+      dpr={[1, 1.25]}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       camera={{ position: STOPS[0].free.pos, fov: 52 }}
       onPointerMissed={() => onFocus(null)}
@@ -1732,7 +1696,6 @@ export default function TownScene({
           shadows for a desk lamp to cut, and the lamp is the point. */}
       <Sky />
 
-      <Adapt />
       <Frames />
       {WATCH && <Perf />}
       <Rig target={target} narrow={narrow} clock={clock} />

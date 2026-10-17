@@ -27,7 +27,7 @@ import { getPlain, setPlain } from "./plain";
 
 const DUR = 2.2;
 /** When the page behind the veil becomes the plain read. */
-const FLIP = 0.74;
+const FLIP = 0.44;
 
 /**
  * `?sw=0.4` holds the run at four tenths instead of playing it. No
@@ -67,12 +67,12 @@ const span = (a, b) => (v) => ease((v - a) / (b - a));
  * screen by the same angle whatever depth it is at. Then the second
  * frame opens out to fill the window, and what is in it is the page.
  */
-export const CRANE = span(0, 0.4);
-export const SHUT = span(0.14, 0.44);
-export const SLIDE = span(0.48, 0.76);
-export const OPEN = span(0.78, 0.97);
-const VEIL = span(0.8, 0.95);
-const PAGE = span(0.86, 1);
+export const CRANE = span(0, 0.38);
+export const SHUT = span(0.12, 0.42);
+export const SLIDE = span(0.46, 0.76);
+export const OPEN = span(0.78, 0.98);
+/** The page is in the second frame from the moment it appears. */
+const PAGE = span(0.46, 0.6);
 const CHROME = span(0, 0.16);
 
 /**
@@ -94,21 +94,53 @@ export function frameStep(cam) {
   return 2 * w * (1 - FR.shut) + w * FR.gap;
 }
 
+/**
+ * What the DOM has to do, as four numbers.
+ *
+ * The second frame is not a panel in the scene with the page faded
+ * in behind it at the end - it is the page, shrunk into the frame's
+ * place and carried along with it. These put it there: a scale, an
+ * offset, and the opacity of it and of the bar. The scene writes
+ * the first three every frame from the same geometry it draws the
+ * frames with, so the two cannot drift apart.
+ */
 function paint() {
   const root = document.documentElement.style;
-  if (p <= 0) {
-    root.removeProperty("--sw-veil");
-    root.removeProperty("--sw-page");
-    root.removeProperty("--sw-chrome");
+  // Both ends are the resting state, written out rather than left
+  // to a fallback. Removing the properties looked equivalent and was
+  // not: the scene is what writes the placement, the scene is torn
+  // down at the end of a run, and whatever it wrote last stayed on
+  // the page - which is how the plain read ended up with its
+  // navigation still shrunk into a frame that no longer existed.
+  const done = p <= 0 || p >= 1;
+  if (done) {
+    root.setProperty("--sw-s", "1");
+    root.setProperty("--sw-tx", "0px");
+    root.setProperty("--sw-ty", "0px");
+    root.setProperty("--sw-clip", "0");
+    root.setProperty("--sw-edge", "0");
+    root.setProperty("--sw-page", "1");
+    root.setProperty("--sw-chrome", "1");
     return;
   }
-  root.setProperty("--sw-veil", String(VEIL(p)));
   root.setProperty("--sw-page", String(PAGE(p)));
   // The bar goes out with the town it belongs to and comes back with
-  // the page, which also owns one. Written as a single expression so
-  // it lands on 1 at both ends: left at 0 when the run finished, the
-  // plain read had no navigation at all.
+  // the page, which also owns one.
   root.setProperty("--sw-chrome", String(Math.min(1, 1 - CHROME(p) + PAGE(p))));
+  // The second frame's own edge, which has to go once the frame is
+  // the whole window - otherwise it is a line drawn round the page.
+  root.setProperty("--sw-edge", String((1 - OPEN(p)) * 0.5));
+  // A frame holds one screenful. The document behind it is six times
+  // that, and unclipped it hangs out of the bottom of its own frame.
+  root.setProperty("--sw-clip", "1");
+}
+
+/** Called by the scene with the second frame's place on the screen. */
+export function placePage(scale, tx, ty) {
+  const root = document.documentElement.style;
+  root.setProperty("--sw-s", String(scale));
+  root.setProperty("--sw-tx", `${tx}px`);
+  root.setProperty("--sw-ty", `${ty}px`);
 }
 
 function tick(now) {
@@ -146,6 +178,10 @@ export function runSwitch(toPlain) {
       return;
     }
   }
+  // Scrolled to the top first. The frame shows the page from its
+  // top edge down, so anywhere else in the document and the second
+  // frame arrives holding the middle of it.
+  window.scrollTo({ top: 0, behavior: "instant" });
   dir = toPlain ? 1 : -1;
   from = p;
   t0 = performance.now();
@@ -171,7 +207,9 @@ export const useSwitching = () =>
       subs.add(fn);
       return () => subs.delete(fn);
     },
-    () => dir !== 0,
+    // A held frame counts as in flight, or the canvas unmounts out
+    // from under the very thing the hatch exists to look at.
+    () => dir !== 0 || HELD !== null,
     () => false,
   );
 
