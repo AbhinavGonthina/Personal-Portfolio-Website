@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { endArrival } from "./arrival";
 import { getPlain, setPlain } from "./plain";
 
 /**
@@ -180,6 +181,10 @@ export function runSwitch(toPlain) {
       return;
     }
   }
+  // Whatever else is going on, it is over. Clicking for one reading
+  // while the car is still pulling up is a choice about which of the
+  // two you want, not a request to watch both at once.
+  endArrival();
   // Scrolled to the top first. The frame shows the page from its
   // top edge down, so anywhere else in the document and the second
   // frame arrives holding the middle of it.
