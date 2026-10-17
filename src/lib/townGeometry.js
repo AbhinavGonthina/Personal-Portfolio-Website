@@ -59,7 +59,7 @@ export const TOWN = {
  * because the About section's words belong painted on it rather than
  * floating in a panel over the top.
  */
-export const BOARD = { w: 7.6, h: 3.5, y: 2.4, pad: 0.2 };
+export const BOARD = { w: 8.2, h: 4.0, y: 2.4, pad: 0.2 };
 export const BOARD_PHOTO = BOARD.h - BOARD.pad * 2;
 
 /** How far out from the middle the two gantry lamps hang. */

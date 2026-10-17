@@ -1,4 +1,4 @@
-import { DESK, HOUSE, TOWN, WALL_PANEL } from "./townGeometry";
+import { BOARD, DESK, HOUSE, TOWN, WALL_PANEL } from "./townGeometry";
 
 /**
  * Where the camera stands at each section, in order down the page.
@@ -46,11 +46,16 @@ export const STOPS = [
     id: "about",
     title: "Who I am",
     frame: {
-      at: toWorld(TOWN.billboard, [0, 4.2, 0]),
+      at: toWorld(TOWN.billboard, [0, BOARD.y + BOARD.h / 2, 0]),
       yaw: TOWN.billboard.yaw,
       dist: 9.2,
       centred: true,
-      eye: EYE,
+      // No `eye` here, which is the whole difference. A centred frame
+      // already defaults to the subject's own height, and this stop
+      // was overriding that back down to standing - so the one shot
+      // on the walk whose whole job is to be read was read from
+      // underneath, with the type keystoning away towards the top.
+      // The rest of the town keeps its feet on the ground.
     },
   },
   {
