@@ -22,7 +22,6 @@ import {
   mailbox,
   mailflag,
   maildoor,
-  maildoorshell,
   mailshell,
   mailrail,
 } from "../lib/townGeometry";
@@ -322,7 +321,6 @@ function Mailbox({ x, link, mats, label, live }) {
   const body = useBuilt(mailbox);
   const door = useBuilt(maildoor);
   const shell = useBuilt(mailshell);
-  const doorEdge = useBuilt(maildoorshell);
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
   const flagRef = useRef();
@@ -385,7 +383,7 @@ function Mailbox({ x, link, mats, label, live }) {
             second animation to keep in step with the first. */}
       <group ref={lidRef} position={[0, 0, MAIL_BODY.d / 2]}>
         <mesh geometry={door} material={mats.painted} />
-        <Outline geo={doorEdge} angle={30} />
+        <Outline geo={door} angle={30} />
         {/* Clear of the panel, not in it. The door is built from
               its hinge and so is 0.05 thick forward of this group;
               at 0.045 the mark sat five millimetres inside its own
