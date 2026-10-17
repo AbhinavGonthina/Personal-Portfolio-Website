@@ -554,13 +554,17 @@ export function mailrail(count) {
 const WALL = 0.045;
 const ARCH_SEG = 9;
 
-// Not grey. The town outside the house was the one part of the
-// place with no colour in it, and these stand in the foreground of
-// the last shot of the walk.
-const MAIL_BODY_C = "#39415e";
-const MAIL_DOOR_C = "#49537a";
-const MAIL_RAIL_C = "#2f3449";
-const MAIL_CAP_C = "#434a66";
+// Darker than the house, which is itself near black. These are in
+// the foreground of the last shot and the house is behind them, so
+// they need to sit under it rather than level with it - and out
+// here the hairline is what draws everything anyway.
+//
+// A shade between each piece is all it takes to keep a door
+// reading as a door and a capping course as a course.
+const MAIL_BODY_C = "#0c0d13";
+const MAIL_DOOR_C = "#11121b";
+const MAIL_RAIL_C = "#08090e";
+const MAIL_CAP_C = "#0f1017";
 
 /**
  * The outline of a mailbox, and nothing else.
@@ -594,7 +598,13 @@ function hoodProfile(hw, hs) {
 
 export function mailshell() {
   const { w, h, d } = MAIL_BODY;
-  return prism(hoodProfile(w / 2, h * 0.55), d, [0, 0, -d / 2]);
+  // Stopped short of the front face, not flush with it. The door
+  // shuts at exactly d/2, so a shell that reaches d/2 puts its own
+  // front outline in the same plane as the back of the door - and
+  // a tie in the depth test is a line that draws through the panel
+  // it is supposed to be behind. That was the second arc inside
+  // the first one.
+  return prism(hoodProfile(w / 2, h * 0.55), d - 0.04, [0, 0, -d / 2]);
 }
 
 /** The same for the door, as a sheet rather than a solid. */
