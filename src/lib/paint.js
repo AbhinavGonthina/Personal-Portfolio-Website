@@ -193,36 +193,88 @@ export function paintScreen(project, index, total) {
 
 /* ------------------------------------------------------------------ */
 
+/** A rounded rectangle path, built by hand so nothing depends on
+ *  `roundRect` being present. */
+function rrect(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+
+/**
+ * The board face, with the two lamps on the gantry actually falling
+ * on it.
+ *
+ * Painted rather than lit. Two spotlights with shadow maps would cost
+ * more every frame than everything else on this hoarding put together
+ * and would be aimed at a flat plane that never moves, which is the
+ * one case where a light can be resolved once and baked. So the pools
+ * are two radial gradients added under where the lamps hang, and the
+ * lamps themselves are still the geometry they always were.
+ */
+export function paintBoardFace(lamps) {
+  const W = 1024;
+  const H = 472;
+  const [c, g] = canvas(W, H);
+
+  g.fillStyle = "#05050a";
+  g.fillRect(0, 0, W, H);
+
+  // Added, not drawn over: where two pools overlap they should get
+  // brighter, the way two lamps on one board do.
+  g.globalCompositeOperation = "lighter";
+  for (const at of lamps) {
+    const cx = W * at;
+    const cy = -H * 0.1;
+    const grd = g.createRadialGradient(cx, cy, 0, cx, cy, H * 1.15);
+    grd.addColorStop(0, "rgba(150,172,255,0.30)");
+    grd.addColorStop(0.35, "rgba(132,154,235,0.11)");
+    grd.addColorStop(0.72, "rgba(110,130,200,0.03)");
+    grd.addColorStop(1, "rgba(110,130,200,0)");
+    g.fillStyle = grd;
+    g.fillRect(0, 0, W, H);
+  }
+  g.globalCompositeOperation = "source-over";
+
+  return finish(c);
+}
+
 /**
  * The right-hand half of the hoarding: who the face belongs to.
  *
- * A hoarding is read from a moving car and the version before this
+ * A hoarding is read from a moving car and the first version of this
  * was written to be read at a desk - a paragraph of prose on black,
- * which is a profile readme that happens to be outdoors. Nothing
- * else in this town is made of sentences: the towers carry mono
- * caps, the headings carry a number and a rule. So the paragraph is
- * gone, and what is left is the four things a sign can say before
- * you have driven past it - who, what they do, what they build with,
- * and where they are up to. The paragraph is not lost, but it is not
- * here either: it is in the Hero and the About section, which is to
- * say it is one toggle away in the simpler read, where there is a
- * chair under the reader and no reason to be brief.
+ * which is a profile readme that happens to be outdoors. Nothing else
+ * in this town is made of sentences: the towers carry mono caps and
+ * the headings carry a number and a rule.
+ *
+ * So it is a board of labels now. The order is the order someone
+ * reads a stranger in: the name, then what they are after, then who
+ * has already employed them, then where they study, then what they
+ * work on. Everything below the name is a pill, because a pill holds
+ * one fact and a line of text holds as many as you push into it - and
+ * this board has had too many pushed into it before.
  *
  * One accent, and it is the blue the frame around this board is lit
- * in, so the paint and the geometry agree. The corner ticks came off
- * with the prose: this is half of a board that already has a frame,
- * and ticking its own corners made it a card sitting on one.
+ * in, so the paint and the geometry agree. The whole panel is drawn
+ * with `toneMapped` off, so anything near white here is past the
+ * bloom threshold and lights up on its own.
  *
  * Drawn at 2x, because at 1024 across a board that fills half the
  * screen the type was visibly soft.
  */
 const S = 2;
 
-export function paintBoard(profile, education) {
+export function paintBoard(profile, education, lampAt) {
   const W = 1100 * S;
   const H = 880 * S;
   const [c, g] = canvas(W, H);
-  const pad = 70 * S;
+  const pad = 66 * S;
+  const right = W - pad;
   const ACC = ACCENT.blue;
   const RULE = "#23232b";
 
@@ -232,7 +284,7 @@ export function paintBoard(profile, education) {
   g.fillRect(0, 0, W, H);
 
   // The ground grid, carried up onto the board.
-  g.strokeStyle = "#0d0d11";
+  g.strokeStyle = "#11131c";
   g.lineWidth = 1 * S;
   g.beginPath();
   for (let x = 0; x <= W; x += 55 * S) {
@@ -245,6 +297,31 @@ export function paintBoard(profile, education) {
   }
   g.stroke();
 
+  // The half of the gantry lamp's pool that falls on this panel.
+  // Painted before the type so the type stays at full strength
+  // inside it, which is what a lit sign looks like - the light is on
+  // the board, not over the words.
+  g.globalCompositeOperation = "lighter";
+  const pool = g.createRadialGradient(
+    W * lampAt,
+    -H * 0.08,
+    0,
+    W * lampAt,
+    -H * 0.08,
+    H * 1.1,
+  );
+  pool.addColorStop(0, "rgba(152,174,255,0.26)");
+  pool.addColorStop(0.4, "rgba(132,154,235,0.10)");
+  pool.addColorStop(1, "rgba(110,130,200,0)");
+  g.fillStyle = pool;
+  g.fillRect(0, 0, W, H);
+  g.globalCompositeOperation = "source-over";
+
+  // Scanlines, at the opacity where you stop seeing them and start
+  // seeing a screen. Any heavier and the type sits behind a comb.
+  g.fillStyle = "rgba(143,168,255,0.035)";
+  for (let y = 0; y < H; y += 4 * S) g.fillRect(0, y, W, 1 * S);
+
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
 
@@ -256,19 +333,32 @@ export function paintBoard(profile, education) {
     g.font = `${weight} ${px * S}px ${SANS}`;
     if ("letterSpacing" in g) g.letterSpacing = "0px";
   };
-  const rule = (y) => {
-    g.fillStyle = RULE;
-    g.fillRect(pad, y, W - pad * 2, 2 * S);
+
+  /** One pill. Returns its width, so a row can lay itself out. */
+  const pill = (x, y, text, { size, space, ink, line, fill, h }) => {
+    mono(size, space);
+    const w = g.measureText(text).width + 36 * S;
+    rrect(g, x, y, w, h * S, (h * S) / 2);
+    if (fill) {
+      g.fillStyle = fill;
+      g.fill();
+    }
+    g.strokeStyle = line;
+    g.lineWidth = 1.5 * S;
+    g.stroke();
+    g.fillStyle = ink;
+    g.fillText(text, x + 18 * S, y + h * S * 0.5 + size * S * 0.36);
+    return w;
   };
 
   // Eyebrow, in the accent. The board is a lit sign, so the small
   // type on it is lit too rather than being another shade of grey.
   g.fillStyle = ACC;
-  mono(26, 6);
+  mono(23, 5);
   g.fillText(
     `${profile.role.toUpperCase()}  ·  ${profile.location.toUpperCase()}`,
     pad,
-    pad + 26 * S,
+    pad + 22 * S,
   );
 
   // The name, stacked. Two lines carry half again the type size of
@@ -276,36 +366,72 @@ export function paintBoard(profile, education) {
   // whole argument.
   const [first, ...rest] = profile.name.split(" ");
   g.fillStyle = "#ffffff";
-  sans(140, 600);
-  g.fillText(first, pad - 6 * S, pad + 182 * S);
-  g.fillText(rest.join(" "), pad - 6 * S, pad + 320 * S);
-  rule(pad + 364 * S);
+  sans(120, 600);
+  g.fillText(first, pad - 5 * S, pad + 150 * S);
+  g.fillText(rest.join(" "), pad - 5 * S, pad + 272 * S);
 
-  // What the work is made of, in the mono caps the towers wear.
-  g.fillStyle = "#9aa0ab";
-  mono(25, 4);
-  g.fillText(
-    profile.focus.map((f) => f.toUpperCase()).join("  ·  "),
+  // What he is after, which is the one thing on this board a stranger
+  // is looking for. Filled rather than outlined, because it is the
+  // only pill here that is an ask rather than a fact.
+  pill(
     pad,
-    pad + 432 * S,
+    pad + 316 * S,
+    `${profile.seeking} · ${education.graduation}`.toUpperCase(),
+    {
+      size: 22,
+      space: 4,
+      ink: "#05050a",
+      line: ACC,
+      fill: ACC,
+      h: 48,
+    },
   );
 
-  // Two standing facts, a label and a value on one line each: a
-  // plaque, not the last paragraph.
-  const rows = [
-    ["CURRENTLY", profile.currently],
-    ["GRADUATING", `${education.graduation}  ·  GPA ${education.gpa}`],
-  ];
-  let y = pad + 556 * S;
-  for (const [label, value] of rows) {
-    rule(y - 44 * S);
-    g.fillStyle = ACC;
-    mono(23, 5);
-    g.fillText(label, pad, y);
-    g.fillStyle = "#d4d4d8";
-    sans(29);
-    g.fillText(value, pad, y + 46 * S);
-    y += 128 * S;
+  // Who has already employed him. Outlined, in his own words' order.
+  let x = pad;
+  for (const [where, what] of profile.highlights) {
+    const w = pill(x, pad + 394 * S, `${where} · ${what}`.toUpperCase(), {
+      size: 19,
+      space: 3,
+      ink: "#cfd6e6",
+      line: "#2f3647",
+      h: 44,
+    });
+    x += w + 16 * S;
+  }
+
+  // Where he studies, set as two lines so neither runs small.
+  g.fillStyle = "#9aa0ab";
+  sans(26);
+  g.fillText(`${education.school}  ·  ${education.degree}`, pad, pad + 512 * S);
+  g.fillText(
+    `GPA ${education.gpa}  ·  ${education.honors}`,
+    pad,
+    pad + 552 * S,
+  );
+
+  g.fillStyle = RULE;
+  g.fillRect(pad, pad + 590 * S, right - pad, 2 * S);
+
+  // What the work is, in four areas rather than in a tech stack. The
+  // stack is on the Skills racks, where there is room to mean it.
+  let cx = pad;
+  let cy = pad + 624 * S;
+  for (const name of profile.categories) {
+    mono(19, 3);
+    const w = g.measureText(name.toUpperCase()).width + 36 * S;
+    if (cx + w > right) {
+      cx = pad;
+      cy += 56 * S;
+    }
+    pill(cx, cy, name.toUpperCase(), {
+      size: 19,
+      space: 3,
+      ink: "#9aa0ab",
+      line: "#272d3b",
+      h: 44,
+    });
+    cx += w + 14 * S;
   }
 
   return finish(c);

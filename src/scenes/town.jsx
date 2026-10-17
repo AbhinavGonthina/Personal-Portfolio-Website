@@ -4,6 +4,7 @@ import * as THREE from "three";
 import {
   BOARD,
   BOARD_PHOTO,
+  BOARD_TEXT,
   DESK,
   DESK_SCREEN,
   HOUSE,
@@ -71,11 +72,11 @@ const Shell = ({ geo, mat }) =>
  * The hoarding: posts, a lit frame, the portrait on the left of the
  * board and everything the About section says painted on the right.
  */
-export function Billboard({ mats, visible, board }) {
+export function Billboard({ mats, visible, board, face }) {
   const built = useBuilt(billboard);
   const photo = useLoader(THREE.TextureLoader, profile.photo);
   const gap = BOARD.pad;
-  const textW = BOARD.w - BOARD_PHOTO - gap * 3;
+  const textW = BOARD_TEXT;
 
   return (
     <group
@@ -94,7 +95,7 @@ export function Billboard({ mats, visible, board }) {
           it that is not black is the one thing that should be. */}
       <mesh position={[0, built.mid, 0.05]}>
         <planeGeometry args={[BOARD.w, BOARD.h]} />
-        <meshBasicMaterial color="#05050a" toneMapped={false} />
+        <meshBasicMaterial map={face} color="#ffffff" toneMapped={false} />
       </mesh>
       <mesh position={[-BOARD.w / 2 + gap + BOARD_PHOTO / 2, built.mid, 0.06]}>
         <planeGeometry args={[BOARD_PHOTO, BOARD_PHOTO]} />

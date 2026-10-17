@@ -4,7 +4,17 @@ import { usePlain } from "../lib/plain";
 import { useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
-import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
+import {
+  paintBoard,
+  paintBoardFace,
+  paintMark,
+  paintScreen,
+  paintSkills,
+} from "../lib/paint";
+import {
+  BOARD_LAMPS as LAMPS_AT,
+  BOARD_PANEL_LAMP as PANEL_LAMP,
+} from "../lib/townGeometry";
 import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
@@ -81,7 +91,13 @@ export default function TownStage({ refs }) {
     [off],
   );
   const board = useMemo(
-    () => (off ? null : paintBoard(profile, education)),
+    () => (off ? null : paintBoard(profile, education, PANEL_LAMP)),
+    [off],
+  );
+  // Where the two lamps hang, as a fraction across the board, so the
+  // pools they cast land under them rather than near them.
+  const boardFace = useMemo(
+    () => (off ? null : paintBoardFace(LAMPS_AT)),
     [off],
   );
   const skills = useMemo(() => (off ? null : paintSkills(skillGroups)), [off]);
@@ -91,6 +107,7 @@ export default function TownStage({ refs }) {
   );
   useEffect(() => () => marks.forEach((m) => m.dispose()), [marks]);
   useEffect(() => () => board?.dispose(), [board]);
+  useEffect(() => () => boardFace?.dispose(), [boardFace]);
   useEffect(() => () => skills?.dispose(), [skills]);
   useEffect(() => () => screen?.dispose(), [screen]);
 
@@ -304,6 +321,7 @@ export default function TownStage({ refs }) {
             screen={screen}
             skills={skills}
             board={board}
+            boardFace={boardFace}
             marks={marks}
           />
         </Suspense>

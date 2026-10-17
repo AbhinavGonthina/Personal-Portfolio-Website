@@ -8,10 +8,35 @@ export const profile = {
     "CS student at Northeastern building backend systems and the interfaces on top of them. Most recently at athenahealth, where I worked on AWS infrastructure, data pipelines, and observability.",
   // One line on the landing page saying what is happening right now.
   // Short enough to read at a glance; update it when it stops being true.
-  currently: "Building OnTrack, and looking for Summer 2027 internships.",
+  //
+  // This used to say "Summer 2027 internships", which cannot be true
+  // alongside a graduation date of April 2027 - the summer after it is
+  // the first summer there is no degree left to go back to.
+  currently:
+    "Building OnTrack, and looking for full-time software engineering roles.",
+  // The same ask in the fewest words that still carry it, for the
+  // hoarding, where there is no room for a sentence.
+  seeking: "Open to full-time SWE",
   photo: "/headshot.webp",
   // Four headline technologies, all of them on the résumé.
   focus: ["AWS", "Terraform", "Spring Boot", "React"],
+  // The same work described by area rather than by tool, for the
+  // hoarding. Someone driving past wants to know what you do; the
+  // Skills racks are where the tools are named.
+  categories: [
+    "Frontend & UI",
+    "Backend & APIs",
+    "Cloud & DevOps",
+    "Data & Pipelines",
+  ],
+  // The two names worth the space on a board, shortest form. Curated
+  // here rather than taken off the top of `experience`, because
+  // "whichever two are first" is not an editorial decision anybody
+  // made - and reordering that list should not silently reword this.
+  highlights: [
+    ["Ex-athenahealth", "SWE Intern"],
+    ["Ex-Philips", "SWE Co-op"],
+  ],
 };
 
 // Three things link to this now (hero button, footer socials, the hand that

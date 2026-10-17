@@ -1619,7 +1619,7 @@ function Sky() {
  * The landmarks stay on throughout, because the establishing shot has
  * to show the whole town at once - that is what it is for.
  */
-function Town({ town, screen, skills, board, marks }) {
+function Town({ town, screen, skills, board, boardFace, marks }) {
   // The door starts opening as the camera leaves the city, so arriving
   // and the door swinging are one motion rather than two that have to
   // agree with each other.
@@ -1645,7 +1645,7 @@ function Town({ town, screen, skills, board, marks }) {
           the town does - though not the same one as the room. */}
       <Ground grid={!walled} />
       <Dressing mats={town} visible />
-      <Billboard mats={town} visible board={board} />
+      <Billboard mats={town} visible board={board} face={boardFace} />
       <House mats={town} visible open={open} />
       <Interior mats={town} visible={inside} screen={screen} skills={skills} />
       <Mailboxes mats={town} visible labels={marks} live={mailLive} />
@@ -1661,6 +1661,7 @@ export default function TownScene({
   screen,
   skills,
   board,
+  boardFace,
   marks,
 }) {
   const layout = useLayout();
@@ -1737,6 +1738,7 @@ export default function TownScene({
         screen={screen}
         skills={skills}
         board={board}
+        boardFace={boardFace}
         marks={marks}
       />
       <ClusterSigns hidden={Boolean(focused)} />
