@@ -218,7 +218,7 @@ function rrect(g, x, y, w, h, r) {
  */
 export function paintBoardFace(lamps) {
   const W = 1024;
-  const H = 472;
+  const H = 500;
   const [c, g] = canvas(W, H);
 
   g.fillStyle = "#05050a";
@@ -271,7 +271,7 @@ const S = 2;
 
 export function paintBoard(profile, education, lampAt) {
   const W = 1100 * S;
-  const H = 880 * S;
+  const H = 990 * S;
   const [c, g] = canvas(W, H);
   const pad = 66 * S;
   const right = W - pad;
@@ -354,85 +354,92 @@ export function paintBoard(profile, education, lampAt) {
   // Eyebrow, in the accent. The board is a lit sign, so the small
   // type on it is lit too rather than being another shade of grey.
   g.fillStyle = ACC;
-  mono(23, 5);
+  mono(32, 5);
   g.fillText(
     `${profile.role.toUpperCase()}  ·  ${profile.location.toUpperCase()}`,
     pad,
-    pad + 22 * S,
+    pad + 34 * S,
   );
 
-  // The name, stacked. Two lines carry half again the type size of
-  // one across the same width, and on a hoarding the size is the
-  // whole argument.
+  // The name, stacked. It does not need to be the biggest thing that
+  // fits: it is the only white on a board of grey, which carries it
+  // further than another twenty points would, and the points are
+  // worth more to the labels under it.
   const [first, ...rest] = profile.name.split(" ");
   g.fillStyle = "#ffffff";
-  sans(120, 600);
-  g.fillText(first, pad - 5 * S, pad + 150 * S);
-  g.fillText(rest.join(" "), pad - 5 * S, pad + 272 * S);
+  sans(124, 600);
+  g.fillText(first, pad - 5 * S, pad + 174 * S);
+  g.fillText(rest.join(" "), pad - 5 * S, pad + 306 * S);
 
   // What he is after, which is the one thing on this board a stranger
   // is looking for. Filled rather than outlined, because it is the
   // only pill here that is an ask rather than a fact.
   pill(
     pad,
-    pad + 316 * S,
+    pad + 352 * S,
     `${profile.seeking} · ${education.graduation}`.toUpperCase(),
     {
-      size: 22,
+      size: 30,
       space: 4,
       ink: "#05050a",
       line: ACC,
       fill: ACC,
-      h: 48,
+      h: 56,
     },
   );
 
-  // Who has already employed him. Outlined, in his own words' order.
-  let x = pad;
-  for (const [where, what] of profile.highlights) {
-    const w = pill(x, pad + 394 * S, `${where} · ${what}`.toUpperCase(), {
-      size: 19,
+  // Who has already employed him, one to a line. Side by side they
+  // had to drop to a size that made two names out of four words, and
+  // the board is tall enough now to spend a row on each.
+  profile.highlights.forEach(([where, what], i) => {
+    pill(pad, pad + (430 + i * 64) * S, `${where} · ${what}`.toUpperCase(), {
+      size: 27,
       space: 3,
       ink: "#cfd6e6",
       line: "#2f3647",
-      h: 44,
+      h: 52,
     });
-    x += w + 16 * S;
-  }
+  });
 
   // Where he studies, set as two lines so neither runs small.
   g.fillStyle = "#9aa0ab";
-  sans(26);
-  g.fillText(`${education.school}  ·  ${education.degree}`, pad, pad + 512 * S);
+  sans(36);
+  g.fillText(`${education.school}  ·  ${education.degree}`, pad, pad + 606 * S);
   g.fillText(
     `GPA ${education.gpa}  ·  ${education.honors}`,
     pad,
-    pad + 552 * S,
+    pad + 654 * S,
   );
 
   g.fillStyle = RULE;
-  g.fillRect(pad, pad + 590 * S, right - pad, 2 * S);
+  g.fillRect(pad, pad + 686 * S, right - pad, 2 * S);
 
   // What the work is, in four areas rather than in a tech stack. The
   // stack is on the Skills racks, where there is room to mean it.
+  //
+  // Two to a row on purpose. All four will not cross this panel at a
+  // size worth reading, and wrapping them wherever they happened to
+  // run out of room left the fourth one orphaned on a line of its
+  // own; two by two is the same four facts arranged as though
+  // somebody had chosen it.
+  const PER_ROW = 2;
   let cx = pad;
-  let cy = pad + 624 * S;
-  for (const name of profile.categories) {
-    mono(19, 3);
-    const w = g.measureText(name.toUpperCase()).width + 36 * S;
-    if (cx + w > right) {
+  let cy = pad + 718 * S;
+  profile.categories.forEach((name, i) => {
+    if (i && i % PER_ROW === 0) {
       cx = pad;
-      cy += 56 * S;
+      cy += 64 * S;
     }
-    pill(cx, cy, name.toUpperCase(), {
-      size: 19,
-      space: 3,
-      ink: "#9aa0ab",
-      line: "#272d3b",
-      h: 44,
-    });
-    cx += w + 14 * S;
-  }
+    cx +=
+      pill(cx, cy, name.toUpperCase(), {
+        size: 27,
+        space: 3,
+        ink: "#9aa0ab",
+        line: "#272d3b",
+        h: 52,
+      }) +
+      14 * S;
+  });
 
   return finish(c);
 }

@@ -976,9 +976,12 @@ function resolve(stop, out, cam, pointer, t) {
 
   out.px = at[0] + nx * dist + rx * halfW * 0.46;
   out.pz = at[2] + nz * dist + rz * halfW * 0.46;
-  // Standing, always. The camera's own height is eye level and the
-  // subject's height is what it looks at - a board four metres up is
-  // seen by looking up at it, not by floating to meet it.
+  // A stop says its own height, or takes the subject's. Most of them
+  // say `eye` and stand on the ground, because a town seen from
+  // standing height is a town you are walking through. The board is
+  // the exception and asks for neither: it is the one surface on the
+  // walk whose whole job is to be read, and read from underneath its
+  // type keystones away towards the top.
   out.py = eye ?? at[1] + (centred ? 0 : 0.25);
   out.lx = at[0] + rx * halfW * 0.4;
   out.lz = at[2] + rz * halfW * 0.4;
