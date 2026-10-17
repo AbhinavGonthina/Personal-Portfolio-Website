@@ -667,7 +667,7 @@ const MAIL_VIEW = {
 const BARK = ["#3a3330", "#332e2f", "#2f3034", "#3b352c"];
 const LEAF = ["#2f4a39", "#27423f", "#334257", "#3a4030", "#2b3a4c", "#43412f"];
 
-function tree(parts, i, x, z, near) {
+function tree(parts, i, x, z, near, far = false) {
   const kind = near ? i % 3 : i % 2;
   const h = 2.4 + rnd(i, 4.4) * 3.4;
   const trunkFrom = parts.length;
@@ -676,6 +676,17 @@ function tree(parts, i, x, z, near) {
   );
   tint(parts, trunkFrom, BARK[i % BARK.length]);
   const leafFrom = parts.length;
+
+  // At the back of the map a tree is a silhouette and nothing else,
+  // so it is one cone rather than a stack of five. The near wood
+  // costs about seventy triangles a tree and this costs twelve,
+  // which is the difference between filling the far ground and
+  // tripling what the landing has to draw.
+  if (far) {
+    parts.push(cone(1.15, 2.4, 6, [x, h * 0.78, z]));
+    tint(parts, leafFrom, LEAF[i % LEAF.length]);
+    return;
+  }
 
   if (kind === 0) {
     // Conifer: a stack of skirts, narrowing.
@@ -792,6 +803,32 @@ export function dressing() {
     }
   }
 
+  // The outskirts: the ground beyond the wood on both sides and the
+  // band behind the city. This is the empty black in the corners
+  // when the camera cranes out to put the whole place in one frame.
+  //
+  // Its own buffer, because it is the one part of the town that is
+  // only ever looked at from up there. Added to the wood it put the
+  // landing from 26k triangles to 55k - the columns are slabs that
+  // run the depth of the map, so widening them widens what cannot
+  // be culled - and a view nobody is in should not be charged to
+  // the view everybody starts in.
+  const far = [];
+  for (let gx = 0; gx < 32; gx++) {
+    if (!far[gx >> 3]) far[gx >> 3] = [];
+    const col = far[gx >> 3];
+    for (let gz = 0; gz < 14; gz++) {
+      n++;
+      const x = -112 + gx * 7.1 + (rnd(n, 2.2) - 0.5) * 5;
+      const z = -68 + gz * 10.4 + (rnd(n, 9.7) - 0.5) * 5;
+      // Everything the near wood already covers, and the city.
+      if (z > 8 && Math.abs(x) < 82) continue;
+      if (Math.hypot(x, z) < 36) continue;
+      if (Math.abs(z - ROAD.z) < ROAD.half + 2.4) continue;
+      tree(col, n, x, z, false, true);
+    }
+  }
+
   // The park, off to the right of the house, which was there before
   // the road was and is a good deal thinner than the wood.
   for (let i = 0; i < 14; i++) {
@@ -808,5 +845,6 @@ export function dressing() {
     road: merge(road),
     paint: merge(paint),
     woods: woods.map(merge).filter(Boolean),
+    far: far.filter((c) => c.length).map((c) => merge(c)),
   };
 }

@@ -1510,6 +1510,20 @@ function Frames() {
 }
 
 /**
+ * True once the crane has lifted far enough to see the edges of the
+ * map. Read in the frame loop and pushed into state only when the
+ * answer changes, which is twice a switch.
+ */
+function useWide() {
+  const [on, setOn] = useState(false);
+  useFrame(() => {
+    const want = getSwitch() > 0.04;
+    if (want !== on) setOn(want);
+  });
+  return on;
+}
+
+/**
  * Keeps a boolean in step with where the camera is, without rendering
  * every frame. Visibility gates only have to flip a few times a page,
  * so they are read in the frame loop and pushed into state only when
@@ -1771,6 +1785,8 @@ function Sky() {
  * to show the whole town at once - that is what it is for.
  */
 function Town({ town, screen, skills, board, boardFace, marks }) {
+  // Craned out far enough to see the edges of the map.
+  const wide = useWide();
   // The door starts opening as the camera leaves the city, so arriving
   // and the door swinging are one motion rather than two that have to
   // agree with each other.
@@ -1800,7 +1816,7 @@ function Town({ town, screen, skills, board, boardFace, marks }) {
       {/* The floor lives here so it can see the same gates the rest of
           the town does - though not the same one as the room. */}
       <Ground grid={!walled} />
-      <Dressing mats={town} visible />
+      <Dressing mats={town} visible wide={wide} />
       <Billboard mats={town} visible board={board} face={boardFace} />
       <House mats={town} visible open={open} />
       <Interior mats={town} visible={inside} screen={screen} skills={skills} />
