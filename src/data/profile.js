@@ -20,23 +20,13 @@ export const profile = {
   photo: "/headshot.webp",
   // Four headline technologies, all of them on the résumé.
   focus: ["AWS", "Terraform", "Spring Boot", "React"],
-  // The same work described by area rather than by tool, for the
-  // hoarding. Someone driving past wants to know what you do; the
-  // Skills racks are where the tools are named.
-  categories: [
-    "Frontend & UI",
-    "Backend & APIs",
-    "Cloud & DevOps",
-    "Data & Pipelines",
-  ],
-  // The two names worth the space on a board, shortest form. Curated
-  // here rather than taken off the top of `experience`, because
-  // "whichever two are first" is not an editorial decision anybody
-  // made - and reordering that list should not silently reword this.
-  highlights: [
-    ["Ex-athenahealth", "SWE Intern"],
-    ["Ex-Philips", "SWE Co-op"],
-  ],
+  // One sentence for the hoarding: who he is and what the work has
+  // been in, in the order someone asks it. Shorter than `tagline`
+  // and doing a different job - the tagline introduces him to a
+  // reader who has sat down, this introduces him to someone who has
+  // not stopped walking.
+  pitch:
+    "CS student at Northeastern, with experience across backend services, cloud infrastructure, and data pipelines at athenahealth and Philips.",
 };
 
 // Three things link to this now (hero button, footer socials, the hand that

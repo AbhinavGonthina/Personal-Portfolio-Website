@@ -25,7 +25,15 @@ export function ExtrudedText({
   tex,
   aspect,
   height,
-  depth = 0.26,
+  // A fraction of the glyph height, not a fixed distance. The far
+  // layer is near black, so depth is how much of each letter reads
+  // dark - and a depth that does not scale means a small word is a
+  // mostly dark word. The cluster signs on the road are 0.52 high
+  // and were taking the old flat 0.26: half of every letter was the
+  // shadow colour, which is why they came out grey beside WELCOME
+  // while WELCOME, at 0.22 on 0.92, came out white. 0.24 is the
+  // ratio the two words that looked right were already using.
+  depth = height * 0.24,
   layers = 14,
   matRef,
 }) {
