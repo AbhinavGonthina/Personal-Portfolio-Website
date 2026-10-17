@@ -37,6 +37,13 @@ export function useTownMaterials() {
         roughness: 0.6,
         metalness: 0.25,
       }),
+      // The inside of something you are meant to read as open. Unlit
+      // on purpose: every other surface here takes the sky, and the
+      // one that does not is the one the eye calls a hole.
+      void: new THREE.MeshBasicMaterial({
+        color: "#06060b",
+        toneMapped: false,
+      }),
       // Interior walls, a good deal darker than the outside shells.
       // Outdoors a surface has the sky to catch; in here the only
       // light is a desk lamp and a rack, and the walls have to fall

@@ -9,6 +9,7 @@ import {
   DESK_SCREEN,
   HOUSE,
   MAIL_BODY,
+  MAIL_TOP,
   MAIL_GAP,
   RACKS,
   TOWN,
@@ -20,7 +21,8 @@ import {
   interior,
   mailbox,
   mailflag,
-  maillid,
+  maildoor,
+  mailmouth,
   mailrail,
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
@@ -235,7 +237,22 @@ export function Dressing({ mats, visible }) {
 
 /* ---------------------------------------------------------------- */
 
-const LID_OPEN = -1.15;
+// Ajar, not flung open. A mailbox door moves far enough to show the
+// slot and stop; at -1.15 this one swung through sixty-six degrees
+// and ended up standing over the roof of its own box.
+const LID_OPEN = -0.6;
+// The mark is square and the top of the box is a semicircle, so the
+// limit is not the width of the box - it is how far up the arc the
+// square's top corners can go before they are outside it. Solved
+// rather than guessed: at 0.72 of the width the corners stood proud
+// of the arc and the logo looked cropped by a box it was drawn on.
+const MARK_W = MAIL_BODY.w * 0.64;
+const MARK_H = MARK_W * (342 / 256);
+const MARK_TOP =
+  MAIL_BODY.h * 0.55 + Math.sqrt((MAIL_BODY.w / 2) ** 2 - (MARK_W / 2) ** 2);
+// Centre, from that top. The name ends up a little clear of the
+// handle on the door below it, which is where it should sit.
+const MARK_Y = MARK_TOP - MARK_H / 2;
 
 /**
  * One mailbox. The lid swings open and the flag goes up when you point
@@ -247,7 +264,8 @@ const LID_OPEN = -1.15;
  */
 function Mailbox({ x, link, mats, label, live }) {
   const body = useBuilt(mailbox);
-  const lid = useBuilt(maillid);
+  const door = useBuilt(maildoor);
+  const mouth = useBuilt(mailmouth);
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
   const flagRef = useRef();
@@ -305,15 +323,26 @@ function Mailbox({ x, link, mats, label, live }) {
             window.open(link, "_blank", "noopener,noreferrer");
           }}
         />
-        <group
-          ref={lidRef}
-          position={[0, MAIL_BODY.h * 0.55, -MAIL_BODY.d / 2]}
-        >
-          <mesh
-            geometry={lid}
-            material={mats.post}
-            position={[0, -MAIL_BODY.h * 0.55, MAIL_BODY.d / 2]}
-          />
+        {/* The door, and the mark riding on it. The mark is a child
+            of the hinge rather than a sibling of it, so there is no
+            second animation to keep in step with the first. */}
+        <mesh geometry={mouth} material={mats.void} />
+        <group ref={lidRef} position={[0, MAIL_TOP, MAIL_BODY.d / 2]}>
+          <mesh geometry={door} material={mats.post} />
+          {/* Clear of the panel, not in it. The door is built from
+              its hinge and so is 0.05 thick forward of this group;
+              at 0.045 the mark sat five millimetres inside its own
+              door and the door drew over it. */}
+          <mesh position={[0, MARK_Y - MAIL_TOP, 0.058]}>
+            <planeGeometry args={[MARK_W, MARK_H]} />
+            <meshBasicMaterial
+              ref={markRef}
+              map={label}
+              transparent
+              opacity={0.72}
+              toneMapped={false}
+            />
+          </mesh>
         </group>
         <group
           ref={flagRef}
@@ -321,16 +350,6 @@ function Mailbox({ x, link, mats, label, live }) {
         >
           <mesh geometry={flag} material={on ? mats.warm : mats.cool} />
         </group>
-        <mesh position={[0, MAIL_BODY.h * 0.32, MAIL_BODY.d / 2 + 0.01]}>
-          <planeGeometry args={[MAIL_BODY.w * 0.84, MAIL_BODY.w * 0.84]} />
-          <meshBasicMaterial
-            ref={markRef}
-            map={label}
-            transparent
-            opacity={0.72}
-            toneMapped={false}
-          />
-        </mesh>
       </group>
     </group>
   );

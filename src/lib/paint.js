@@ -1,5 +1,9 @@
 import * as THREE from "three";
 import { ACCENT } from "./townMaterials";
+import githubMark from "bootstrap-icons/icons/github.svg?raw";
+import linkedinMark from "bootstrap-icons/icons/linkedin.svg?raw";
+import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
+import resumeMark from "bootstrap-icons/icons/file-earmark-text.svg?raw";
 
 /**
  * Canvas textures for the things in the town that have to show content:
@@ -30,86 +34,94 @@ function finish(c) {
 /* ------------------------------------------------------------------ */
 
 /**
- * The mark on a mailbox. Icons are drawn as paths rather than loaded as
- * brand SVGs: at this size a recognisable glyph beats an accurate one,
- * and the name is underneath anyway.
+ * The marks on the mailboxes, taken from Bootstrap Icons rather than
+ * drawn here.
+ *
+ * They were drawn here, as paths approximating each logo from memory,
+ * on the argument that at this size a recognisable glyph beats an
+ * accurate one. That argument holds for a mail envelope and does not
+ * hold for somebody else's trademark: the GitHub and LinkedIn marks
+ * are things people recognise exactly or not at all, and the drawn
+ * ones were not them.
+ *
+ * One set, not two, so the four read as a family. Bootstrap Icons is
+ * the set that still carries LinkedIn - it has been pulled from most
+ * of the others - and it carries an envelope and a document in the
+ * same hand, which is what the other two needed.
+ *
+ * Parsed once at module scope. A `Path2D` is a compiled path and
+ * rebuilding one per repaint would be work for no change.
  */
-const ICONS = {
-  github(g, s) {
-    // The git graph: a branch leaving a trunk and rejoining it.
-    g.lineWidth = s * 0.075;
-    g.lineCap = "round";
-    g.beginPath();
-    g.moveTo(s * 0.3, s * 0.18);
-    g.lineTo(s * 0.3, s * 0.82);
-    g.stroke();
-    g.beginPath();
-    g.moveTo(s * 0.3, s * 0.5);
-    g.quadraticCurveTo(s * 0.3, s * 0.3, s * 0.7, s * 0.3);
-    g.stroke();
-    for (const [x, y] of [
-      [0.3, 0.2],
-      [0.3, 0.8],
-      [0.7, 0.3],
-    ]) {
-      g.beginPath();
-      g.arc(s * x, s * y, s * 0.09, 0, Math.PI * 2);
-      g.fill();
-    }
-  },
-  linkedin(g, s) {
-    g.lineWidth = s * 0.07;
-    g.strokeRect(s * 0.14, s * 0.14, s * 0.72, s * 0.72);
-    g.font = `700 ${s * 0.46}px ${SANS}`;
-    g.textAlign = "center";
-    g.textBaseline = "middle";
-    g.fillText("in", s * 0.5, s * 0.54);
-  },
-  email(g, s) {
-    g.lineWidth = s * 0.07;
-    g.lineJoin = "round";
-    g.strokeRect(s * 0.12, s * 0.26, s * 0.76, s * 0.48);
-    g.beginPath();
-    g.moveTo(s * 0.12, s * 0.26);
-    g.lineTo(s * 0.5, s * 0.56);
-    g.lineTo(s * 0.88, s * 0.26);
-    g.stroke();
-  },
-  resume(g, s) {
-    g.lineWidth = s * 0.07;
-    g.lineJoin = "round";
-    g.beginPath();
-    g.moveTo(s * 0.24, s * 0.12);
-    g.lineTo(s * 0.62, s * 0.12);
-    g.lineTo(s * 0.78, s * 0.3);
-    g.lineTo(s * 0.78, s * 0.88);
-    g.lineTo(s * 0.24, s * 0.88);
-    g.closePath();
-    g.stroke();
-    for (let i = 0; i < 3; i++) {
-      g.beginPath();
-      g.moveTo(s * 0.34, s * (0.46 + i * 0.14));
-      g.lineTo(s * 0.68, s * (0.46 + i * 0.14));
-      g.stroke();
-    }
-  },
+const SVG = {
+  github: githubMark,
+  linkedin: linkedinMark,
+  email: envelopeMark,
+  resume: resumeMark,
 };
 
-export function paintMark(icon, name) {
-  const S = 256;
-  const [c, g] = canvas(S, S + 72);
-  g.strokeStyle = "#e8ecff";
-  g.fillStyle = "#e8ecff";
+const ICONS = Object.fromEntries(
+  Object.entries(SVG).map(([name, svg]) => {
+    const box = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(svg);
+    return [
+      name,
+      {
+        w: box ? +box[1] : 16,
+        h: box ? +box[2] : 16,
+        paths: [...svg.matchAll(/\sd="([^"]+)"/g)].map((m) => new Path2D(m[1])),
+      },
+    ];
+  }),
+);
+
+/**
+ * One mark, centred in a square box at its own aspect ratio.
+ *
+ * `Math.min` of the two scales rather than a scale per axis: these
+ * are square to begin with, but a mark squeezed to fit a box is the
+ * thing this was changed to stop doing, and a formula that cannot
+ * squeeze cannot start doing it again if a set with oblong icons
+ * ever replaces this one.
+ */
+function drawIcon(g, name, size) {
+  const icon = ICONS[name] ?? ICONS.resume;
+  const s = Math.min(size / icon.w, size / icon.h);
   g.save();
-  g.translate(0, 8);
-  (ICONS[icon] ?? ICONS.resume)(g, S);
+  g.translate((size - icon.w * s) / 2, (size - icon.h * s) / 2);
+  g.scale(s, s);
+  for (const p of icon.paths) g.fill(p);
+  g.restore();
+}
+
+/**
+ * One mailbox face: the mark in a square, the name under it.
+ *
+ * The canvas is 256 across and 342 down and the plane it goes on is
+ * built from that ratio, not from a square. It used to be a square,
+ * and everything on it arrived at the box squashed to 78% of its
+ * height - which is what made the marks look wrong as much as the
+ * marks being wrong did.
+ */
+const MARK_W = 256;
+const MARK_H = 342;
+
+export function paintMark(icon, name) {
+  const [c, g] = canvas(MARK_W, MARK_H);
+  g.fillStyle = "#e8ecff";
+  g.strokeStyle = "#e8ecff";
+
+  // Inset, so the mark has air around it rather than running to the
+  // edge of its square.
+  const inset = 26;
+  g.save();
+  g.translate(inset, inset);
+  drawIcon(g, icon, MARK_W - inset * 2);
   g.restore();
 
   g.font = `700 46px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = "5px";
   g.textAlign = "center";
   g.textBaseline = "middle";
-  g.fillText(name.toUpperCase(), c.width / 2, S + 40);
+  g.fillText(name.toUpperCase(), MARK_W / 2, MARK_W + 48);
   return finish(c);
 }
 
