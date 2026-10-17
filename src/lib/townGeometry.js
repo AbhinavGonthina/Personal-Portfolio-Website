@@ -62,6 +62,32 @@ export const TOWN = {
 export const BOARD = { w: 7.6, h: 3.5, y: 2.4, pad: 0.2 };
 export const BOARD_PHOTO = BOARD.h - BOARD.pad * 2;
 
+/** How far out from the middle the two gantry lamps hang. */
+const LAMP_X = 2;
+
+/**
+ * The same two, as a fraction across the face. The pools of light are
+ * painted into the face texture rather than cast by real lights, and
+ * this is what keeps the paint under the lamps instead of near them.
+ */
+export const BOARD_LAMPS = [
+  (BOARD.w / 2 - LAMP_X) / BOARD.w,
+  (BOARD.w / 2 + LAMP_X) / BOARD.w,
+];
+
+/** The painted panel, which takes whatever the portrait leaves. */
+export const BOARD_TEXT = BOARD.w - BOARD_PHOTO - BOARD.pad * 3;
+
+/**
+ * Where the right-hand lamp falls across that panel, as a fraction
+ * of its width. The panel is its own plane drawn over the face, so
+ * a pool painted on the face stops at its edge - the light has to be
+ * painted into the panel as well to carry on across it, and this is
+ * the only number that keeps the two halves of one pool in line.
+ */
+export const BOARD_PANEL_LAMP =
+  (LAMP_X - (BOARD.w / 2 - BOARD.pad - BOARD_TEXT)) / BOARD_TEXT;
+
 export function billboard() {
   const base = [];
   const lit = [];
@@ -97,9 +123,18 @@ export function billboard() {
   }
   for (const side of [-1, 1]) {
     base.push(
-      cyl(0.045, 0.045, 0.7, 6, [side * 2, mid + hh + 0.35, 0.25], [0.7, 0, 0]),
+      cyl(
+        0.045,
+        0.045,
+        0.7,
+        6,
+        [side * LAMP_X, mid + hh + 0.35, 0.25],
+        [0.7, 0, 0],
+      ),
     );
-    lit.push(dot(0.1, [side * 2, mid + hh + 0.55, 0.47], null, [1, 0.7, 1]));
+    lit.push(
+      dot(0.1, [side * LAMP_X, mid + hh + 0.55, 0.47], null, [1, 0.7, 1]),
+    );
   }
 
   // Ticks at the portrait's corners. A photograph is the one thing on
@@ -119,6 +154,20 @@ export function billboard() {
       lit.push(box(arm, t, t, [x - (sx * (arm - t)) / 2, y, 0.08]));
       lit.push(box(t, arm, t, [x, y - (sy * (arm - t)) / 2, 0.08]));
     }
+  }
+
+  // A hairline just inside the photograph's edge, inside the ticks.
+  // The ticks say where the portrait is; this says it is behind
+  // glass. It is drawn in the lit material with the rest, so the
+  // bloom picks it up and it reads as an edge that is lit rather
+  // than an edge that is drawn.
+  const ir = BOARD_PHOTO / 2 - 0.045;
+  const it = 0.012;
+  for (const dy of [ir, -ir]) {
+    lit.push(box(ir * 2 + it, it, it, [px, mid + dy, 0.075]));
+  }
+  for (const dx of [ir, -ir]) {
+    lit.push(box(it, ir * 2 - it, it, [px + dx, mid, 0.075]));
   }
 
   return { base: merge(base), lit: merge(lit), mid, hw, hh };
