@@ -262,7 +262,11 @@ const MARK_TOP =
 // Centred on the face. The arc is still the limit - if the mark
 // ever grows enough that centring would push its corners outside
 // the curve, it sits as high as the curve allows instead.
-const MARK_Y = Math.min(MAIL_TOP / 2, MARK_TOP - MARK_H / 2);
+// Low on the face rather than halfway up it. Dead centre is where
+// the block of mark and name balances, but the mark is a big square
+// and the name is one small line under it, so the weight is all at
+// the top and centring the box reads as hanging high.
+const MARK_Y = Math.min(MAIL_TOP * 0.44, MARK_TOP - MARK_H / 2);
 
 /**
  * One mailbox. The lid swings open and the flag goes up when you point
@@ -278,7 +282,6 @@ function Mailbox({ x, link, mats, label, live }) {
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
   const flagRef = useRef();
-  const riseRef = useRef();
   const markRef = useRef();
   const [over, setOver] = useState(false);
   const on = over && live;
@@ -293,13 +296,11 @@ function Mailbox({ x, link, mats, label, live }) {
       const want = on ? 0 : -1.3;
       flagRef.current.rotation.x += (want - flagRef.current.rotation.x) * k;
     }
-    // The whole box lifts a little and its mark brightens, so the one
-    // you are pointing at is obvious from the corner of the eye and
-    // not only when you look straight at the lid.
-    if (riseRef.current) {
-      const want = on ? 0.1 : 0;
-      riseRef.current.position.y += (want - riseRef.current.position.y) * k;
-    }
+    // The box does not move. It used to lift a little so that the one
+    // you were pointing at was obvious from the corner of the eye,
+    // and a mailbox that rises off its own post to greet you is not
+    // what that reads as. The door opening says it well enough, and
+    // the mark brightening says the rest.
     if (markRef.current) {
       const want = on ? 1 : 0.72;
       markRef.current.opacity += (want - markRef.current.opacity) * k;
@@ -312,52 +313,50 @@ function Mailbox({ x, link, mats, label, live }) {
 
   return (
     <group position={[x, 1.12, 0]}>
-      <group ref={riseRef}>
-        <mesh
-          geometry={body}
-          material={mats.post}
-          onPointerOver={(e) => {
-            if (!live) return;
-            e.stopPropagation();
-            setOver(true);
-            document.body.style.cursor = "pointer";
-          }}
-          onPointerOut={() => {
-            setOver(false);
-            document.body.style.cursor = "";
-          }}
-          onClick={(e) => {
-            if (!live) return;
-            e.stopPropagation();
-            window.open(link, "_blank", "noopener,noreferrer");
-          }}
-        />
-        {/* The door, and the mark riding on it. The mark is a child
+      <mesh
+        geometry={body}
+        material={mats.post}
+        onPointerOver={(e) => {
+          if (!live) return;
+          e.stopPropagation();
+          setOver(true);
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          setOver(false);
+          document.body.style.cursor = "";
+        }}
+        onClick={(e) => {
+          if (!live) return;
+          e.stopPropagation();
+          window.open(link, "_blank", "noopener,noreferrer");
+        }}
+      />
+      {/* The door, and the mark riding on it. The mark is a child
             of the hinge rather than a sibling of it, so there is no
             second animation to keep in step with the first. */}
-        <group ref={lidRef} position={[0, 0, MAIL_BODY.d / 2]}>
-          <mesh geometry={door} material={mats.post} />
-          {/* Clear of the panel, not in it. The door is built from
+      <group ref={lidRef} position={[0, 0, MAIL_BODY.d / 2]}>
+        <mesh geometry={door} material={mats.post} />
+        {/* Clear of the panel, not in it. The door is built from
               its hinge and so is 0.05 thick forward of this group;
               at 0.045 the mark sat five millimetres inside its own
               door and the door drew over it. */}
-          <mesh position={[0, MARK_Y, 0.058]}>
-            <planeGeometry args={[MARK_W, MARK_H]} />
-            <meshBasicMaterial
-              ref={markRef}
-              map={label}
-              transparent
-              opacity={0.72}
-              toneMapped={false}
-            />
-          </mesh>
-        </group>
-        <group
-          ref={flagRef}
-          position={[MAIL_BODY.w / 2 + 0.04, MAIL_BODY.h * 0.3, -0.1]}
-        >
-          <mesh geometry={flag} material={on ? mats.warm : mats.cool} />
-        </group>
+        <mesh position={[0, MARK_Y, 0.058]}>
+          <planeGeometry args={[MARK_W, MARK_H]} />
+          <meshBasicMaterial
+            ref={markRef}
+            map={label}
+            transparent
+            opacity={0.72}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+      <group
+        ref={flagRef}
+        position={[MAIL_BODY.w / 2 + 0.04, MAIL_BODY.h * 0.3, -0.1]}
+      >
+        <mesh geometry={flag} material={on ? mats.warm : mats.cool} />
       </group>
     </group>
   );
