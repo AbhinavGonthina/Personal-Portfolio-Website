@@ -356,7 +356,7 @@ function Mailbox({ x, link, mats, label, live }) {
   );
 }
 
-export function Mailboxes({ mats, visible, labels, live }) {
+export function Mailboxes({ mats, visible, labels, live, greet }) {
   const rail = useBuilt(() => mailrail(socials.length));
   const span = (socials.length - 1) * MAIL_GAP;
   // The last thing in the town, standing in front of the wall the
@@ -376,15 +376,17 @@ export function Mailboxes({ mats, visible, labels, live }) {
       {/* Clear of the ground rather than half sunk in it: the letters
           are centred on their own origin, so putting the group at
           zero buries the bottom half of every one of them. */}
-      <group position={[0, 0.62, 0.66]}>
-        <ExtrudedText
-          tex={thanks.tex}
-          aspect={thanks.aspect}
-          height={0.46}
-          depth={0.12}
-          layers={8}
-        />
-      </group>
+      {greet && (
+        <group position={[0, 0.62, 0.66]}>
+          <ExtrudedText
+            tex={thanks.tex}
+            aspect={thanks.aspect}
+            height={0.46}
+            depth={0.12}
+            layers={8}
+          />
+        </group>
+      )}
       {visible &&
         socials.map((s, i) => (
           <Mailbox

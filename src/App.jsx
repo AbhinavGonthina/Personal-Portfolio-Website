@@ -10,6 +10,8 @@ import Skills from "./sections/Skills";
 import Projects from "./sections/Projects";
 import Connect from "./sections/Connect";
 import { useSwitching } from "./lib/switchView";
+import { usePlain } from "./lib/plain";
+import { useReady } from "./lib/ready";
 
 /**
  * The page is a walk through one town, and these are its stops in
@@ -32,6 +34,13 @@ export default function App() {
   // plain as it was before the transition existed. Two renders a
   // switch is the whole price.
   const switching = useSwitching();
+  // Waiting on the town: the canvas is meant to be showing something
+  // and has not drawn yet. On a cold load that is a black screen,
+  // and on the way back from the plain read it is the plain read
+  // sitting there looking like nothing was clicked.
+  const plain = usePlain();
+  const drawn = useReady();
+  const waiting = !drawn && (!plain || switching);
 
   const hero = useRef(null);
   const about = useRef(null);
@@ -67,10 +76,30 @@ export default function App() {
         />
       )}
 
+      {/* Something to look at while the town is being built. The gap
+          between the canvas mounting and the first frame it draws is
+          long enough to sit through, and on the way back from the
+          plain read there is nothing on screen to say anything is
+          happening at all - the page you just asked to leave is
+          still sitting there. It waits on the scene's own report, so
+          it goes when there is a picture rather than when React
+          thinks there should be. */}
+      {waiting && (
+        <div
+          aria-live="polite"
+          className="pointer-events-none fixed inset-0 z-30 grid place-items-center"
+        >
+          <span className="sr-only">Loading</span>
+          <span className="size-9 animate-spin rounded-full border-2 border-ink-700 border-t-fg-muted" />
+        </div>
+      )}
+
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
       <main
-        className={`pointer-events-none relative z-10${switching ? " sw-pane" : ""}`}
+        className={`pointer-events-none relative z-10${switching ? " sw-pane" : ""}${
+          waiting && plain ? " sw-wait" : ""
+        }`}
       >
         <Hero ref={hero} />
         <About ref={about} />
