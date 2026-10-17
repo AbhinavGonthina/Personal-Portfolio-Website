@@ -67,6 +67,45 @@ const posOf = (b) => [b.x, 0, b.z];
 const Shell = ({ geo, mat }) =>
   geo ? <mesh geometry={geo} material={mat} /> : null;
 
+/**
+ * A hairline along a thing's edges, which is what the towers in the
+ * city already wear.
+ *
+ * Without it the house and the boxes are shaded volumes on a black
+ * page and read as a 3D render; the city reads as drawn because
+ * every edge in it is a lit line. One `EdgesGeometry` over the whole
+ * merged buffer, so the whole building costs one more draw call
+ * rather than one per box in it.
+ *
+ * Eighteen degrees, the same threshold the towers use: enough that
+ * a box keeps all twelve of its edges and a drum draws its two
+ * rings instead of twenty-eight verticals.
+ */
+const EDGE = 0.34;
+
+function Outline({ geo, color = ACCENT.blue, opacity = EDGE, angle = 18 }) {
+  const edges = useMemo(
+    () => (geo ? new THREE.EdgesGeometry(geo, angle) : null),
+    [geo, angle],
+  );
+  useEffect(() => () => edges?.dispose(), [edges]);
+  if (!edges) return null;
+  return (
+    <lineSegments geometry={edges}>
+      <lineBasicMaterial
+        color={color}
+        transparent
+        opacity={opacity}
+        // Hidden behind whatever is in front of it, but writing no
+        // depth of its own - a hairline punching a hole in the wall
+        // behind it looks worse than the overlap does.
+        depthWrite={false}
+        toneMapped={false}
+      />
+    </lineSegments>
+  );
+}
+
 /* ---------------------------------------------------------------- */
 
 /**
@@ -136,6 +175,7 @@ export function House({ mats, visible, open }) {
       rotation={yawOf(TOWN.house)}
     >
       <Shell geo={built.base} mat={mats.painted} />
+      <Outline geo={built.base} />
       <Shell geo={built.lit} mat={mats.warm} />
       <group ref={hinge} position={[-HOUSE.door / 2, 0, HOUSE.d / 2 + 0.06]}>
         <Shell geo={leaf} mat={mats.door} />
@@ -332,11 +372,17 @@ function Mailbox({ x, link, mats, label, live }) {
           window.open(link, "_blank", "noopener,noreferrer");
         }}
       />
+      {/* 24, not the usual 18: the arch over the box is nine flat
+          plates and they meet at twenty degrees, so the default
+          threshold drew every seam in it and the curve came out as
+          a fan of lines. A box corner is ninety and still shows. */}
+      <Outline geo={body} angle={24} />
       {/* The door, and the mark riding on it. The mark is a child
             of the hinge rather than a sibling of it, so there is no
             second animation to keep in step with the first. */}
       <group ref={lidRef} position={[0, 0, MAIL_BODY.d / 2]}>
-        <mesh geometry={door} material={mats.post} />
+        <mesh geometry={door} material={mats.painted} />
+        <Outline geo={door} angle={24} />
         {/* Clear of the panel, not in it. The door is built from
               its hinge and so is 0.05 thick forward of this group;
               at 0.045 the mark sat five millimetres inside its own
@@ -379,6 +425,7 @@ export function Mailboxes({ mats, visible, labels, live, greet }) {
       rotation={yawOf(TOWN.mail)}
     >
       <Shell geo={rail.base} mat={mats.painted} />
+      <Outline geo={rail.base} />
       {/* Clear of the ground rather than half sunk in it: the letters
           are centred on their own origin, so putting the group at
           zero buries the bottom half of every one of them. */}
