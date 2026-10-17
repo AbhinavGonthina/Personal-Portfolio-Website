@@ -63,9 +63,22 @@ export const getJourney = () => journey;
  */
 let seen = 0;
 export const setSeen = (v) => {
+  if (v === seen) return;
   seen = v;
+  // Told, not polled. The camera can move while the page is still -
+  // a paced approach does exactly that - so anything watching the
+  // camera cannot wait for the next scroll event to hear about it.
+  nearSubs.forEach((fn) => fn());
 };
 export const getSeen = () => seen;
+
+/** The same as `useJourneyNear`, for the camera rather than the page. */
+export const useSeenNear = (from, to) =>
+  useSyncExternalStore(
+    nearSub,
+    () => seen >= from && seen <= to,
+    () => false,
+  );
 
 /**
  * For the few bits of DOM that have to know where the camera is.
