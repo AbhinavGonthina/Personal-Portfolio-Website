@@ -1,13 +1,14 @@
 import {
-  ball,
   box,
   cone,
   cyl,
+  dot,
   HALF,
   merge,
   place,
   plane,
   prism,
+  puff,
   rnd,
 } from "./geo";
 
@@ -98,7 +99,7 @@ export function billboard() {
     base.push(
       cyl(0.045, 0.045, 0.7, 6, [side * 2, mid + hh + 0.35, 0.25], [0.7, 0, 0]),
     );
-    lit.push(ball(0.1, [side * 2, mid + hh + 0.55, 0.47], null, [1, 0.7, 1]));
+    lit.push(dot(0.1, [side * 2, mid + hh + 0.55, 0.47], null, [1, 0.7, 1]));
   }
 
   return { base: merge(base), lit: merge(lit), mid, hw, hh };
@@ -199,7 +200,7 @@ export function house() {
     base.push(cyl(0.08, 0.09, 2.1, 8, [s * (door / 2 + 0.7), 1.05, hd + 1.15]));
   }
   base.push(box(door + 2, 0.12, 1.45, [0, 2.15, hd + 0.72]));
-  lit.push(ball(0.08, [0, 1.95, hd + 0.2]));
+  lit.push(dot(0.08, [0, 1.95, hd + 0.2]));
   // A lantern either side of the door.
   for (const s of [-1, 1]) {
     base.push(box(0.1, 0.16, 0.1, [s * (door / 2 + 0.26), 1.85, hd + 0.12]));
@@ -214,7 +215,7 @@ export function house() {
     if (i % 2 === 0) {
       const side = i % 4 === 0 ? -1 : 1;
       base.push(cyl(0.035, 0.045, 0.3, 6, [side * 0.72, 0.15, z]));
-      lit.push(ball(0.07, [side * 0.72, 0.33, z], null, [1, 0.8, 1]));
+      lit.push(dot(0.07, [side * 0.72, 0.33, z], null, [1, 0.8, 1]));
     }
   }
 
@@ -327,7 +328,7 @@ export function interior() {
       [0, 0, Math.PI + 0.6],
     ),
   );
-  lit.push(ball(0.05, [DESK.x - 0.24, 1.18, DESK.z - 1]));
+  lit.push(dot(0.05, [DESK.x - 0.24, 1.18, DESK.z - 1]));
   base.push(box(0.5, 0.06, 0.5, [DESK.x - 0.95, 0.5, DESK.z]));
   base.push(box(0.07, 0.6, 0.48, [DESK.x - 1.18, 0.78, DESK.z]));
   base.push(cyl(0.045, 0.045, 0.4, 8, [DESK.x - 0.95, 0.27, DESK.z]));
@@ -373,7 +374,7 @@ export function interior() {
   );
 
   base.push(cyl(0.014, 0.014, 0.3, 6, [0.2, R.h - 0.15, 0.4]));
-  lit.push(ball(0.12, [0.2, R.h - 0.34, 0.4], null, [1, 0.72, 1]));
+  lit.push(dot(0.12, [0.2, R.h - 0.34, 0.4], null, [1, 0.72, 1]));
   lit.push(box(0.035, 0.03, R.d - 1.2, [RACKS.x + 0.1, R.h - 0.12, 0]));
 
   // A bezel around the monitor, so the screen has an edge to glow
@@ -534,9 +535,9 @@ function tree(parts, i, x, z, near) {
     }
     parts.push(cone(0.62, 1.5, 7, [x, h + 0.5, z]));
   } else {
-    parts.push(ball(0.92, [x, h + 0.4, z], null, [1, 1.2, 1]));
-    parts.push(ball(0.6, [x + 0.46, h + 1, z - 0.2], null, [1, 1.05, 1]));
-    parts.push(ball(0.5, [x - 0.4, h + 0.86, z + 0.3], null, [1, 1, 1]));
+    parts.push(puff(0.92, [x, h + 0.4, z], null, [1, 1.2, 1]));
+    parts.push(puff(0.6, [x + 0.46, h + 1, z - 0.2], null, [1, 1.05, 1]));
+    parts.push(puff(0.5, [x - 0.4, h + 0.86, z + 0.3], null, [1, 1, 1]));
   }
 }
 
@@ -579,7 +580,7 @@ export function dressing() {
     base.push(cyl(0.07, 0.1, 4.2, 7, [x, 2.1, ROAD.z - ROAD.half - 0.7]));
     base.push(box(0.08, 0.08, 1, [x, 4.15, ROAD.z - ROAD.half - 1.1]));
     lit.push(
-      ball(0.13, [x, 4.05, ROAD.z - ROAD.half - 1.5], null, [1.4, 0.6, 1]),
+      dot(0.13, [x, 4.05, ROAD.z - ROAD.half - 1.5], null, [1.4, 0.6, 1]),
     );
   }
 
@@ -588,14 +589,22 @@ export function dressing() {
     const x = -36 + i * 6.6;
     base.push(cyl(0.08, 0.12, 4.8, 8, [x, 2.4, -18.3]));
     base.push(box(0.09, 0.09, 1.3, [x, 4.75, -17.8]));
-    lit.push(ball(0.15, [x, 4.65, -17.25], null, [1.4, 0.6, 1]));
+    lit.push(dot(0.15, [x, 4.65, -17.25], null, [1.4, 0.6, 1]));
   }
 
-  // The wood. A jittered grid over everything behind and beside the
-  // town, skipping the road, the clearing in front of it, and the
-  // ground the town is standing on.
+  // The wood, in columns rather than as one buffer.
+  //
+  // Merged whole it was a single mesh whose bounding sphere covered
+  // the entire map, so it passed the frustum test from everywhere -
+  // including from inside the house, where forty thousand triangles
+  // of tree were being drawn behind a wall. Split into columns, the
+  // ones behind you are rejected before they cost anything.
+  const woods = [];
+  const COLS = 7;
+  for (let i = 0; i < COLS; i++) woods.push([]);
   let n = 0;
   for (let gx = 0; gx < 26; gx++) {
+    const col = woods[Math.min(COLS - 1, Math.floor((gx / 26) * COLS))];
     for (let gz = 0; gz < 12; gz++) {
       n++;
       const x = -78 + gx * 6.24 + (rnd(n, 2.2) - 0.5) * 4.4;
@@ -613,7 +622,7 @@ export function dressing() {
       if (Math.hypot(x + 19, z - 8) < 10) continue;
       if (Math.hypot(x - 11, z - 14.8) < 8) continue;
       if (Math.hypot(x - MAIL_VIEW.x, z - MAIL_VIEW.z) < 6.5) continue;
-      tree(base, n, x, z, z < 42);
+      tree(col, n, x, z, z < 42);
     }
   }
 
@@ -632,5 +641,6 @@ export function dressing() {
     lit: merge(lit),
     road: merge(road),
     paint: merge(paint),
+    woods: woods.map(merge).filter(Boolean),
   };
 }

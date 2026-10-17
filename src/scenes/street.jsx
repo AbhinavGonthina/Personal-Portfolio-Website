@@ -1,4 +1,6 @@
+import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /**
  * The ground everything in the town stands on, and the lettering that
@@ -27,28 +29,52 @@ export function ExtrudedText({
   layers = 14,
   matRef,
 }) {
-  return Array.from({ length: layers }, (_, i) => {
-    const t = i / (layers - 1);
-    return (
-      <mesh
-        key={i}
-        position={[0, 0, -t * depth]}
-        // Nearest layer last, so the painter's sort three does on
-        // transparent objects stacks them in the right order.
-        renderOrder={layers - i}
-      >
-        <planeGeometry args={[height * aspect, height]} />
-        <meshBasicMaterial
-          ref={matRef}
-          map={tex}
-          color={FACE.clone().lerp(SIDE, t)}
-          transparent
-          depthWrite={false}
-          toneMapped={false}
-        />
-      </mesh>
-    );
-  });
+  // One mesh, not one per layer.
+  //
+  // A layer each meant fourteen draw calls and fourteen materials for
+  // a single word; three cluster signs, the welcome and the thanks
+  // came to sixty-odd calls of nothing but lettering. The stack is
+  // merged into one buffer instead, with the darkening carried as a
+  // vertex colour rather than as a material per copy - which also
+  // leaves one opacity to fade rather than fourteen.
+  const geo = useMemo(() => {
+    const parts = [];
+    // Farthest first. With depth writing off, the order inside the
+    // buffer is the order they paint in, and the near face has to
+    // land on top of the ones behind it.
+    for (let i = layers - 1; i >= 0; i--) {
+      const t = i / (layers - 1);
+      const g = new THREE.PlaneGeometry(height * aspect, height);
+      g.translate(0, 0, -t * depth);
+      const c = FACE.clone().lerp(SIDE, t);
+      const n = g.attributes.position.count;
+      const col = new Float32Array(n * 3);
+      for (let v = 0; v < n; v++) {
+        col[v * 3] = c.r;
+        col[v * 3 + 1] = c.g;
+        col[v * 3 + 2] = c.b;
+      }
+      g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+      parts.push(g);
+    }
+    return mergeGeometries(parts, false);
+  }, [aspect, height, depth, layers]);
+
+  useEffect(() => () => geo?.dispose(), [geo]);
+  if (!geo) return null;
+
+  return (
+    <mesh geometry={geo}>
+      <meshBasicMaterial
+        ref={matRef}
+        map={tex}
+        vertexColors
+        transparent
+        depthWrite={false}
+        toneMapped={false}
+      />
+    </mesh>
+  );
 }
 
 /**
