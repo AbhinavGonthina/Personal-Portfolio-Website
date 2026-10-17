@@ -934,7 +934,13 @@ const lerp = (a, b, t) => a + (b - a) * t;
 // there until PIVOT_OUT; the feet do not start until PIVOT_HOLD.
 const PIVOT_IN = 0.3;
 const PIVOT_OUT = 0.74;
-const PIVOT_HOLD = 0.16;
+const PIVOT_HOLD = 0.28;
+// The least time an approach may take, in seconds. Long enough that
+// the turn, the walk and the look are three things you watch rather
+// than one thing that happened.
+const APPROACH_S = 2.4;
+// The most wall time one frame may contribute to that.
+const PACE_MAX_DT = 0.25;
 const span = (v, lo, hi) => Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
 
 const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
@@ -1061,6 +1067,11 @@ const HELD = frozenAt();
  * opens on the same beat the camera turns to look at it.
  */
 function Rig({ target, narrow, clock }) {
+  // Where the camera is along the walk, which is not always where
+  // the scroll is. See the pacing below.
+  const walked = useRef(null);
+  const lastFrame = useRef(0);
+
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-2.6 * delta);
     const cam = state.camera;
@@ -1106,7 +1117,51 @@ function Rig({ target, narrow, clock }) {
       // Scroll walks the camera from one stop to the next. Everything
       // between two stops is the same shot moving, which is the whole
       // point of one canvas spanning the page.
-      const j = Math.min(STOPS.length - 1.0001, Math.max(0, getJourney()));
+      // The scroll says where to be; a pivoting approach says how
+      // fast it may be got to.
+      //
+      // Staging the approach inside its own segment is not enough,
+      // because a hard flick does not stay in the segment: the
+      // scroll lands past it within a frame or two, `i` moves on to
+      // the next pair of stops, and the staging it was about to
+      // play is simply not the code running any more. The camera
+      // then takes one damped straight line from the arc to the far
+      // wall - through the house rather than in at the door.
+      //
+      // So the camera has its own position along the walk, and it
+      // may only advance at walking pace while it is inside an
+      // approach that asked to be walked. Everywhere else it is the
+      // scroll exactly, and going backwards is never paced: leaving
+      // should answer at once.
+      // Wall time, not summed deltas. A machine drawing slowly would
+      // otherwise take several times as long to walk the same path,
+      // and a single long frame - the first wide shot is one - adds
+      // its whole length at once and skips the walk outright, which
+      // is exactly the bug this is here to fix.
+      // How fast the camera may be asked to move, in wall time.
+      //
+      // A frame may contribute at most PACE_MAX_DT of it. That cap
+      // is doing two jobs: the canvas stops entirely when it is not
+      // active, so the first frame after an idle would otherwise
+      // arrive holding the whole idle and spend it in one step, and
+      // a machine that drops a long frame would skip the walk for
+      // the same reason. Capped, a slow machine stretches the walk
+      // and never loses it, which is the right way round.
+      const nowMs = performance.now();
+      const dt = Math.min((nowMs - lastFrame.current) / 1000, PACE_MAX_DT);
+      lastFrame.current = nowMs;
+
+      const want = Math.min(STOPS.length - 1.0001, Math.max(0, getJourney()));
+      if (walked.current === null) walked.current = want;
+      const seg =
+        STOPS[Math.min(STOPS.length - 1, Math.floor(walked.current) + 1)];
+      // Only an approach that asked to be walked is paced, and only
+      // forwards: leaving should answer at once.
+      walked.current =
+        want <= walked.current || !seg?.pivot
+          ? want
+          : Math.min(want, walked.current + dt / APPROACH_S);
+      const j = walked.current;
       const i = Math.floor(j);
       const f = ease(j - i);
       const a = STOPS[i];
@@ -1128,7 +1183,8 @@ function Rig({ target, narrow, clock }) {
         // A pivoting stop holds still while it turns, so the position
         // curve starts late and the aim is already pointed where the
         // walk is going by the time the walk starts.
-        const fp = b.pivot ? ease(span(f, PIVOT_HOLD, 1)) : f;
+        const fa = f;
+        const fp = b.pivot ? ease(span(fa, PIVOT_HOLD, 1)) : f;
         const u = 1 - fp;
         const q = (a0, v0, b0) => u * u * a0 + 2 * u * fp * v0 + fp * fp * b0;
         SHOT.px = q(A.px, via[0], B.px);
@@ -1139,15 +1195,15 @@ function Rig({ target, narrow, clock }) {
           SHOT.lx = q(A.lx, vl[0], B.lx);
           SHOT.ly = q(A.ly, vl[1], B.ly);
           SHOT.lz = q(A.lz, vl[2], B.lz);
-        } else if (f < PIVOT_IN) {
+        } else if (fa < PIVOT_IN) {
           // Turning on the spot.
-          const g = ease(f / PIVOT_IN);
+          const g = ease(fa / PIVOT_IN);
           SHOT.lx = lerp(A.lx, vl[0], g);
           SHOT.ly = lerp(A.ly, vl[1], g);
           SHOT.lz = lerp(A.lz, vl[2], g);
-        } else if (f > PIVOT_OUT) {
+        } else if (fa > PIVOT_OUT) {
           // Arrived, and turning to the thing the stop is about.
-          const g = ease(span(f, PIVOT_OUT, 1));
+          const g = ease(span(fa, PIVOT_OUT, 1));
           SHOT.lx = lerp(vl[0], B.lx, g);
           SHOT.ly = lerp(vl[1], B.ly, g);
           SHOT.lz = lerp(vl[2], B.lz, g);
