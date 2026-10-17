@@ -168,6 +168,38 @@ function tick(now) {
   }
 }
 
+/**
+ * Coming back to the town means building it.
+ *
+ * The scene is not mounted while the plain read is up - that is the
+ * point of the plain read - so interactive has to raise the whole
+ * thing: geometry, canvas textures, and a shader compile for every
+ * material in it. That used to happen with the clock already
+ * running, so the first half second of the crane was spent not
+ * drawing, which is why this direction stuttered and the other one,
+ * where the scene is already up and only the page has to arrive,
+ * did not.
+ *
+ * So the mount goes first and the clock waits for it. The ceiling
+ * is there because a scene that never reports back must not be able
+ * to strand somebody in the reading they just asked to leave.
+ */
+let waiting = 0;
+const WARM_CEILING = 3000;
+
+function begin() {
+  t0 = performance.now();
+  if (!raf) raf = requestAnimationFrame(tick);
+}
+
+/** Called by the scene once it has compiled and drawn a frame. */
+export function sceneReady() {
+  if (!waiting) return;
+  clearTimeout(waiting);
+  waiting = 0;
+  begin();
+}
+
 export function runSwitch(toPlain) {
   if (HELD !== null) return;
   if (typeof window !== "undefined") {
@@ -191,9 +223,21 @@ export function runSwitch(toPlain) {
   window.scrollTo({ top: 0, behavior: "instant" });
   dir = toPlain ? 1 : -1;
   from = p;
-  t0 = performance.now();
+  // Mount first: `useSwitching` flips on this, and that is what puts
+  // the canvas back on the page.
   subs.forEach((fn) => fn());
-  if (!raf) raf = requestAnimationFrame(tick);
+
+  // Leaving the town, the town is already there. Only the way back
+  // has anything to wait for.
+  if (toPlain || !getPlain()) {
+    begin();
+    return;
+  }
+  if (waiting) clearTimeout(waiting);
+  waiting = setTimeout(() => {
+    waiting = 0;
+    begin();
+  }, WARM_CEILING);
 }
 
 /** Read every frame by the scene. Never subscribes, never renders. */
