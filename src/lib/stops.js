@@ -30,7 +30,13 @@ const EYE_IN = 1.5;
 
 /** Standing on the path outside the front door, facing it. */
 const DOORSTEP = toWorld(TOWN.house, [0, EYE, 5.2]);
-const DOORWAY = toWorld(TOWN.house, [0, EYE_IN, 2.0]);
+// Through the door and well past it. Contact looks sixteen units
+// down the path on its way out, which is why leaving the house reads
+// as walking: the aim is pointed where the feet are going. This is
+// the same idea coming in. At 2.0 it was a point short of the door
+// the camera was about to pass through, so the aim swung hard all
+// the way in and the approach read as a slow pan rather than a walk.
+const DOORWAY = toWorld(TOWN.house, [0, EYE_IN, -2.2]);
 
 export const STOPS = [
   {
@@ -86,6 +92,10 @@ export const STOPS = [
     },
     via: DOORSTEP,
     viaLook: DOORWAY,
+    // Turn first, then go. Without this the turn is spread evenly
+    // over the whole approach, so the camera drifts sideways into
+    // the house instead of facing it and walking in.
+    pivot: true,
   },
   {
     // Turned to the right wall and the desk.
