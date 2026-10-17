@@ -550,7 +550,9 @@ export function mailbox() {
   const { w, h, d } = MAIL_BODY;
   const hw = w / 2;
   const hs = h * 0.55;
-  const r = hw - WALL / 2;
+  // A shade inside the door that closes over it, so the two arcs
+  // are not racing each other for the same millimetre.
+  const r = hw - WALL / 2 - 0.014;
   const parts = [
     box(w, hs, WALL, [0, hs / 2, -d / 2 + WALL / 2]),
     box(w, WALL, d, [0, WALL / 2, 0]),
@@ -599,13 +601,14 @@ export function mailbox() {
 export function maildoor() {
   const { w, h, d } = MAIL_BODY;
   const t = 0.05;
-  // A shade proud of the opening, not a shade inside it. Cut to
-  // just under the body it covers, the arch of the box stood out
-  // above the arch of the door as a lip of itself all the way
-  // round the top - a door has to be the bigger of the two.
-  const r = w / 2 + 0.006;
+  // Properly proud of the opening, not a hair proud of it. Cut to
+  // just under the body, the arch of the box stood above the arch
+  // of the door as a lip of itself all the way round the top; cut
+  // to a millimetre over, the two arcs met in a seam that read as
+  // the same lip. A door wants a margin, not a tie.
+  const r = w / 2 + 0.022;
   const parts = [
-    box(w + 0.012, h * 0.55, t, [0, h * 0.275, 0]),
+    box(w + 0.044, h * 0.55, t, [0, h * 0.275, 0]),
     cyl(r, r, t, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
   ];
   // Built around its hinge, which is the bottom of the face.
