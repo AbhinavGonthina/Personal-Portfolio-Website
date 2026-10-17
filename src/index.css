@@ -177,6 +177,6 @@ header.sw-pane,
    Only ever on for the length of that wait - a filter on a document
    tall element is not something to leave switched on. */
 .sw-wait {
-  filter: blur(7px) saturate(0.6);
+  filter: blur(16px) saturate(0.45);
   transition: filter 240ms ease;
 }

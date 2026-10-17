@@ -599,9 +599,13 @@ export function mailbox() {
 export function maildoor() {
   const { w, h, d } = MAIL_BODY;
   const t = 0.05;
-  const r = w / 2 - 0.012;
+  // A shade proud of the opening, not a shade inside it. Cut to
+  // just under the body it covers, the arch of the box stood out
+  // above the arch of the door as a lip of itself all the way
+  // round the top - a door has to be the bigger of the two.
+  const r = w / 2 + 0.006;
   const parts = [
-    box(w - 0.024, h * 0.55, t, [0, h * 0.275, 0]),
+    box(w + 0.012, h * 0.55, t, [0, h * 0.275, 0]),
     cyl(r, r, t, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
   ];
   // Built around its hinge, which is the bottom of the face.
@@ -639,6 +643,14 @@ export function mailflag() {
  * centre line; the car stands in the near lane, kerbside.
  */
 export const ROAD = { z: 34.2, half: 4.5, from: -92, to: 92 };
+
+/**
+ * The edge of the floor. The ground is a 150 unit plane, so anything
+ * past 75 from the middle is standing on nothing - from the ground
+ * you never see that far, and from the crane shot it is a row of
+ * trees hanging in the black past the end of the grid.
+ */
+const GROUND = 71;
 
 /** The clearing: no tree stands inside this, or it would block the town. */
 const CLEARING = { x: 12, from: 11, to: 31.5 };
@@ -786,6 +798,8 @@ export function dressing() {
       n++;
       const x = -78 + gx * 6.24 + (rnd(n, 2.2) - 0.5) * 4.4;
       const z = 14 + gz * 5.6 + (rnd(n, 9.7) - 0.5) * 4;
+      // On the floor.
+      if (Math.abs(x) > GROUND || Math.abs(z) > GROUND) continue;
       // Off the tarmac and off the verges.
       if (Math.abs(z - ROAD.z) < ROAD.half + 1.8) continue;
       // Out of the way of the shot down the road into the town.
@@ -819,10 +833,11 @@ export function dressing() {
     const col = far[gx >> 3];
     for (let gz = 0; gz < 14; gz++) {
       n++;
-      const x = -112 + gx * 7.1 + (rnd(n, 2.2) - 0.5) * 5;
-      const z = -68 + gz * 10.4 + (rnd(n, 9.7) - 0.5) * 5;
+      const x = -74 + gx * 4.7 + (rnd(n, 2.2) - 0.5) * 5;
+      const z = -72 + gz * 10.6 + (rnd(n, 9.7) - 0.5) * 5;
+      if (Math.abs(x) > GROUND || Math.abs(z) > GROUND) continue;
       // Everything the near wood already covers, and the city.
-      if (z > 8 && Math.abs(x) < 82) continue;
+      if (z > 8 && Math.abs(x) < 74) continue;
       if (Math.hypot(x, z) < 36) continue;
       if (Math.abs(z - ROAD.z) < ROAD.half + 2.4) continue;
       tree(col, n, x, z, false, true);
