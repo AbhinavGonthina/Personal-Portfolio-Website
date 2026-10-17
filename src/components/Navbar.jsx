@@ -30,7 +30,14 @@ const scrollTo = (id) => {
   setFocused(null);
   // The stop the link is for, so the camera can tell where it is
   // being sent before the scroll has got anywhere near it.
-  const to = STOPS.findIndex((s) => s.id === id);
+  //
+  // Through `NAV_FOR`, not by matching ids: a nav item is named for
+  // the section it scrolls to and a stop is named for the place it
+  // looks at, and for Contact those are different words - the
+  // section is "connect" and the stop is "contact". Comparing them
+  // directly found nothing, handed the camera a null, and the skip
+  // this is here to arm never armed.
+  const to = STOPS.findIndex((s) => NAV_FOR[s.id] === id);
   beginJump(2500, to < 0 ? null : to);
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 };
