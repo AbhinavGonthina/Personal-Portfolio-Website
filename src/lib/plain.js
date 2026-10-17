@@ -59,6 +59,9 @@ export function setPlain(next) {
   subscribers.forEach((fn) => fn());
 }
 
+/** For the switch, which reads it once at load and never renders. */
+export const getPlain = () => plain;
+
 export const usePlain = () =>
   useSyncExternalStore(
     subscribe,

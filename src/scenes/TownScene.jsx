@@ -15,6 +15,7 @@ import Car from "./arrival";
 import { ARRIVAL_END, arrivalShot } from "../lib/arrivalPath";
 import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
 import { markLanded } from "../lib/welcome";
+import { BEZEL, CRANE, FOG, getSwitch, WIDE } from "../lib/switchView";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
@@ -1181,6 +1182,7 @@ function Rig({ target, narrow, clock }) {
       LOOK.x += (SHOT.lx - LOOK.x) * k;
       LOOK.y += (SHOT.ly - LOOK.y) * k;
       LOOK.z += (SHOT.lz - LOOK.z) * k;
+      crane(state, cam);
       cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
       return;
     }
@@ -1213,9 +1215,114 @@ function Rig({ target, narrow, clock }) {
     LOOK.x += (lx - LOOK.x) * k;
     LOOK.y += (ly - LOOK.y) * k;
     LOOK.z += (lz - LOOK.z) * k;
+    crane(state, cam);
     cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
   });
   return null;
+}
+
+/**
+ * Lifts off whatever shot the rig just worked out and backs away
+ * until the whole town is in frame.
+ *
+ * Blended over the top rather than branched around, so it works from
+ * any stop and from a focused building - and so the scroll rig keeps
+ * running underneath and is already in the right place when the
+ * crane comes back down.
+ *
+ * The fog has to open as it goes. At ninety units the exponential
+ * falloff is a grey wall, and the shot the whole move exists to
+ * arrive at would have nothing in it.
+ */
+function crane(state, cam) {
+  const c = CRANE(getSwitch());
+  if (c <= 0) return;
+  cam.position.x += (WIDE.px - cam.position.x) * c;
+  cam.position.y += (WIDE.py - cam.position.y) * c;
+  cam.position.z += (WIDE.pz - cam.position.z) * c;
+  LOOK.x += (WIDE.lx - LOOK.x) * c;
+  LOOK.y += (WIDE.ly - LOOK.y) * c;
+  LOOK.z += (WIDE.lz - LOOK.z) * c;
+  const fog = state.scene.fog;
+  if (fog) fog.density = FOG.near + (FOG.far - FOG.near) * c;
+}
+
+/**
+ * Four slabs that close in around the view like a bezel.
+ *
+ * Carried on the camera rather than placed in the world, so they
+ * frame the screen from wherever the crane has got to. Their inner
+ * edges start just outside the frustum at the distance they sit at
+ * and travel inwards, which is a matte closing rather than a border
+ * being drawn.
+ */
+const CLOSE = 0.42;
+
+function Bezel() {
+  const g = useRef();
+  const slabs = useRef([]);
+  useFrame((state) => {
+    const grp = g.current;
+    if (!grp) return;
+    const b = BEZEL(getSwitch());
+    grp.visible = b > 0;
+    if (b <= 0) return;
+
+    const cam = state.camera;
+    grp.position.copy(cam.position);
+    grp.quaternion.copy(cam.quaternion);
+
+    const D = 7;
+    const h = Math.tan((cam.fov * DEG) / 2) * D;
+    const w = h * cam.aspect;
+    // Inner edge: at the frustum edge to begin with, then in.
+    const ih = h * (1 - CLOSE * b);
+    const iw = w * (1 - CLOSE * b);
+    const s = slabs.current;
+    if (!s[0] || !s[7]) return;
+    const put = (m, x, y, sx, sy, z) => {
+      m.position.set(x, y, z);
+      m.scale.set(sx, sy, 1);
+    };
+    // The matte. Centred half a slab outside the inner edge, so the
+    // slab runs from that edge outwards - put the centre a whole
+    // slab out and the whole thing clears the frustum and covers
+    // nothing at all.
+    put(s[0], 0, ih + h / 2, w * 3, h, -D);
+    put(s[1], 0, -ih - h / 2, w * 3, h, -D);
+    put(s[2], -iw - w / 2, 0, w, h * 3, -D);
+    put(s[3], iw + w / 2, 0, w, h * 3, -D);
+    // And a hairline along the inside of it. A black matte closing
+    // over a black sky is nothing at all; the line is the only part
+    // of this anyone can actually see.
+    const e = h * 0.006;
+    put(s[4], 0, ih, iw * 2, e, -D + 0.01);
+    put(s[5], 0, -ih, iw * 2, e, -D + 0.01);
+    put(s[6], -iw, 0, e, ih * 2, -D + 0.01);
+    put(s[7], iw, 0, e, ih * 2, -D + 0.01);
+    for (let i = 4; i < 8; i++) s[i].material.opacity = b;
+  });
+
+  return (
+    <group ref={g} visible={false}>
+      {[0, 1, 2, 3].map((i) => (
+        <mesh key={i} ref={(el) => el && (slabs.current[i] = el)}>
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial color="#04050a" toneMapped={false} />
+        </mesh>
+      ))}
+      {[4, 5, 6, 7].map((i) => (
+        <mesh key={i} ref={(el) => el && (slabs.current[i] = el)}>
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial
+            color={ACCENT.blue}
+            toneMapped={false}
+            transparent
+          />
+        </mesh>
+      ))}
+    </group>
+  );
 }
 
 /**
@@ -1568,6 +1675,7 @@ export default function TownScene({
       <Sky />
 
       <Adapt />
+      <Bezel />
       {WATCH && <Perf />}
       <Rig target={target} narrow={narrow} clock={clock} />
       {arriving && <Car clock={clock} />}

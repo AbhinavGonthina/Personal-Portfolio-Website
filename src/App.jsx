@@ -46,6 +46,15 @@ export default function App() {
       <TownStage refs={refs} />
       <SectionTitle />
       <ScrollHint />
+      {/* What the town goes out behind on the way to the plain read.
+          Always mounted and always transparent until the switch
+          paints it, which keeps the whole thing to two style
+          recalculations a frame. */}
+      <div
+        aria-hidden
+        className="sw-veil pointer-events-none fixed inset-0 z-[5] bg-ink-950"
+      />
+
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
       <main className="pointer-events-none relative z-10">

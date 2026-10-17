@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useStopIndex } from "../lib/stage";
 import { usePlain } from "../lib/plain";
+import { useSwitching } from "../lib/switchView";
 import { STOPS } from "../lib/stops";
 
 /**
@@ -32,14 +33,17 @@ for (const s of STOPS) {
 
 export default function SectionTitle() {
   const plain = usePlain();
+  // Inline opacity from motion beats a class, so these two are
+  // gated rather than faded.
+  const switching = useSwitching();
   const i = useStopIndex();
   const title = STOPS[Math.min(STOPS.length - 1, Math.max(0, i))]?.title;
   const n = title ? ORDER.indexOf(title) + 1 : 0;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-20 mx-auto w-full max-w-6xl px-6 pt-32">
+    <div className="sw-chrome pointer-events-none fixed inset-x-0 top-0 z-20 mx-auto w-full max-w-6xl px-6 pt-32">
       <AnimatePresence mode="wait">
-        {title && !plain && (
+        {title && !plain && !switching && (
           <motion.div
             key={title}
             initial={{ opacity: 0, y: 8 }}
