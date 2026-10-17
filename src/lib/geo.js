@@ -39,6 +39,20 @@ export const cone = (r, h, seg, pos, rot, scale) =>
   at(new THREE.ConeGeometry(r, h, seg), pos, rot, scale);
 export const ball = (r, pos, rot, scale) =>
   at(new THREE.SphereGeometry(r, 14, 10), pos, rot, scale);
+
+/**
+ * Two cheaper spheres, for the two things there are hundreds of.
+ *
+ * A lamp bulb is six pixels across and a tree is a silhouette in the
+ * dark; neither needs the 280 triangles a full ball costs. Forty
+ * bulbs and a hundred and twenty clumps of foliage were most of the
+ * triangles in the town, and all of them were spent on roundness
+ * nobody can see.
+ */
+export const dot = (r, pos, rot, scale) =>
+  at(new THREE.SphereGeometry(r, 6, 4), pos, rot, scale);
+export const puff = (r, pos, rot, scale) =>
+  at(new THREE.SphereGeometry(r, 8, 5), pos, rot, scale);
 export const ring = (r, t, pos, rot, scale) =>
   at(new THREE.TorusGeometry(r, t, 8, 24), pos, rot, scale);
 export const plane = (w, h, pos, rot, scale) =>

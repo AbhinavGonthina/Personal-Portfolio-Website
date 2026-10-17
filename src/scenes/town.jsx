@@ -213,6 +213,9 @@ export function Dressing({ mats, visible }) {
       <Shell geo={built.road} mat={mats.road} />
       <Shell geo={built.paint} mat={mats.paint} />
       <Shell geo={built.base} mat={mats.shell} />
+      {built.woods?.map((geo, i) => (
+        <Shell key={i} geo={geo} mat={mats.shell} />
+      ))}
       <Shell geo={built.lit} mat={mats.warm} />
     </group>
   );

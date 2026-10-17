@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
@@ -584,16 +584,21 @@ function Building({
         </mesh>
       )}
 
-      <group position={[0, body_h / 2, 0]}>
-        <Edges
-          form={form}
-          w={w}
-          d={d}
-          h={body_h}
-          color={edgeColor}
-          matRef={edge(0)}
-        />
-      </group>
+      {/* Outlines are what keeps a tower off the background. The
+          reflection has a pavement behind it and is a silhouette
+          anyway, so it goes without. */}
+      {!mirrored && (
+        <group position={[0, body_h / 2, 0]}>
+          <Edges
+            form={form}
+            w={w}
+            d={d}
+            h={body_h}
+            color={edgeColor}
+            matRef={edge(0)}
+          />
+        </group>
+      )}
 
       <mesh ref={body} position={[0, body_h / 2, 0]}>
         <ShaftGeo form={form} w={w} d={d} h={body_h} />
@@ -608,7 +613,7 @@ function Building({
       </mesh>
 
       {/* A narrower upper stage. */}
-      {top === "setback" && (
+      {top === "setback" && !mirrored && (
         <group position={[0, body_h + (height - body_h) / 2, 0]}>
           <Edges
             form={form}
@@ -708,7 +713,11 @@ function Building({
           look like a separate frame hung around the logo. The plate is now
           only just smaller than the badge: its job is to stop the windows
           showing through the badge's feathered edge, not to be seen. */}
-      {logo && (
+      {/* Neither the badge nor the name goes into the reflection.
+          They are four draw calls apiece of small type, upside down
+          at forty-five percent under a dark pavement - nothing you
+          could read, and a third of what the mirrored copies cost. */}
+      {logo && !mirrored && (
         <group position={[0, signTop - BADGE / 2, faceZ + 0.018]}>
           <mesh position={[0, 0, -0.014]} ref={sign(0)}>
             <planeGeometry args={[BADGE * 0.98, BADGE * 0.98]} />
@@ -741,18 +750,20 @@ function Building({
           stays the same clean white however the building is lit - it is
           signage, not a surface. Just clear of the badge, which has a
           feathered edge of its own. */}
-      <mesh
-        ref={sign(3)}
-        position={[0, signTop - BADGE - 0.1 - plate.h / 2, faceZ + 0.019]}
-      >
-        <planeGeometry args={[plate.w, plate.h]} />
-        <meshBasicMaterial
-          map={plate.tex}
-          transparent
-          toneMapped={false}
-          depthWrite={false}
-        />
-      </mesh>
+      {!mirrored && (
+        <mesh
+          ref={sign(3)}
+          position={[0, signTop - BADGE - 0.1 - plate.h / 2, faceZ + 0.019]}
+        >
+          <planeGeometry args={[plate.w, plate.h]} />
+          <meshBasicMaterial
+            map={plate.tex}
+            transparent
+            toneMapped={false}
+            depthWrite={false}
+          />
+        </mesh>
+      )}
 
       {/* Not in the reflection. The emblems are the most detailed thing
           in the scene and the mirrored copies sit at 45% under a dark
@@ -963,6 +974,90 @@ function resolve(stop, out, cam, pointer, t) {
 }
 
 const LOOK = { x: 0, y: 3, z: -2 };
+
+/**
+ * Draws fewer pixels on a machine that cannot keep up.
+ *
+ * The scene is fragment-bound before it is anything else: bloom is a
+ * full-screen blur over several passes, and every one of them costs
+ * the square of the pixel ratio. A laptop at 2x is doing four times
+ * the shading of the same window at 1x for a difference you have to
+ * look for.
+ *
+ * So the ratio is measured rather than chosen. It steps down when a
+ * second and a half of frames comes in under the bar, and it never
+ * steps back up - a scene that oscillates between two resolutions is
+ * worse than one that settled on the lower.
+ */
+// Never below the display's own pixels. Going under that is the one
+// setting people notice immediately, and on a 1x screen there is
+// nothing here to win anyway.
+const FLOOR = 1;
+
+function Adapt() {
+  const n = useRef(0);
+  const t = useRef(0);
+  const tries = useRef(0);
+  const { gl, setDpr } = useThree();
+  useFrame((_, delta) => {
+    if (tries.current >= 3) return;
+    n.current++;
+    t.current += delta;
+    if (t.current < 1.5) return;
+    const fps = n.current / t.current;
+    n.current = 0;
+    t.current = 0;
+    const cur = gl.getPixelRatio();
+    if (fps < 45 && cur > FLOOR) {
+      tries.current++;
+      setDpr(Math.max(FLOOR, Math.round(cur * 80) / 100));
+    } else if (fps >= 45) {
+      // One good stretch and it stops watching.
+      tries.current = 3;
+    }
+  });
+  return null;
+}
+
+/** `?perf=1` prints what a frame costs, once a second. */
+const WATCH =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).has("perf");
+
+function Perf() {
+  const n = useRef(0);
+  const t = useRef(0);
+  const acc = useRef({ calls: 0, tris: 0 });
+  const { gl } = useThree();
+  useEffect(() => {
+    gl.info.autoReset = false;
+    return () => {
+      gl.info.autoReset = true;
+    };
+  }, [gl]);
+  useFrame((state, delta) => {
+    const r = state.gl.info.render;
+    acc.current.calls += r.calls;
+    acc.current.tris += r.triangles;
+    state.gl.info.reset();
+    n.current++;
+    t.current += delta;
+    if (t.current >= 1) {
+      window.__perf = {
+        fps: +(n.current / t.current).toFixed(1),
+        calls: Math.round(acc.current.calls / n.current),
+        tris: Math.round(acc.current.tris / n.current),
+        geoms: state.gl.info.memory.geometries,
+        tex: state.gl.info.memory.textures,
+        dpr: state.gl.getPixelRatio(),
+      };
+      n.current = 0;
+      t.current = 0;
+      acc.current = { calls: 0, tris: 0 };
+    }
+  });
+  return null;
+}
 
 /** Non-null when `?at=` is pinning the arrival to one moment. */
 const HELD = frozenAt();
@@ -1472,6 +1567,8 @@ export default function TownScene({
           shadows for a desk lamp to cut, and the lamp is the point. */}
       <Sky />
 
+      <Adapt />
+      {WATCH && <Perf />}
       <Rig target={target} narrow={narrow} clock={clock} />
       {arriving && <Car clock={clock} />}
       <Distant />
