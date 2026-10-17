@@ -1689,7 +1689,14 @@ export default function TownScene({
       // blank anything, and 1.25 keeps most of what the measuring
       // was buying on a high-density screen anyway.
       dpr={[1, 1.25]}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      // No antialias on the canvas itself. The composer renders the
+      // scene into its own buffer and the canvas only ever receives
+      // one full-screen quad off the back of it - a quad with no
+      // edges inside the frame, so there is nothing there for
+      // multisampling to smooth. Asking for it anyway allocated a
+      // second multisampled buffer and resolved it every frame to
+      // produce a pixel-identical picture.
+      gl={{ antialias: false, powerPreference: "high-performance" }}
       camera={{ position: STOPS[0].free.pos, fov: 52 }}
       onPointerMissed={() => onFocus(null)}
       style={{ position: "absolute", inset: 0 }}
@@ -1744,7 +1751,12 @@ export default function TownScene({
       {/* Thresholded at 0.9 so bloom only catches the crowns and masts,
           which are the only things pushed past 1.0 - hence their
           toneMapped={false}. */}
-      <EffectComposer enableNormalPass={false}>
+      {/* 4 samples, not the 8 this defaults to. The whole picture is
+          hairlines, so the samples are doing visible work and cannot
+          go away - but they are the most expensive thing in the
+          frame, and 8 of them at this resolution is bandwidth the
+          line art cannot show the benefit of. */}
+      <EffectComposer enableNormalPass={false} multisampling={4}>
         <Bloom
           mipmapBlur
           intensity={1.15}
