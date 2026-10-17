@@ -942,15 +942,39 @@ const PIVOT_HOLD = 0.28;
 const APPROACH_S = 2.4;
 // The most wall time one frame may contribute to that.
 const PACE_MAX_DT = 0.25;
+// The longest a skip may hold the camera at its destination while
+// it waits for the page to catch up.
+const SKIP_CEILING = 4000;
 
 /**
- * Whether a trip from a to b would pass through the house. Both ends
- * have to be outside it: going in is a walk worth watching, and only
- * passing through is not.
+ * Which side of the house a point on the walk is: before it, after
+ * it, or inside.
+ *
+ * The house is entered on the way to Skills and left on the way to
+ * Contact, so everything from Skills to just short of Contact is
+ * indoors.
  */
-const spansHouse = (a, b) =>
-  (a <= STOP.experience + 0.25 && b >= STOP.contact - 0.25) ||
-  (a >= STOP.contact - 0.25 && b <= STOP.experience + 0.25);
+const side = (v) => (v < STOP.skills ? -1 : v > STOP.contact - 0.2 ? 1 : 0);
+
+/**
+ * Whether a trip from a to b would pass through the house.
+ *
+ * Both ends outside it, on opposite sides. Going in is a walk worth
+ * watching, and coming out of it is too - only passing through is
+ * not, and that is the one this answers yes to.
+ *
+ * Sides rather than "near the start, near the end": the first cut
+ * at this asked whether a was within a quarter stop of Experience,
+ * which is true of somebody standing at that stop and false of
+ * somebody half way up the garden path - and from the path, which
+ * is still outside the house, clicking Contact walked them in
+ * through it.
+ */
+const spansHouse = (a, b) => {
+  const sa = side(a);
+  const sb = side(b);
+  return sa !== 0 && sb !== 0 && sa !== sb;
+};
 const span = (v, lo, hi) => Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
 
 const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
@@ -1081,9 +1105,10 @@ function Rig({ target, narrow, clock }) {
   // the scroll is. See the pacing below.
   const walked = useRef(null);
   const lastFrame = useRef(0);
-  // Where the camera was when the current jump was clicked. Null
-  // when nothing is jumping.
-  const jumpFrom = useRef(null);
+  // Where a skip is holding the camera, and when it gives up. Null
+  // when no skip is running.
+  const skipTo = useRef(null);
+  const skipUntil = useRef(0);
 
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-2.6 * delta);
@@ -1173,27 +1198,45 @@ function Rig({ target, narrow, clock }) {
       // Only when both ends are outside: clicking Skills from the
       // street still walks in through the door, because that is the
       // shot the walk was built for.
-      // Latched for the length of the jump, and judged on where the
-      // camera was when the link was clicked.
+      // Held until the page itself arrives, not until the jump
+      // window closes.
       //
-      // Asking `spansHouse(walked, dest)` fresh each frame cannot
-      // work, because the answer changes the thing it is asked
-      // about: the first frame moves the camera to the far end, and
-      // on the second frame it is no longer on the near side of the
-      // house, so the skip switches itself off. The scroll is still
-      // back at the start at that point, and "going backwards is
-      // immediate" then dragged the camera home and walked it in
-      // through the front door.
+      // Two things had to be got right here. The question cannot be
+      // re-asked each frame, because the answer changes the thing
+      // it is asked about - the first frame moves the camera to the
+      // far end, so the second frame finds it is no longer on the
+      // near side and switches the skip off. And the hold cannot
+      // end with `isJumping`, which gives up as soon as the page is
+      // found standing still: a smooth scroll that stalls for one
+      // frame ends the jump early, the camera drops back to
+      // wherever the scroll has got to, and if that is the middle
+      // of the house then the middle of the house is where it goes.
+      //
+      // So a skip latches on the destination and holds the camera
+      // there until the scroll is on the same side of the house,
+      // with a ceiling so it can never stick.
       const dest = jumpTo();
-      if (dest === null) jumpFrom.current = null;
-      else if (jumpFrom.current === null) jumpFrom.current = walked.current;
-      const skipping = dest !== null && spansHouse(jumpFrom.current, dest);
+      if (
+        dest !== null &&
+        skipTo.current === null &&
+        spansHouse(walked.current, dest)
+      ) {
+        skipTo.current = dest;
+        skipUntil.current = nowMs + SKIP_CEILING;
+      }
+      if (
+        skipTo.current !== null &&
+        (side(want) === side(skipTo.current) || nowMs > skipUntil.current)
+      ) {
+        skipTo.current = null;
+      }
+      const skipping = skipTo.current !== null;
       const seg =
         STOPS[Math.min(STOPS.length - 1, Math.floor(walked.current) + 1)];
       // Only an approach that asked to be walked is paced, and only
       // forwards: leaving should answer at once.
       walked.current = skipping
-        ? dest
+        ? skipTo.current
         : want <= walked.current || !seg?.pivot
           ? want
           : Math.min(want, walked.current + dt / APPROACH_S);
