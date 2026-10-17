@@ -22,7 +22,6 @@ import {
   mailbox,
   mailflag,
   maildoor,
-  mailmouth,
   mailrail,
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
@@ -237,10 +236,11 @@ export function Dressing({ mats, visible }) {
 
 /* ---------------------------------------------------------------- */
 
-// Ajar, not flung open. A mailbox door moves far enough to show the
-// slot and stop; at -1.15 this one swung through sixty-six degrees
-// and ended up standing over the roof of its own box.
-const LID_OPEN = -0.6;
+// Down, and far enough to be out of the way. Positive, because the
+// hinge is at the foot of the door: this drops the top of it
+// forwards until the panel is nearly level and the opening behind
+// it is open to look into.
+const LID_OPEN = 1.1;
 // The mark is square and the top of the box is a semicircle, so the
 // limit is not the width of the box - it is how far up the arc the
 // square's top corners can go before they are outside it. Solved
@@ -252,7 +252,10 @@ const MARK_TOP =
   MAIL_BODY.h * 0.55 + Math.sqrt((MAIL_BODY.w / 2) ** 2 - (MARK_W / 2) ** 2);
 // Centre, from that top. The name ends up a little clear of the
 // handle on the door below it, which is where it should sit.
-const MARK_Y = MARK_TOP - MARK_H / 2;
+// Centred on the face. The arc is still the limit - if the mark
+// ever grows enough that centring would push its corners outside
+// the curve, it sits as high as the curve allows instead.
+const MARK_Y = Math.min(MAIL_TOP / 2, MARK_TOP - MARK_H / 2);
 
 /**
  * One mailbox. The lid swings open and the flag goes up when you point
@@ -265,7 +268,6 @@ const MARK_Y = MARK_TOP - MARK_H / 2;
 function Mailbox({ x, link, mats, label, live }) {
   const body = useBuilt(mailbox);
   const door = useBuilt(maildoor);
-  const mouth = useBuilt(mailmouth);
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
   const flagRef = useRef();
@@ -326,14 +328,13 @@ function Mailbox({ x, link, mats, label, live }) {
         {/* The door, and the mark riding on it. The mark is a child
             of the hinge rather than a sibling of it, so there is no
             second animation to keep in step with the first. */}
-        <mesh geometry={mouth} material={mats.void} />
-        <group ref={lidRef} position={[0, MAIL_TOP, MAIL_BODY.d / 2]}>
+        <group ref={lidRef} position={[0, 0, MAIL_BODY.d / 2]}>
           <mesh geometry={door} material={mats.post} />
           {/* Clear of the panel, not in it. The door is built from
               its hinge and so is 0.05 thick forward of this group;
               at 0.045 the mark sat five millimetres inside its own
               door and the door drew over it. */}
-          <mesh position={[0, MARK_Y - MAIL_TOP, 0.058]}>
+          <mesh position={[0, MARK_Y, 0.058]}>
             <planeGeometry args={[MARK_W, MARK_H]} />
             <meshBasicMaterial
               ref={markRef}

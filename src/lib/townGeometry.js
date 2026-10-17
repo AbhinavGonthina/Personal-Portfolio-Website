@@ -529,13 +529,58 @@ export function mailrail(count) {
   return { base: merge(base) };
 }
 
+/**
+ * The box, hollow, because a door that opens onto a solid front is
+ * not a door.
+ *
+ * It was a solid block with a dark panel laid over the face. The
+ * panel was meant to read as a recess and read as a rectangle stuck
+ * to the front instead - it sat at the same depth as the face of
+ * the block, so there was nothing there for the eye to call a hole.
+ * This is walls: a back, two sides, a floor, and an arch over them.
+ *
+ * The arch is a run of flat plates rather than a drum. A drum is
+ * solid all the way through and would fill the top half of the
+ * opening it is supposed to be the roof of.
+ */
+const WALL = 0.045;
+const ARCH_SEG = 9;
+
 export function mailbox() {
   const { w, h, d } = MAIL_BODY;
-  return merge([
-    box(w, h * 0.55, d, [0, h * 0.275, 0]),
-    cyl(w / 2, w / 2, d, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
+  const hw = w / 2;
+  const hs = h * 0.55;
+  const r = hw - WALL / 2;
+  const parts = [
+    box(w, hs, WALL, [0, hs / 2, -d / 2 + WALL / 2]),
+    box(w, WALL, d, [0, WALL / 2, 0]),
     box(w * 0.9, 0.055, 0.055, [0, h * 0.2, d / 2 + 0.02]),
-  ]);
+    cyl(
+      hw,
+      hw,
+      WALL,
+      14,
+      [0, hs, -d / 2 + WALL / 2],
+      [HALF, 0, 0],
+      [1, 1, 0.8],
+    ),
+  ];
+  for (const sx of [-1, 1]) {
+    parts.push(box(WALL, hs, d, [sx * (hw - WALL / 2), hs / 2, 0]));
+  }
+  for (let i = 0; i < ARCH_SEG; i++) {
+    const a = (Math.PI * (i + 0.5)) / ARCH_SEG;
+    parts.push(
+      box(
+        (Math.PI * hw) / ARCH_SEG + 0.02,
+        WALL,
+        d,
+        [Math.cos(a) * r, hs + Math.sin(a) * r, 0],
+        [0, 0, a - HALF],
+      ),
+    );
+  }
+  return merge(parts);
 }
 
 /**
@@ -551,28 +596,6 @@ export function mailbox() {
  * Built around its own hinge rather than around the box, so the
  * caller can rotate it without first having to move it.
  */
-/**
- * The opening the door was covering.
- *
- * Set into the face rather than laid on it, and in the unlit black
- * rather than the body colour: the ring of lit bodywork left around
- * it is what reads as the thickness of the wall, and without it an
- * open mailbox is a box with a lid hovering over a solid front.
- */
-export function mailmouth() {
-  const { w, h, d } = MAIL_BODY;
-  const inset = 0.055;
-  const r = w / 2 - inset;
-  return merge([
-    box(w - inset * 2, h * 0.55 - inset, 0.012, [
-      0,
-      h * 0.275 + inset / 2,
-      d / 2,
-    ]),
-    cyl(r, r, 0.012, 14, [0, h * 0.55, d / 2], [HALF, 0, 0], [1, 1, 0.8]),
-  ]);
-}
-
 export function maildoor() {
   const { w, h, d } = MAIL_BODY;
   const t = 0.05;
@@ -581,14 +604,21 @@ export function maildoor() {
     box(w - 0.024, h * 0.55, t, [0, h * 0.275, 0]),
     cyl(r, r, t, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
   ];
-  // Built around its hinge: the top of the arc, on the front face.
-  // Only the panel thickness sits forward of it, so the caller puts
-  // the pivot on the front edge and the door tips about that edge.
-  // Carrying the box depth in here instead put the pivot back at
-  // the middle of the box, and the door swung out on a 0.46 radius
-  // arc and ended up hanging in the air in front of its own box.
+  // Built around its hinge, which is the bottom of the face.
+  //
+  // Hinged at the top it tipped towards the viewer and covered the
+  // opening it had just uncovered - from the front you saw a door
+  // at an angle and no hole at all. A mailbox door drops, and a
+  // door that drops takes itself out of the way of the thing it
+  // was shut over.
+  //
+  // Only the panel thickness sits forward of the hinge, so the
+  // caller puts the pivot on the front edge and the door swings
+  // about that edge. Carrying the box depth in here instead put the
+  // pivot back at the middle of the box, and the door swung out on
+  // a 0.46 radius arc and hung in the air in front of its own box.
   void d;
-  place(parts, [0, -MAIL_TOP, t / 2], null);
+  place(parts, [0, 0, t / 2], null);
   return merge(parts);
 }
 
