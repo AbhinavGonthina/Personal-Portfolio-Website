@@ -121,9 +121,15 @@ function paint() {
     root.setProperty("--sw-edge", "0");
     root.setProperty("--sw-page", "1");
     root.setProperty("--sw-chrome", "1");
+    // Nothing behind the page at rest. This used to read --sw-page,
+    // which rests at 1 - so the backing stayed up as a full-screen
+    // sheet over the canvas, and coming home to the town was a black
+    // screen with the town drawing away underneath it.
+    root.setProperty("--sw-back", "0");
     return;
   }
   root.setProperty("--sw-page", String(PAGE(p)));
+  root.setProperty("--sw-back", String(PAGE(p)));
   // The bar goes out with the town it belongs to and comes back with
   // the page, which also owns one.
   root.setProperty("--sw-chrome", String(Math.min(1, 1 - CHROME(p) + PAGE(p))));
