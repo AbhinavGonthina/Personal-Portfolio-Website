@@ -22,6 +22,8 @@ import {
   mailbox,
   mailflag,
   maildoor,
+  maildoorshell,
+  mailshell,
   mailrail,
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
@@ -319,6 +321,8 @@ const MARK_Y = Math.min(MAIL_TOP * 0.44, MARK_TOP - MARK_H / 2);
 function Mailbox({ x, link, mats, label, live }) {
   const body = useBuilt(mailbox);
   const door = useBuilt(maildoor);
+  const shell = useBuilt(mailshell);
+  const doorEdge = useBuilt(maildoorshell);
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
   const flagRef = useRef();
@@ -372,17 +376,16 @@ function Mailbox({ x, link, mats, label, live }) {
           window.open(link, "_blank", "noopener,noreferrer");
         }}
       />
-      {/* 24, not the usual 18: the arch over the box is nine flat
-          plates and they meet at twenty degrees, so the default
-          threshold drew every seam in it and the curve came out as
-          a fan of lines. A box corner is ninety and still shows. */}
-      <Outline geo={body} angle={24} />
+      {/* Traced off the silhouette, not off the real box - see
+          `mailshell`. 30 degrees, so the fourteen sided arch draws
+          its two rings and not its fourteen verticals. */}
+      <Outline geo={shell} angle={30} />
       {/* The door, and the mark riding on it. The mark is a child
             of the hinge rather than a sibling of it, so there is no
             second animation to keep in step with the first. */}
       <group ref={lidRef} position={[0, 0, MAIL_BODY.d / 2]}>
         <mesh geometry={door} material={mats.painted} />
-        <Outline geo={door} angle={24} />
+        <Outline geo={doorEdge} angle={30} />
         {/* Clear of the panel, not in it. The door is built from
               its hinge and so is 0.05 thick forward of this group;
               at 0.045 the mark sat five millimetres inside its own

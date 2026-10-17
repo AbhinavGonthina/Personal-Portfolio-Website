@@ -189,8 +189,11 @@ const T = 0.16;
  * most of what made the house read as one untouched block beside a
  * city of colour.
  */
-const HOUSE_WALL = "#474a67";
-const HOUSE_ROOF = "#7d3a4a";
+// Near black, because the city it stands in is near black and the
+// blue hairline is what draws all of it. A lit facade beside unlit
+// towers reads as a different scene, not a different building.
+const HOUSE_WALL = "#15161f";
+const HOUSE_ROOF = "#33202a";
 
 export function house() {
   const base = [];
@@ -558,6 +561,42 @@ const MAIL_BODY_C = "#39415e";
 const MAIL_DOOR_C = "#49537a";
 const MAIL_RAIL_C = "#2f3449";
 const MAIL_CAP_C = "#434a66";
+
+/**
+ * The outline of a mailbox, and nothing else.
+ *
+ * Never drawn. The real box is hollow, which means it is a dozen
+ * separate walls, and an `EdgesGeometry` over that traces every
+ * seam where one wall meets another - the result was a wireframe
+ * of the construction rather than a drawing of the object, and it
+ * showed up every place the construction is rough.
+ *
+ * So the hairline is taken from this instead: the shape the box
+ * would be if it were solid. Two pieces, so the lines are the four
+ * corners, the two rings of the arch and the mouth.
+ */
+export function mailshell() {
+  const { w, h, d } = MAIL_BODY;
+  const hs = h * 0.55;
+  return merge([
+    box(w, hs, d, [0, hs / 2, 0]),
+    cyl(w / 2, w / 2, d, 14, [0, hs, 0], [HALF, 0, 0], [1, 1, 0.8]),
+  ]);
+}
+
+/** The same, for the door: its outline without its thickness. */
+export function maildoorshell() {
+  const { w, h, d } = MAIL_BODY;
+  const hs = h * 0.55;
+  const r = w / 2 + 0.022;
+  const parts = [
+    box(w + 0.044, hs, 0.012, [0, hs / 2, 0]),
+    cyl(r, r, 0.012, 14, [0, hs, 0], [HALF, 0, 0], [1, 1, 0.8]),
+  ];
+  void d;
+  place(parts, [0, 0, 0.05], null);
+  return merge(parts);
+}
 
 export function mailbox() {
   const { w, h, d } = MAIL_BODY;
