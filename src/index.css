@@ -142,7 +142,6 @@
 
 .sw-veil {
   opacity: var(--sw-back, 0);
-  border: 1px solid rgb(143 168 255 / var(--sw-edge, 0));
 }
 
 /* The page sits one bar-height down the document, and the bar beside
