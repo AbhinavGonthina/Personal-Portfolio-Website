@@ -16,17 +16,17 @@ export const profile = {
     "Building OnTrack, and looking for full-time software engineering roles.",
   // The same ask in the fewest words that still carry it, for the
   // hoarding, where there is no room for a sentence.
-  seeking: "Open to full-time SWE",
+  seeking: "Post-grad SWE roles",
   photo: "/headshot.webp",
   // Four headline technologies, all of them on the résumé.
   focus: ["AWS", "Terraform", "Spring Boot", "React"],
-  // One sentence for the hoarding: who he is and what the work has
-  // been in, in the order someone asks it. Shorter than `tagline`
-  // and doing a different job - the tagline introduces him to a
-  // reader who has sat down, this introduces him to someone who has
-  // not stopped walking.
+  // The board's own introduction, in the first person, because a
+  // hoarding with a face on it is the one surface here that is
+  // allowed to say hello. Shorter than `tagline` and doing a
+  // different job: the tagline introduces him to a reader who has
+  // sat down, this one to someone who has not stopped walking.
   pitch:
-    "CS student at Northeastern, with experience across backend services, cloud infrastructure, and data pipelines at athenahealth and Philips.",
+    "Hi, I'm Abhi — an Honors CS student at Northeastern University with industry experience from small startups to global enterprises. My expertise is in full-stack development and the AWS infrastructure, automation, and data pipelines behind it.",
 };
 
 // Three things link to this now (hero button, footer socials, the hand that
