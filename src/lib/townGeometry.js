@@ -566,36 +566,41 @@ const MAIL_CAP_C = "#434a66";
  * The outline of a mailbox, and nothing else.
  *
  * Never drawn. The real box is hollow, which means it is a dozen
- * separate walls, and an `EdgesGeometry` over that traces every
- * seam where one wall meets another - the result was a wireframe
- * of the construction rather than a drawing of the object, and it
- * showed up every place the construction is rough.
+ * separate walls, and an `EdgesGeometry` over that draws a
+ * wireframe of how the thing was built rather than a drawing of
+ * the thing - it showed up every place the building was rough.
  *
- * So the hairline is taken from this instead: the shape the box
- * would be if it were solid. Two pieces, so the lines are the four
- * corners, the two rings of the arch and the mouth.
+ * One extruded profile, not a box with a drum on top. Two solids
+ * meeting at the springline share a face there, and a shared face
+ * is an edge: the box drew a line straight across its own front,
+ * through the arch and through the logo sitting under it. A single
+ * silhouette has nothing inside it to draw.
+ *
+ * The arc is fourteen segments, so its facets are thirteen degrees
+ * apart and the 30 degree threshold the caller uses rolls them
+ * into one curve.
  */
-export function mailshell() {
-  const { w, h, d } = MAIL_BODY;
-  const hs = h * 0.55;
-  return merge([
-    box(w, hs, d, [0, hs / 2, 0]),
-    cyl(w / 2, w / 2, d, 14, [0, hs, 0], [HALF, 0, 0], [1, 1, 0.8]),
-  ]);
+const SHELL_SEG = 14;
+
+function hoodProfile(hw, hs) {
+  const pts = [[-hw, 0]];
+  for (let i = 0; i <= SHELL_SEG; i++) {
+    const a = Math.PI - (Math.PI * i) / SHELL_SEG;
+    pts.push([Math.cos(a) * hw, hs + Math.sin(a) * hw]);
+  }
+  pts.push([hw, 0]);
+  return pts;
 }
 
-/** The same, for the door: its outline without its thickness. */
-export function maildoorshell() {
+export function mailshell() {
   const { w, h, d } = MAIL_BODY;
-  const hs = h * 0.55;
-  const r = w / 2 + 0.022;
-  const parts = [
-    box(w + 0.044, hs, 0.012, [0, hs / 2, 0]),
-    cyl(r, r, 0.012, 14, [0, hs, 0], [HALF, 0, 0], [1, 1, 0.8]),
-  ];
-  void d;
-  place(parts, [0, 0, 0.05], null);
-  return merge(parts);
+  return prism(hoodProfile(w / 2, h * 0.55), d, [0, 0, -d / 2]);
+}
+
+/** The same for the door, as a sheet rather than a solid. */
+export function maildoorshell() {
+  const { w, h } = MAIL_BODY;
+  return prism(hoodProfile(w / 2 + 0.022, h * 0.55), 0.004, [0, 0, 0.05]);
 }
 
 export function mailbox() {
