@@ -219,7 +219,7 @@ export function Interior({ mats, visible, screen, skills }) {
   );
 }
 
-export function Dressing({ mats, visible }) {
+export function Dressing({ mats, visible, wide }) {
   const built = useBuilt(dressing);
   return (
     <group visible={visible}>
@@ -229,6 +229,13 @@ export function Dressing({ mats, visible }) {
       {built.woods?.map((geo, i) => (
         <Shell key={i} geo={geo} mat={mats.painted} />
       ))}
+      {/* The outskirts, only while the camera is up where it can
+          see them. On the ground they are behind the wood or
+          behind the city either way. */}
+      {wide &&
+        built.far?.map((geo, i) => (
+          <Shell key={"far" + i} geo={geo} mat={mats.painted} />
+        ))}
       <Shell geo={built.lit} mat={mats.warm} />
     </group>
   );
