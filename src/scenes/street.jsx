@@ -72,7 +72,17 @@ export function ExtrudedText({
   if (!geo) return null;
 
   return (
-    <mesh geometry={geo}>
+    // After the ground, always. The floor is a transparent pane -
+    // it has to be, or the mirrored town under it would not show
+    // through - so it sits in the transparent pass and is sorted by
+    // distance, and its origin is the middle of a 150 unit plane
+    // the camera is usually standing on. That puts it nearest, so it
+    // paints last, over lettering that is genuinely in front of it,
+    // and the grid lines come through the letters. A render order
+    // settles it rather than leaving it to a sort that cannot see
+    // the difference. Each layer used to carry its own, which is
+    // what this quietly dropped when they were merged into one.
+    <mesh geometry={geo} renderOrder={2}>
       <meshBasicMaterial
         ref={matRef}
         map={tex}
