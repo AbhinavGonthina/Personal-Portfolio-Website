@@ -4,7 +4,7 @@ import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
 import { usePlain } from "../lib/plain";
-import { runSwitch } from "../lib/switchView";
+import { runSwitch, useSwitching } from "../lib/switchView";
 import { setFocused, useStopIndex } from "../lib/stage";
 import { beginJump } from "../lib/scrollLock";
 import { STOPS } from "../lib/stops";
@@ -51,6 +51,7 @@ const LINK =
 
 export default function Navbar() {
   const plain = usePlain();
+  const switching = useSwitching();
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
 
@@ -116,8 +117,11 @@ export default function Navbar() {
       className={cn(
         // sw-pane: the bar is part of the page, so while the switch
         // is running it rides inside the second frame rather than
-        // sitting over the whole window at full size.
-        "sw-pane sticky top-0 z-50 transition-colors duration-300",
+        // sitting over the whole window at full size. Only while it
+        // is running, though - a sticky bar is already its own layer
+        // and does not need a transform on it the rest of the time.
+        "sticky top-0 z-50 transition-colors duration-300",
+        switching && "sw-pane",
         scrolled
           ? "border-b border-ink-700/70 bg-ink-950/70 backdrop-blur-xl"
           : "border-b border-transparent bg-transparent",

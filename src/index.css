@@ -165,7 +165,10 @@ main.sw-pane {
   clip-path: inset(0 0 calc(var(--sw-clip, 0) * (100% - 100vh + 4rem)) 0);
 }
 
-header,
+/* `header.sw-pane`, not `header`: the bar only carries the class
+   while a run is in flight, and outside one nothing should be
+   setting a property on it at all. */
+header.sw-pane,
 .sw-chrome {
   opacity: var(--sw-chrome, 1);
 }
