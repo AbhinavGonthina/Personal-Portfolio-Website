@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
 import { useSwitching } from "../lib/switchView";
+import { useReady } from "../lib/ready";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
@@ -52,6 +53,8 @@ export default function TownStage({ refs }) {
   const focused = useFocused();
   const arriving = useArriving();
   const [ready, setReady] = useState(false);
+  // Whether the scene has drawn, which is not whether it is mounted.
+  const drawn = useReady();
   const [live, setLive] = useState(false);
   const [grab, setGrab] = useState(false);
   const [shot, setShot] = useState(0);
@@ -325,6 +328,20 @@ export default function TownStage({ refs }) {
             marks={marks}
           />
         </Suspense>
+      )}
+
+      {/* Something to look at while the town is being built. The gap
+          between the canvas mounting and the first frame it draws is
+          long enough to sit through on a cold load, and black for
+          that long is indistinguishable from a page that has broken.
+          It waits on the scene's own report, so it goes when there
+          is actually a picture behind it rather than when React
+          thinks there should be. */}
+      {!drawn && (
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <span className="sr-only">Loading</span>
+          <span className="size-9 animate-spin rounded-full border-2 border-ink-700 border-t-fg-muted" />
+        </div>
       )}
     </div>
   );

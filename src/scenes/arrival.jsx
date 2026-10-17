@@ -12,7 +12,7 @@ import {
 } from "../lib/carGeometry";
 import { HEADREST_BAR, paintHeadrest } from "../lib/paint";
 import { ACCENT } from "../lib/townMaterials";
-import { ARRIVED_AT, CAR_PARK, DOOR_AT } from "../lib/arrivalPath";
+import { ARRIVED_AT, CAR_PARK, DOOR_AT, ride } from "../lib/arrivalPath";
 
 /**
  * Arriving by car.
@@ -33,6 +33,7 @@ import { ARRIVED_AT, CAR_PARK, DOOR_AT } from "../lib/arrivalPath";
  * inside is a shell you are not in.
  */
 
+const RIDE = { y: 0, pitch: 0, roll: 0 };
 const DOOR_OPEN = 1.15;
 
 /**
@@ -70,6 +71,7 @@ export default function Car({ clock }) {
   const built = useMemo(car, []);
   const door = useMemo(carDoor, []);
   const bezel = useMemo(headrestScreen, []);
+  const shell = useRef();
   const hinge = useRef();
   const bar = useRef();
   const [arrived, setArrived] = useState(false);
@@ -92,6 +94,16 @@ export default function Car({ clock }) {
   useFrame((_, delta) => {
     const t = clock.current.t;
     if (!arrived && t > ARRIVED_AT) setArrived(true);
+    // The body on its springs. The camera takes the same vertical
+    // movement from the same function, so the two cannot drift -
+    // what is left here is the pitch and roll, which is the cabin
+    // moving a little around a head that is holding fairly still.
+    if (shell.current) {
+      ride(t, RIDE);
+      shell.current.position.y = RIDE.y;
+      shell.current.rotation.x = RIDE.pitch;
+      shell.current.rotation.z = RIDE.roll;
+    }
     if (bar.current) bar.current.scale.x = Math.max(0.001, filled(t));
     if (hinge.current) {
       const k = 1 - Math.exp(-3.4 * delta);
@@ -129,95 +141,88 @@ export default function Car({ clock }) {
       position={[CAR_PARK.x, 0, CAR_PARK.z]}
       rotation={[0, CAR_PARK.yaw, 0]}
     >
-      <mesh geometry={built.base}>{paint}</mesh>
-      <mesh geometry={built.trim}>{cloth}</mesh>
-      <mesh geometry={built.lit}>
-        <meshBasicMaterial color={ACCENT.amber} toneMapped={false} />
-      </mesh>
-      <mesh geometry={built.glass}>
-        <meshStandardMaterial
-          color="#0a0d16"
-          roughness={0.12}
-          metalness={0.6}
-          transparent
-          opacity={0.6}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {/* The windscreen and the two front windows, which are nearly
-          opaque. Through clear glass the only thing ahead of a car
-          that is supposed to be arriving somewhere is a town standing
-          perfectly still. */}
-      <mesh geometry={built.tint}>
-        <meshStandardMaterial
-          color="#05070c"
-          roughness={0.18}
-          metalness={0.55}
-          transparent
-          opacity={0.96}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      <group ref={hinge} position={HINGE}>
-        <mesh geometry={door.base}>{paint}</mesh>
-        <mesh geometry={door.trim}>{cloth}</mesh>
-        <mesh geometry={door.glass}>
+      <group ref={shell}>
+        <mesh geometry={built.base}>{paint}</mesh>
+        <mesh geometry={built.trim}>{cloth}</mesh>
+        <mesh geometry={built.lit}>
+          <meshBasicMaterial color={ACCENT.amber} toneMapped={false} />
+        </mesh>
+        {/* Every pane, and all of them nearly opaque. Through clear
+          glass the only thing around a car that is supposed to be
+          arriving somewhere is a town standing perfectly still - and
+          that was true out of the back windows as much as the front,
+          which is where it used to be visible. */}
+        <mesh geometry={built.tint}>
           <meshStandardMaterial
-            color="#0a0d16"
-            roughness={0.12}
-            metalness={0.6}
+            color="#05070c"
+            roughness={0.18}
+            metalness={0.55}
             transparent
-            opacity={0.6}
+            opacity={0.96}
             side={THREE.DoubleSide}
           />
         </mesh>
-      </group>
 
-      {/* The screen, on the back of the headrest in front of you. It
-          faces +Z, which is where you are sitting. */}
-      <group position={SCREEN_AT}>
-        <mesh geometry={bezel}>
-          <meshStandardMaterial
-            color="#0b0d16"
-            roughness={0.6}
-            metalness={0.2}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh position={[0, 0, 0.022]}>
-          <planeGeometry args={[SCREEN.w, SCREEN.h]} />
-          <meshBasicMaterial
-            map={screens[arrived ? 1 : 0]}
-            toneMapped={false}
-          />
-        </mesh>
-        <group ref={bar} position={[bx, by, 0.024]}>
-          <mesh position={[bw / 2, 0, 0]}>
-            <planeGeometry args={[bw, bh]} />
-            <meshBasicMaterial color={ACCENT.cyan} toneMapped={false} />
+        <group ref={hinge} position={HINGE}>
+          <mesh geometry={door.base}>{paint}</mesh>
+          <mesh geometry={door.trim}>{cloth}</mesh>
+          <mesh geometry={door.glass}>
+            <meshStandardMaterial
+              color="#05070c"
+              roughness={0.18}
+              metalness={0.55}
+              transparent
+              opacity={0.96}
+              side={THREE.DoubleSide}
+            />
           </mesh>
         </group>
-      </group>
 
-      {/* A reading light, so the inside of the car is not a black box.
+        {/* The screen, on the back of the headrest in front of you. It
+          faces +Z, which is where you are sitting. */}
+        <group position={SCREEN_AT}>
+          <mesh geometry={bezel}>
+            <meshStandardMaterial
+              color="#0b0d16"
+              roughness={0.6}
+              metalness={0.2}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+          <mesh position={[0, 0, 0.022]}>
+            <planeGeometry args={[SCREEN.w, SCREEN.h]} />
+            <meshBasicMaterial
+              map={screens[arrived ? 1 : 0]}
+              toneMapped={false}
+            />
+          </mesh>
+          <group ref={bar} position={[bx, by, 0.024]}>
+            <mesh position={[bw / 2, 0, 0]}>
+              <planeGeometry args={[bw, bh]} />
+              <meshBasicMaterial color={ACCENT.cyan} toneMapped={false} />
+            </mesh>
+          </group>
+        </group>
+
+        {/* A reading light, so the inside of the car is not a black box.
           Two of them: one over the back seat and one over the front,
           because a single lamp at the camera's own position lights
           nothing it can see. */}
-      <pointLight
-        position={[0, CAR.roof - 0.08, 1.15]}
-        color={ACCENT.amber}
-        intensity={1.4}
-        distance={3.2}
-        decay={2}
-      />
-      <pointLight
-        position={[0, CAR.roof - 0.12, -1.0]}
-        color={ACCENT.amber}
-        intensity={0.7}
-        distance={3}
-        decay={2}
-      />
+        <pointLight
+          position={[0, CAR.roof - 0.08, 1.15]}
+          color={ACCENT.amber}
+          intensity={1.4}
+          distance={3.2}
+          decay={2}
+        />
+        <pointLight
+          position={[0, CAR.roof - 0.12, -1.0]}
+          color={ACCENT.amber}
+          intensity={0.7}
+          distance={3}
+          decay={2}
+        />
+      </group>
     </group>
   );
 }

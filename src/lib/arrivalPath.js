@@ -21,6 +21,35 @@ const toWorld = ([lx, ly, lz]) => [
 
 const LAND = STOPS[0].free;
 
+/** When the car comes to a stop. */
+export const ROLL_END = 2.4;
+/** How long the suspension takes to stop talking about it. */
+const SETTLE = 1.0;
+
+/**
+ * The shake of a car that is still moving.
+ *
+ * Every window is nearly opaque, which is what stops you seeing that
+ * the town outside is standing still - and it also removes the only
+ * evidence that the car was ever moving. This puts it back. It is
+ * small on purpose: enough that the cabin is alive, not so much that
+ * it reads as a rough road.
+ *
+ * It does not cut off. The car eases down over a second and the
+ * suspension keeps moving after the wheels have stopped, which is
+ * the part that matters - the door opens a second after the last of
+ * this has died away, so nobody steps out of a car in the same
+ * instant it stopped.
+ */
+export function ride(t, out) {
+  const a = t < ROLL_END ? 1 : Math.max(0, 1 - (t - ROLL_END) / SETTLE);
+  const s = a * a;
+  out.y = (Math.sin(t * 17.3) * 0.0075 + Math.sin(t * 7.1) * 0.004) * s;
+  out.pitch = Math.sin(t * 5.3) * 0.005 * s;
+  out.roll = Math.sin(t * 3.9 + 1) * 0.0035 * s;
+  return out;
+}
+
 /** When the door starts to swing, shared with the car itself. */
 export const DOOR_AT = 3.8;
 /** When the headrest stops saying it is loading. */

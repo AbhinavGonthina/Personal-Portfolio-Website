@@ -53,14 +53,14 @@ const rail = (x, z, len) => box(0.09, 0.06, len, [x, RAIL_Y, z]);
 
 /**
  * The shell and everything bolted to it, as four merged buffers:
- * painted bodywork, upholstery, clear glass, and the two front
- * windows, which are not clear - see `tint` in the scene.
+ * painted bodywork, upholstery, and glass. There is one kind of
+ * glass now: every pane in the body is the near-opaque `tint`,
+ * because a clear pane anywhere shows a town standing still.
  */
 export function car() {
   const base = [];
   const trim = [];
   const lit = [];
-  const glass = [];
   const tint = [];
 
   // Floor pan, then the lower body as a tub rather than a solid block.
@@ -95,7 +95,7 @@ export function car() {
   }
   // The left rear opening, which has no door that moves.
   base.push(rail(-HW + 0.04, 0.72, DOOR_LEN));
-  glass.push(pane(-HW + 0.02, 0.72, DOOR_LEN - 0.1));
+  tint.push(pane(-HW + 0.02, 0.72, DOOR_LEN - 0.1));
 
   base.push(box(CAR.wide, 0.07, 3.0, [0, CAR.roof, 0.05]));
   trim.push(box(CAR.wide - 0.16, 0.03, 2.84, [0, CAR.roof - 0.06, 0.05]));
@@ -104,7 +104,7 @@ export function car() {
   tint.push(
     box(CAR.wide - 0.22, 0.68, 0.03, [0, GLASS_Y, -HL + 1.2], [0.4, 0, 0]),
   );
-  glass.push(
+  tint.push(
     box(CAR.wide - 0.26, 0.62, 0.03, [0, GLASS_Y, HL - 0.98], [-0.36, 0, 0]),
   );
 
@@ -159,7 +159,6 @@ export function car() {
     base: merge(base),
     trim: merge(trim),
     lit: merge(lit),
-    glass: merge(glass),
     tint: merge(tint),
   };
 }
