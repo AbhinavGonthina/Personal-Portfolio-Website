@@ -193,6 +193,21 @@ export function paintScreen(project, index, total) {
 
 /* ------------------------------------------------------------------ */
 
+/** Greedy line breaking against a width, in whatever font is set. */
+const wrap = (g, text, maxW) => {
+  const out = [];
+  let line = "";
+  for (const w of String(text).split(" ")) {
+    const next = line ? line + " " + w : w;
+    if (g.measureText(next).width > maxW && line) {
+      out.push(line);
+      line = w;
+    } else line = next;
+  }
+  if (line) out.push(line);
+  return out;
+};
+
 /** A rounded rectangle path, built by hand so nothing depends on
  *  `roundRect` being present. */
 function rrect(g, x, y, w, h, r) {
@@ -358,25 +373,37 @@ export function paintBoard(profile, education, lampAt) {
   g.fillText(
     `${profile.role.toUpperCase()}  ·  ${profile.location.toUpperCase()}`,
     pad,
-    pad + 34 * S,
+    pad + 44 * S,
   );
 
-  // The name, stacked. It does not need to be the biggest thing that
-  // fits: it is the only white on a board of grey, which carries it
-  // further than another twenty points would, and the points are
-  // worth more to the labels under it.
+  // The name, stacked.
   const [first, ...rest] = profile.name.split(" ");
   g.fillStyle = "#ffffff";
-  sans(124, 600);
-  g.fillText(first, pad - 5 * S, pad + 174 * S);
-  g.fillText(rest.join(" "), pad - 5 * S, pad + 306 * S);
+  sans(136, 600);
+  g.fillText(first, pad - 6 * S, pad + 224 * S);
+  g.fillText(rest.join(" "), pad - 6 * S, pad + 368 * S);
+
+  g.fillStyle = RULE;
+  g.fillRect(pad, pad + 412 * S, right - pad, 2 * S);
+
+  // One sentence. The board carried five blocks before this and the
+  // whole of it had to run small to fit; a stranger reads the top
+  // two of five anyway, so the other three are gone and the two
+  // that are left are the size they should always have been.
+  g.fillStyle = "#b6bcc8";
+  sans(44);
+  let y = pad + 482 * S;
+  for (const line of wrap(g, profile.pitch, right - pad)) {
+    g.fillText(line, pad, y);
+    y += 60 * S;
+  }
 
   // What he is after, which is the one thing on this board a stranger
   // is looking for. Filled rather than outlined, because it is the
-  // only pill here that is an ask rather than a fact.
+  // only thing here that is an ask rather than a fact.
   pill(
     pad,
-    pad + 352 * S,
+    pad + 724 * S,
     `${profile.seeking} · ${education.graduation}`.toUpperCase(),
     {
       size: 30,
@@ -384,62 +411,9 @@ export function paintBoard(profile, education, lampAt) {
       ink: "#05050a",
       line: ACC,
       fill: ACC,
-      h: 56,
+      h: 58,
     },
   );
-
-  // Who has already employed him, one to a line. Side by side they
-  // had to drop to a size that made two names out of four words, and
-  // the board is tall enough now to spend a row on each.
-  profile.highlights.forEach(([where, what], i) => {
-    pill(pad, pad + (430 + i * 64) * S, `${where} · ${what}`.toUpperCase(), {
-      size: 27,
-      space: 3,
-      ink: "#cfd6e6",
-      line: "#2f3647",
-      h: 52,
-    });
-  });
-
-  // Where he studies, set as two lines so neither runs small.
-  g.fillStyle = "#9aa0ab";
-  sans(36);
-  g.fillText(`${education.school}  ·  ${education.degree}`, pad, pad + 606 * S);
-  g.fillText(
-    `GPA ${education.gpa}  ·  ${education.honors}`,
-    pad,
-    pad + 654 * S,
-  );
-
-  g.fillStyle = RULE;
-  g.fillRect(pad, pad + 686 * S, right - pad, 2 * S);
-
-  // What the work is, in four areas rather than in a tech stack. The
-  // stack is on the Skills racks, where there is room to mean it.
-  //
-  // Two to a row on purpose. All four will not cross this panel at a
-  // size worth reading, and wrapping them wherever they happened to
-  // run out of room left the fourth one orphaned on a line of its
-  // own; two by two is the same four facts arranged as though
-  // somebody had chosen it.
-  const PER_ROW = 2;
-  let cx = pad;
-  let cy = pad + 718 * S;
-  profile.categories.forEach((name, i) => {
-    if (i && i % PER_ROW === 0) {
-      cx = pad;
-      cy += 64 * S;
-    }
-    cx +=
-      pill(cx, cy, name.toUpperCase(), {
-        size: 27,
-        space: 3,
-        ink: "#9aa0ab",
-        line: "#272d3b",
-        h: 52,
-      }) +
-      14 * S;
-  });
 
   return finish(c);
 }
