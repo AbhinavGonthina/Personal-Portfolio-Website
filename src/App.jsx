@@ -4,7 +4,7 @@ import ScrollHint from "./components/ScrollHint";
 import SectionTitle from "./components/SectionTitle";
 import TownStage from "./components/TownStage";
 import FourthWall from "./components/FourthWall";
-import { LOOK, PAGE, useWall } from "./lib/fourthWall";
+import { LOOK, PAGE, useWall, wallTilt } from "./lib/fourthWall";
 import Hero from "./sections/Hero";
 import About from "./sections/About";
 import Experience from "./sections/Experience";
@@ -61,7 +61,7 @@ export default function App() {
           wall > 0 && wall < 1
             ? {
                 opacity: PAGE(wall),
-                transform: `translateY(${(LOOK(wall) - 1) * 100}vh)`,
+                transform: wallTilt(LOOK(wall)),
                 // A wall, not a window: without this the room slides
                 // down behind a transparent page and you can read
                 // the two of them at once.

@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { setPlain } from "./plain";
+import { getPlain, setPlain } from "./plain";
 
 /**
  * Switching between the two readings, the long way round.
@@ -36,7 +36,10 @@ function frozen() {
 const HELD = frozen();
 
 const subs = new Set();
-let p = HELD ?? 0;
+// A page that opens on the plain read is already at the far end of
+// this: starting at zero left the switch with nowhere to run back
+// from, and Interactive did nothing at all.
+let p = HELD ?? (getPlain() ? 1 : 0);
 // A held frame past the switch has to be past it in every sense, or
 // the wall you are looking up at is the interactive page's empty
 // scaffolding rather than the plain read.
@@ -152,3 +155,34 @@ export const CHROME = span(0, 0.16);
  * same two numbers, so the picture lands inside its frame.
  */
 export const MON = { scale: 0.6, mid: 0.33 };
+
+/**
+ * Looking up, as a head does it.
+ *
+ * Not the page sliding down over the desk - a pitch. The room swings
+ * away about the eye and foreshortens as it goes, and the wall comes
+ * down out of the same rotation, steeply at first and square on by
+ * the time it arrives. `perspective()` is written into the transform
+ * itself rather than set on a parent, because the three layers that
+ * have to turn together - the backdrop, the screen and the room -
+ * are three fixed siblings with no shared box between them.
+ */
+const DEPTH = "150vh";
+const TILT = 58;
+const DROP = 92;
+
+/**
+ * The transform for everything standing in the room.
+ *
+ * Negative, because raising your eyes puts the desk below them and
+ * you end up looking at it from above - near edge at the top, far
+ * edge at the bottom, so it reads wider at the top. Positive tips it
+ * the other way and the monitor appears to lean back over you.
+ */
+export const tilt = (look) =>
+  `perspective(${DEPTH}) translateY(${look * DROP}vh) rotateX(${-look * TILT}deg)`;
+
+/** And the wall above it, steeply under-slung at first and square on
+ *  by the time the turn ends. */
+export const wallTilt = (look) =>
+  `perspective(${DEPTH}) translateY(${(look - 1) * DROP}vh) rotateX(${(1 - look) * TILT}deg)`;
