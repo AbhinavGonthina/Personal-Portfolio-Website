@@ -59,8 +59,6 @@ export function setPlain(next) {
   subscribers.forEach((fn) => fn());
 }
 
-export const getPlain = () => plain;
-
 export const usePlain = () =>
   useSyncExternalStore(
     subscribe,

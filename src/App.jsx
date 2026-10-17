@@ -3,8 +3,6 @@ import Navbar from "./components/Navbar";
 import ScrollHint from "./components/ScrollHint";
 import SectionTitle from "./components/SectionTitle";
 import TownStage from "./components/TownStage";
-import FourthWall from "./components/FourthWall";
-import { LOOK, PAGE, useWall, wallTilt } from "./lib/fourthWall";
 import Hero from "./sections/Hero";
 import About from "./sections/About";
 import Experience from "./sections/Experience";
@@ -25,7 +23,6 @@ import Connect from "./sections/Connect";
  * This order has to match `lib/stops.js`.
  */
 export default function App() {
-  const wall = useWall();
   const hero = useRef(null);
   const about = useRef(null);
   const experience = useRef(null);
@@ -49,27 +46,9 @@ export default function App() {
       <TownStage refs={refs} />
       <SectionTitle />
       <ScrollHint />
-      <FourthWall />
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
-      {/* While the sequence is playing, the page is the wall above
-          the desk - so it waits out of frame overhead and arrives by
-          coming down into it as the view tilts up. */}
-      <main
-        className="pointer-events-none relative z-10"
-        style={
-          wall > 0 && wall < 1
-            ? {
-                opacity: PAGE(wall),
-                transform: wallTilt(LOOK(wall)),
-                // A wall, not a window: without this the room slides
-                // down behind a transparent page and you can read
-                // the two of them at once.
-                background: "var(--color-ink-950, #05070b)",
-              }
-            : undefined
-        }
-      >
+      <main className="pointer-events-none relative z-10">
         <Hero ref={hero} />
         <About ref={about} />
         <Experience ref={experience} />
