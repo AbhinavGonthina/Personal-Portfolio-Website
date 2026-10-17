@@ -1,4 +1,4 @@
-import { DESK, LOOK, MON, PULL, useWall } from "../lib/fourthWall";
+import { DESK, LOOK, MON, PULL, tilt, useWall } from "../lib/fourthWall";
 
 /**
  * The room the town turns out to be in.
@@ -67,7 +67,7 @@ export default function FourthWall() {
         aria-hidden
         className="pointer-events-none fixed inset-0 z-[15]"
         style={{
-          transform: `translateY(${look * 100}vh)`,
+          transform: tilt(look),
           background: `rgba(5,6,10,${desk})`,
         }}
       />
@@ -76,10 +76,7 @@ export default function FourthWall() {
         className="pointer-events-none fixed inset-0 z-30 overflow-hidden"
       >
         {/* One group, so the tilt takes the whole room with it. */}
-        <div
-          className="absolute inset-0"
-          style={{ transform: `translateY(${look * 100}vh)` }}
-        >
+        <div className="absolute inset-0" style={{ transform: tilt(look) }}>
           <div
             className="absolute rounded-[0.4vh] border"
             style={{

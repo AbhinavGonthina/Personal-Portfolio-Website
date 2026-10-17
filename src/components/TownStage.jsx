@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { LOOK, MON, PULL, useWall } from "../lib/fourthWall";
+import { getWall, LOOK, MON, PULL, tilt, useWall } from "../lib/fourthWall";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
@@ -97,6 +97,13 @@ export default function TownStage({ refs }) {
     if (off) return;
     const read = () => {
       raf.current = 0;
+      // Nothing on this page is measurable while the room is up.
+      // The page is tilted away by then, and a bounding rect taken
+      // through a rotated ancestor is not where the thing is on the
+      // screen - read anyway, it decided the town was off the bottom
+      // of the document and took the canvas down mid-shot. The
+      // camera has nowhere to go during the switch in any case.
+      if (getWall() > 0) return;
       const els = refs.map((r) => r.current).filter(Boolean);
       if (els.length < 2) return;
 
@@ -295,7 +302,7 @@ export default function TownStage({ refs }) {
         // to be the other way round.
         wall > 0 ? "z-20" : "z-0",
         wall > 0 ? "" : "transition-opacity duration-500",
-        live ? "opacity-100" : "opacity-0",
+        live || wall > 0 ? "opacity-100" : "opacity-0",
         grab && wall <= 0 ? "pointer-events-auto" : "pointer-events-none",
       )}
       // The scale goes to the canvas element through a variable, not
@@ -307,19 +314,24 @@ export default function TownStage({ refs }) {
       style={
         wall > 0
           ? {
-              opacity: live ? 1 : 0,
-              // Receding into the monitor, then leaving by the
-              // bottom of the frame with the rest of the room as the
-              // view tilts up off it.
-              "--shrink": `translateY(${(MON.mid - 0.5) * 100 * PULL(wall) + 100 * LOOK(wall)}vh) scale(${1 - (1 - MON.scale) * PULL(wall)})`,
+              opacity: 1,
+              // Receding into the monitor, and then swinging away
+              // with the rest of the room as the view pitches up off
+              // it. The room's turn is applied last, so it carries
+              // the screen rather than the screen fighting it.
+              "--shrink": `${tilt(LOOK(wall))} translateY(${(MON.mid - 0.5) * 100 * PULL(wall)}vh) scale(${1 - (1 - MON.scale) * PULL(wall)})`,
             }
           : undefined
       }
     >
-      {ready && (
+      {(ready || wall > 0) && (
         <Suspense fallback={null}>
           <TownScene
-            active={live}
+            // Drawing through the switch as well. `live` is measured,
+            // and measuring is suspended while the room is up - left
+            // to it the frame loop stops and the monitor shows a
+            // black screen for the length of the shot.
+            active={live || wall > 0}
             focused={focused}
             onFocus={setFocused}
             narrow={false}
