@@ -118,7 +118,6 @@ function paint() {
     root.setProperty("--sw-tx", "0px");
     root.setProperty("--sw-ty", "0px");
     root.setProperty("--sw-clip", "0");
-    root.setProperty("--sw-edge", "0");
     root.setProperty("--sw-page", "1");
     root.setProperty("--sw-chrome", "1");
     // Nothing behind the page at rest. This used to read --sw-page,
@@ -133,9 +132,6 @@ function paint() {
   // The bar goes out with the town it belongs to and comes back with
   // the page, which also owns one.
   root.setProperty("--sw-chrome", String(Math.min(1, 1 - CHROME(p) + PAGE(p))));
-  // The second frame's own edge, which has to go once the frame is
-  // the whole window - otherwise it is a line drawn round the page.
-  root.setProperty("--sw-edge", String((1 - OPEN(p)) * 0.5));
   // A frame holds one screenful. The document behind it is six times
   // that, and unclipped it hangs out of the bottom of its own frame.
   root.setProperty("--sw-clip", "1");

@@ -1250,7 +1250,7 @@ function Frames() {
   useFrame((state) => {
     const grp = g.current;
     const q = parts.current;
-    if (!grp || !q[7]) return;
+    if (!grp || !q[11]) return;
     const sw = getSwitch();
     const shut = SHUT(sw);
     grp.visible = shut > 0;
@@ -1294,13 +1294,24 @@ function Frames() {
     line(6, ax - aw, 0, e, ah * 2, fade);
     line(7, ax + aw, 0, e, ah * 2, fade);
 
-    // The second frame is not drawn here at all - it is the page,
-    // put in its place by the DOM. Same geometry, so the two cannot
-    // drift apart: it arrives from the right as the first leaves,
-    // and opens out to the full window at the end.
+    // The second frame: the page, put in its place by the DOM, with
+    // its edge drawn here beside the first one's.
+    //
+    // Both edges come out of the same four planes, the same colour
+    // and the same thickness, because an edge in CSS beside an edge
+    // in the scene is two different edges however carefully the two
+    // are matched - and they were not matched, so the frame holding
+    // the page looked like the poor relation of the one holding the
+    // town. Half a thickness outside the rect, so the backing behind
+    // the page does not cover the inner half of it.
     const bw = aw + (w - aw) * open;
     const bh = ah + (h - ah) * open;
     const bx = (step - slide * step) * (1 - open);
+    const edge = Math.min(1, slide * 1.8) * (1 - open);
+    line(8, bx, bh + e / 2, (bw + e) * 2, e, edge);
+    line(9, bx, -bh - e / 2, (bw + e) * 2, e, edge);
+    line(10, bx - bw - e / 2, 0, e, (bh + e) * 2, edge);
+    line(11, bx + bw + e / 2, 0, e, (bh + e) * 2, edge);
     // Only while the run is actually in flight. At either end the
     // resting values are the switch's to write, and the scene is
     // about to be torn down anyway.
@@ -1323,7 +1334,7 @@ function Frames() {
           <meshBasicMaterial color="#04050a" toneMapped={false} />
         </mesh>
       ))}
-      {[4, 5, 6, 7].map((i) => (
+      {[4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
         <mesh key={i} ref={grab(i)}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial

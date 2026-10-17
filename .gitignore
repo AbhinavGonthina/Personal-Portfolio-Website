@@ -25,3 +25,6 @@ dist-ssr
 
 # Claude Code local settings
 .claude/
+
+# Local render harness for checking scenes headlessly.
+shots/
