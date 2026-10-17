@@ -477,7 +477,13 @@ export function interior() {
 /* ---------------------------------------------------------------- */
 
 export const MAIL_GAP = 1.4;
-export const MAIL_BODY = { w: 0.58, h: 0.48, d: 0.88 };
+// Taller than it was by a third. The face has to hold a mark at its
+// own aspect ratio and a name under it, and at 0.48 it held the mark
+// and pushed the name off the bottom edge.
+export const MAIL_BODY = { w: 0.58, h: 0.7, d: 0.88 };
+
+/** The top of the face: the straight part, plus the arc over it. */
+export const MAIL_TOP = MAIL_BODY.h * 0.55 + MAIL_BODY.w / 2;
 
 export function mailrail(count) {
   const base = [];
@@ -519,21 +525,57 @@ export function mailbox() {
   ]);
 }
 
-export function maillid() {
+/**
+ * The door on the front, cut to the same outline as the box.
+ *
+ * What opened before was a disc on a stalk sitting inside the body,
+ * which is not a part a mailbox has: it swung up out of the middle
+ * of the box and left the face - the one surface with the mark on
+ * it - standing still. This is the face. It is hinged along its top
+ * edge and the mark is mounted on it, so what lifts is the thing
+ * you were pointing at.
+ *
+ * Built around its own hinge rather than around the box, so the
+ * caller can rotate it without first having to move it.
+ */
+/**
+ * The opening the door was covering.
+ *
+ * Set into the face rather than laid on it, and in the unlit black
+ * rather than the body colour: the ring of lit bodywork left around
+ * it is what reads as the thickness of the wall, and without it an
+ * open mailbox is a box with a lid hovering over a solid front.
+ */
+export function mailmouth() {
   const { w, h, d } = MAIL_BODY;
+  const inset = 0.055;
+  const r = w / 2 - inset;
+  return merge([
+    box(w - inset * 2, h * 0.55 - inset, 0.012, [
+      0,
+      h * 0.275 + inset / 2,
+      d / 2,
+    ]),
+    cyl(r, r, 0.012, 14, [0, h * 0.55, d / 2], [HALF, 0, 0], [1, 1, 0.8]),
+  ]);
+}
+
+export function maildoor() {
+  const { w, h, d } = MAIL_BODY;
+  const t = 0.05;
+  const r = w / 2 - 0.012;
   const parts = [
-    cyl(
-      w / 2 + 0.03,
-      w / 2 + 0.03,
-      0.08,
-      14,
-      [0, 0, d / 2],
-      [HALF, 0, 0],
-      [1, 1, 0.8],
-    ),
-    box(w * 0.5, 0.045, 0.13, [0, -w / 2 + 0.05, d / 2 + 0.05]),
+    box(w - 0.024, h * 0.55, t, [0, h * 0.275, 0]),
+    cyl(r, r, t, 14, [0, h * 0.55, 0], [HALF, 0, 0], [1, 1, 0.8]),
   ];
-  place(parts, [0, h * 0.55, -d / 2], null);
+  // Built around its hinge: the top of the arc, on the front face.
+  // Only the panel thickness sits forward of it, so the caller puts
+  // the pivot on the front edge and the door tips about that edge.
+  // Carrying the box depth in here instead put the pivot back at
+  // the middle of the box, and the door swung out on a 0.46 radius
+  // arc and ended up hanging in the air in front of its own box.
+  void d;
+  place(parts, [0, -MAIL_TOP, t / 2], null);
   return merge(parts);
 }
 
