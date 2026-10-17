@@ -28,7 +28,10 @@ const scrollTo = (id) => {
   // A focused building pins the page, so a nav link would do nothing
   // until you closed it by hand. Leaving is part of going somewhere.
   setFocused(null);
-  beginJump();
+  // The stop the link is for, so the camera can tell where it is
+  // being sent before the scroll has got anywhere near it.
+  const to = STOPS.findIndex((s) => s.id === id);
+  beginJump(2500, to < 0 ? null : to);
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 };
 

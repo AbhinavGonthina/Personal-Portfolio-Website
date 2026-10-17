@@ -52,6 +52,22 @@ export const setJourney = (v) => {
 export const getJourney = () => journey;
 
 /**
+ * Where the camera is along the walk, which is not the same number.
+ *
+ * It was, until the camera got a pace of its own and a way to skip
+ * the house on a link. Anything that appears or disappears because
+ * of where the camera is has to ask this and not `journey`: gating
+ * the floor on the scroll while the camera lagged a segment behind
+ * it is a floor that vanishes from under a camera still standing
+ * on it.
+ */
+let seen = 0;
+export const setSeen = (v) => {
+  seen = v;
+};
+export const getSeen = () => seen;
+
+/**
  * For the few bits of DOM that have to know where the camera is.
  *
  * It is a boolean, not the number: subscribers fire every scroll frame

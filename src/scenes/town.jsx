@@ -317,7 +317,7 @@ const MARK_Y = Math.min(MAIL_TOP * 0.44, MARK_TOP - MARK_H / 2);
  * and the geometry is built forward of it - rotating a lid modelled
  * around its own centre makes it sink through the box.
  */
-function Mailbox({ x, link, mats, label, live }) {
+function Mailbox({ x, link, mats, label, live, visible = true }) {
   const body = useBuilt(mailbox);
   const door = useBuilt(maildoor);
   const shell = useBuilt(mailshell);
@@ -354,7 +354,7 @@ function Mailbox({ x, link, mats, label, live }) {
   }, [live, over]);
 
   return (
-    <group position={[x, 1.12, 0]}>
+    <group position={[x, 1.12, 0]} visible={visible}>
       <mesh
         geometry={body}
         material={mats.painted}
@@ -430,28 +430,32 @@ export function Mailboxes({ mats, visible, labels, live, greet }) {
       {/* Clear of the ground rather than half sunk in it: the letters
           are centred on their own origin, so putting the group at
           zero buries the bottom half of every one of them. */}
-      {greet && (
-        <group position={[0, 0.62, 0.66]}>
-          <ExtrudedText
-            tex={thanks.tex}
-            aspect={thanks.aspect}
-            height={0.46}
-            depth={0.12}
-            layers={8}
-          />
-        </group>
-      )}
-      {visible &&
-        socials.map((s, i) => (
-          <Mailbox
-            key={s.name}
-            x={-span / 2 + i * MAIL_GAP}
-            link={s.href}
-            label={labels[i]}
-            mats={mats}
-            live={live}
-          />
-        ))}
+      {/* Hidden, not absent. Mounting this when the gate opens means
+          building the letters and compiling them at the moment they
+          are first meant to be read, so you watch them arrive - and
+          on a link straight to Contact the gate opens in the same
+          frame the camera does. Built with the rest of the town and
+          switched on when it is time to say it. */}
+      <group visible={greet} position={[0, 0.62, 0.66]}>
+        <ExtrudedText
+          tex={thanks.tex}
+          aspect={thanks.aspect}
+          height={0.46}
+          depth={0.12}
+          layers={8}
+        />
+      </group>
+      {socials.map((s, i) => (
+        <Mailbox
+          key={s.name}
+          x={-span / 2 + i * MAIL_GAP}
+          link={s.href}
+          label={labels[i]}
+          mats={mats}
+          live={live}
+          visible={visible}
+        />
+      ))}
     </group>
   );
 }
