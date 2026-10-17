@@ -930,6 +930,13 @@ const LOOK_YAW = 0.2;
 const LOOK_PITCH = 0.12;
 const lerp = (a, b, t) => a + (b - a) * t;
 
+// Turn, walk, settle. The aim is on the way in by PIVOT_IN and stays
+// there until PIVOT_OUT; the feet do not start until PIVOT_HOLD.
+const PIVOT_IN = 0.3;
+const PIVOT_OUT = 0.74;
+const PIVOT_HOLD = 0.16;
+const span = (v, lo, hi) => Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
+
 const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
 // Scratch, like SHOT: the arrival runs this every frame and a fresh
 // object a frame is litter for the collector to deal with later.
@@ -1118,15 +1125,38 @@ function Rig({ target, narrow, clock }) {
       // instead of walking up the path and through the door.
       const via = b.via;
       if (via) {
-        const u = 1 - f;
-        const q = (a0, v0, b0) => u * u * a0 + 2 * u * f * v0 + f * f * b0;
+        // A pivoting stop holds still while it turns, so the position
+        // curve starts late and the aim is already pointed where the
+        // walk is going by the time the walk starts.
+        const fp = b.pivot ? ease(span(f, PIVOT_HOLD, 1)) : f;
+        const u = 1 - fp;
+        const q = (a0, v0, b0) => u * u * a0 + 2 * u * fp * v0 + fp * fp * b0;
         SHOT.px = q(A.px, via[0], B.px);
         SHOT.py = q(A.py, via[1], B.py);
         SHOT.pz = q(A.pz, via[2], B.pz);
         const vl = b.viaLook ?? via;
-        SHOT.lx = q(A.lx, vl[0], B.lx);
-        SHOT.ly = q(A.ly, vl[1], B.ly);
-        SHOT.lz = q(A.lz, vl[2], B.lz);
+        if (!b.pivot) {
+          SHOT.lx = q(A.lx, vl[0], B.lx);
+          SHOT.ly = q(A.ly, vl[1], B.ly);
+          SHOT.lz = q(A.lz, vl[2], B.lz);
+        } else if (f < PIVOT_IN) {
+          // Turning on the spot.
+          const g = ease(f / PIVOT_IN);
+          SHOT.lx = lerp(A.lx, vl[0], g);
+          SHOT.ly = lerp(A.ly, vl[1], g);
+          SHOT.lz = lerp(A.lz, vl[2], g);
+        } else if (f > PIVOT_OUT) {
+          // Arrived, and turning to the thing the stop is about.
+          const g = ease(span(f, PIVOT_OUT, 1));
+          SHOT.lx = lerp(vl[0], B.lx, g);
+          SHOT.ly = lerp(vl[1], B.ly, g);
+          SHOT.lz = lerp(vl[2], B.lz, g);
+        } else {
+          // Walking, with the aim held where it was pointed.
+          SHOT.lx = vl[0];
+          SHOT.ly = vl[1];
+          SHOT.lz = vl[2];
+        }
       } else {
         for (const key of ["px", "py", "pz", "lx", "ly", "lz"]) {
           SHOT[key] = lerp(A[key], B[key], f);
