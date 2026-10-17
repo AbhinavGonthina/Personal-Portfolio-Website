@@ -849,13 +849,22 @@ export function dressing() {
 
   // The park, off to the right of the house, which was there before
   // the road was and is a good deal thinner than the wood.
+  //
+  // Its own buffer, with the rest of the trees. It used to go in
+  // with `base`, which also holds the lamp posts and the railing -
+  // and once trees started carrying a colour attribute and posts
+  // did not, that merge had one of each and failed. A failed merge
+  // is null, and null draws nothing, so the lamp posts and the
+  // railing quietly left the town.
+  const park = [];
   for (let i = 0; i < 14; i++) {
     const x = 7 + rnd(i, 2.2) * 28;
     const z = -16 + rnd(i, 9.7) * 26;
     if (Math.hypot(x - 13.5, z - 6) < 7) continue;
     if (Math.hypot(x, z) < 15) continue;
-    tree(base, 900 + i, x, z, true);
+    tree(park, 900 + i, x, z, true);
   }
+  woods.push(park);
 
   return {
     base: merge(base),
