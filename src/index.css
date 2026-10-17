@@ -67,6 +67,16 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* The gutter is always there, whether or not the page is
+       currently scrollable.
+
+       Without it, every scroll lock - the car arriving, a focused
+       building, the switch between the two readings - takes the
+       scrollbar away, which makes the viewport a dozen pixels wider,
+       which resizes the canvas, which reallocates its drawing buffer
+       and hands back one blank frame. That was the black flash at
+       the end of the arrival. */
+    scrollbar-gutter: stable;
   }
 
   /* Tailwind's preflight leaves buttons on the browser default, which
