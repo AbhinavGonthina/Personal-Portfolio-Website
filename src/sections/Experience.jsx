@@ -5,6 +5,7 @@ import { usePlain } from "../lib/plain";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
+import PickHint from "../components/PickHint";
 
 /**
  * Two presentations of the same state.
@@ -246,6 +247,8 @@ export default function Experience({ ref }) {
         onSelect={setFocused}
         className="pointer-events-auto sr-only z-20 focus-within:not-sr-only focus-within:absolute focus-within:inset-x-0 focus-within:top-20 focus-within:mx-auto focus-within:flex focus-within:max-w-6xl focus-within:gap-8 focus-within:px-6"
       />
+
+      {!plain && <PickHint />}
 
       <AnimatePresence>
         {current && (
