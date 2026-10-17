@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { getPlain } from "./plain";
 
 /**
  * Whether the arrival sequence is running.
@@ -42,7 +43,18 @@ export function frozenAt() {
   return v !== null && Number.isFinite(n) ? n : null;
 }
 
-let playing = wanted();
+/**
+ * Not if the page opened on the plain read.
+ *
+ * The arrival is how you first see the town, and someone who has
+ * arrived at the plain read has not seen it - but they also did not
+ * ask to. Left armed, it sat waiting through the whole plain
+ * session and then played underneath the switch the moment they
+ * went looking for the town: eight seconds in a car, under a crane
+ * shot, with the page pinned the whole time. A phone gets the plain
+ * read by default, so this is most of the people who ever meet it.
+ */
+let playing = wanted() && !getPlain();
 
 const subscribe = (fn) => {
   subs.add(fn);
