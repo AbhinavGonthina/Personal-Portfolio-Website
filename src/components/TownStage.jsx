@@ -1,7 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { getWall, LOOK, MON, PULL, tilt, useWall } from "../lib/fourthWall";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
@@ -61,12 +60,7 @@ export default function TownStage({ refs }) {
   // The section tops as last measured, so the scroll handler can
   // clamp without laying the page out again on every event.
   const tops = useRef([]);
-  const wall = useWall();
-  // Mounted while the sequence plays, whichever way it is going: the
-  // town is what the monitor is showing, and the monitor is on
-  // screen for most of it. Once it has finished and the tablet has
-  // won, there is nothing left to draw.
-  const off = !!((plain && (wall <= 0 || wall >= 1)) || still);
+  const off = !!(plain || still);
 
   // Nothing moves while the car is pulling up. The camera is on its
   // own clock for those few seconds and scrolling would only put the
@@ -97,13 +91,6 @@ export default function TownStage({ refs }) {
     if (off) return;
     const read = () => {
       raf.current = 0;
-      // Nothing on this page is measurable while the room is up.
-      // The page is tilted away by then, and a bounding rect taken
-      // through a rotated ancestor is not where the thing is on the
-      // screen - read anyway, it decided the town was off the bottom
-      // of the document and took the canvas down mid-shot. The
-      // camera has nowhere to go during the switch in any case.
-      if (getWall() > 0) return;
       const els = refs.map((r) => r.current).filter(Boolean);
       if (els.length < 2) return;
 
@@ -295,43 +282,15 @@ export default function TownStage({ refs }) {
         // own ancestors' boxes, and #root then swallows every click
         // meant for the scene. Stacking it at zero under a z-10 main
         // paints the same and stays hit-testable.
-        "town-stage fixed inset-0",
-        // Over the page while the room is up, under it otherwise.
-        // The page is the wall above the desk: during the tilt the
-        // screen has to cover it, and once the tilt is over it has
-        // to be the other way round.
-        wall > 0 ? "z-20" : "z-0",
-        wall > 0 ? "" : "transition-opacity duration-500",
-        live || wall > 0 ? "opacity-100" : "opacity-0",
-        grab && wall <= 0 ? "pointer-events-auto" : "pointer-events-none",
+        "fixed inset-0 z-0 transition-opacity duration-500",
+        live ? "opacity-100" : "opacity-0",
+        grab ? "pointer-events-auto" : "pointer-events-none",
       )}
-      // The scale goes to the canvas element through a variable, not
-      // to anything React measures. R3F sizes the drawing buffer from
-      // its container's bounding rect, and a bounding rect carries
-      // its ancestors' transforms - so scaling any box above the
-      // canvas convinces the canvas it is that much smaller, and it
-      // stays that size after the transform is gone.
-      style={
-        wall > 0
-          ? {
-              opacity: 1,
-              // Receding into the monitor, and then swinging away
-              // with the rest of the room as the view pitches up off
-              // it. The room's turn is applied last, so it carries
-              // the screen rather than the screen fighting it.
-              "--shrink": `${tilt(LOOK(wall))} translateY(${(MON.mid - 0.5) * 100 * PULL(wall)}vh) scale(${1 - (1 - MON.scale) * PULL(wall)})`,
-            }
-          : undefined
-      }
     >
-      {(ready || wall > 0) && (
+      {ready && (
         <Suspense fallback={null}>
           <TownScene
-            // Drawing through the switch as well. `live` is measured,
-            // and measuring is suspended while the room is up - left
-            // to it the frame loop stops and the monitor shows a
-            // black screen for the length of the shot.
-            active={live || wall > 0}
+            active={live}
             focused={focused}
             onFocus={setFocused}
             narrow={false}
