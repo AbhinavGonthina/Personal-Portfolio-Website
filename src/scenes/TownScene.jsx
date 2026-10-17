@@ -12,7 +12,8 @@ import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
 import Motes from "./motes";
 import Car from "./arrival";
-import { ARRIVAL_END, arrivalShot } from "../lib/arrivalPath";
+import { ARRIVAL_END, arrivalShot, ride } from "../lib/arrivalPath";
+import { clearReady, markReady } from "../lib/ready";
 import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
 import { markLanded } from "../lib/welcome";
 import {
@@ -930,6 +931,9 @@ const LOOK_PITCH = 0.12;
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
+// Scratch, like SHOT: the arrival runs this every frame and a fresh
+// object a frame is litter for the collector to deal with later.
+const RIDE = { y: 0, pitch: 0, roll: 0 };
 const A = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
 const B = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
 
@@ -1076,9 +1080,15 @@ function Rig({ target, narrow, clock }) {
       clock.current.t =
         HELD ?? (performance.now() - clock.current.start) / 1000;
       arrivalShot(clock.current.t, SHOT);
-      cam.position.set(SHOT.px, SHOT.py, SHOT.pz);
+      // Sitting in a car that is still moving. The eye takes the
+      // body's vertical movement and not its pitch or roll, which
+      // is roughly what a neck does, and the look target takes the
+      // same offset so the shake is the cabin moving rather than
+      // the camera nodding at it.
+      ride(clock.current.t, RIDE);
+      cam.position.set(SHOT.px, SHOT.py + RIDE.y, SHOT.pz);
       LOOK.x = SHOT.lx;
-      LOOK.y = SHOT.ly;
+      LOOK.y = SHOT.ly + RIDE.y;
       LOOK.z = SHOT.lz;
       cam.lookAt(LOOK.x, LOOK.y, LOOK.z);
       if (HELD === null && clock.current.t >= ARRIVAL_END) endArrival();
@@ -1301,8 +1311,11 @@ function Warmup() {
     if (calm.current >= WARM_SETTLED || frames.current >= WARM_FRAMES) {
       done.current = true;
       sceneReady();
+      markReady();
     }
   });
+  // The next canvas starts cold, so the indicator has to come back.
+  useEffect(() => clearReady, []);
   return null;
 }
 
