@@ -57,12 +57,42 @@ const ease = (x) => {
 /** A window of `p`, eased, as its own 0..1. */
 const span = (a, b) => (v) => ease((v - a) / (b - a));
 
-/** The crane, the bezel, the wash over the town, and the page. */
-export const CRANE = span(0, 0.8);
-export const BEZEL = span(0.22, 0.9);
-const CHROME = span(0, 0.18);
-const VEIL = span(0.66, 0.9);
-const PAGE = span(0.82, 1);
+/**
+ * The run, in four beats.
+ *
+ * The camera cranes out of the town until the whole place is in one
+ * frame. A second frame waits off to the right. The view travels
+ * across to it - the town and its frame moving together, because the
+ * camera turns rather than slides, and a turn moves everything on
+ * screen by the same angle whatever depth it is at. Then the second
+ * frame opens out to fill the window, and what is in it is the page.
+ */
+export const CRANE = span(0, 0.4);
+export const SHUT = span(0.14, 0.44);
+export const SLIDE = span(0.48, 0.76);
+export const OPEN = span(0.78, 0.97);
+const VEIL = span(0.8, 0.95);
+const PAGE = span(0.86, 1);
+const CHROME = span(0, 0.16);
+
+/**
+ * The frames, in camera space: how far in front, how far in the
+ * first one closes, and the gap between the two as a fraction of the
+ * window's half-width.
+ */
+export const FR = { d: 7, shut: 0.42, gap: 0.14 };
+
+/** Half-extents of the window at the frames' distance. */
+export function frameBox(cam) {
+  const h = Math.tan((cam.fov * Math.PI) / 360) * FR.d;
+  return { h, w: h * cam.aspect };
+}
+
+/** How far apart the two frames sit, centre to centre. */
+export function frameStep(cam) {
+  const { w } = frameBox(cam);
+  return 2 * w * (1 - FR.shut) + w * FR.gap;
+}
 
 function paint() {
   const root = document.documentElement.style;
@@ -74,9 +104,11 @@ function paint() {
   }
   root.setProperty("--sw-veil", String(VEIL(p)));
   root.setProperty("--sw-page", String(PAGE(p)));
-  // The bar, the readout and the hint belong to the town you are
-  // being lifted out of, not to the shot of it.
-  root.setProperty("--sw-chrome", String(1 - CHROME(p)));
+  // The bar goes out with the town it belongs to and comes back with
+  // the page, which also owns one. Written as a single expression so
+  // it lands on 1 at both ends: left at 0 when the run finished, the
+  // plain read had no navigation at all.
+  root.setProperty("--sw-chrome", String(Math.min(1, 1 - CHROME(p) + PAGE(p))));
 }
 
 function tick(now) {

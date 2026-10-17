@@ -15,7 +15,18 @@ import Car from "./arrival";
 import { ARRIVAL_END, arrivalShot } from "../lib/arrivalPath";
 import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
 import { markLanded } from "../lib/welcome";
-import { BEZEL, CRANE, FOG, getSwitch, WIDE } from "../lib/switchView";
+import {
+  CRANE,
+  FOG,
+  FR,
+  frameBox,
+  frameStep,
+  getSwitch,
+  OPEN,
+  SHUT,
+  SLIDE,
+  WIDE,
+} from "../lib/switchView";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { makeEmblemMaterials } from "../lib/emblemMaterials";
 import Emblem from "./emblems";
@@ -1235,7 +1246,8 @@ function Rig({ target, narrow, clock }) {
  * arrive at would have nothing in it.
  */
 function crane(state, cam) {
-  const c = CRANE(getSwitch());
+  const sw = getSwitch();
+  const c = CRANE(sw);
   if (c <= 0) return;
   cam.position.x += (WIDE.px - cam.position.x) * c;
   cam.position.y += (WIDE.py - cam.position.y) * c;
@@ -1245,6 +1257,23 @@ function crane(state, cam) {
   LOOK.z += (WIDE.lz - LOOK.z) * c;
   const fog = state.scene.fog;
   if (fog) fog.density = FOG.near + (FOG.far - FOG.near) * c;
+
+  // Then the view travels to the second frame.
+  //
+  // By turning, not by sliding sideways. A turn moves everything on
+  // screen by the same angle whatever depth it is at, so the town,
+  // the wood and the stars all travel exactly as far as the frame
+  // carrying them does. A lateral move would have slid each of them
+  // by a different amount and torn the picture out of its frame.
+  const slide = SLIDE(sw);
+  if (slide <= 0) return;
+  const yaw = slide * Math.atan(frameStep(cam) / FR.d);
+  const dx = LOOK.x - cam.position.x;
+  const dz = LOOK.z - cam.position.z;
+  const cos = Math.cos(yaw);
+  const sin = Math.sin(yaw);
+  LOOK.x = cam.position.x + dx * cos - dz * sin;
+  LOOK.z = cam.position.z + dx * sin + dz * cos;
 }
 
 /**
@@ -1258,61 +1287,90 @@ function crane(state, cam) {
  */
 const CLOSE = 0.42;
 
-function Bezel() {
+function Frames() {
   const g = useRef();
-  const slabs = useRef([]);
+  const parts = useRef([]);
   useFrame((state) => {
     const grp = g.current;
-    if (!grp) return;
-    const b = BEZEL(getSwitch());
-    grp.visible = b > 0;
-    if (b <= 0) return;
+    const q = parts.current;
+    if (!grp || !q[12]) return;
+    const sw = getSwitch();
+    const shut = SHUT(sw);
+    grp.visible = shut > 0;
+    if (shut <= 0) return;
 
     const cam = state.camera;
     grp.position.copy(cam.position);
     grp.quaternion.copy(cam.quaternion);
 
-    const D = 7;
-    const h = Math.tan((cam.fov * DEG) / 2) * D;
-    const w = h * cam.aspect;
-    // Inner edge: at the frustum edge to begin with, then in.
-    const ih = h * (1 - CLOSE * b);
-    const iw = w * (1 - CLOSE * b);
-    const s = slabs.current;
-    if (!s[0] || !s[7]) return;
+    const { h, w } = frameBox(cam);
+    const step = frameStep(cam);
+    const slide = SLIDE(sw);
+    const open = OPEN(sw);
+    const D = FR.d;
+
+    // The first frame: the hole the town is seen through, closing in
+    // and then travelling off to the left.
+    const aw = w * (1 - FR.shut * shut);
+    const ah = h * (1 - FR.shut * shut);
+    const ax = -slide * step;
+
+    // The second: a dark panel that arrives from the right and then
+    // opens out until it is the whole window.
+    const bw = aw + (w - aw) * open;
+    const bh = ah + (h - ah) * open;
+    const bx = (step - slide * step) * (1 - open);
+
     const put = (m, x, y, sx, sy, z) => {
       m.position.set(x, y, z);
-      m.scale.set(sx, sy, 1);
+      m.scale.set(Math.max(0.001, sx), Math.max(0.001, sy), 1);
     };
-    // The matte. Centred half a slab outside the inner edge, so the
-    // slab runs from that edge outwards - put the centre a whole
-    // slab out and the whole thing clears the frustum and covers
-    // nothing at all.
-    put(s[0], 0, ih + h / 2, w * 3, h, -D);
-    put(s[1], 0, -ih - h / 2, w * 3, h, -D);
-    put(s[2], -iw - w / 2, 0, w, h * 3, -D);
-    put(s[3], iw + w / 2, 0, w, h * 3, -D);
-    // And a hairline along the inside of it. A black matte closing
-    // over a black sky is nothing at all; the line is the only part
-    // of this anyone can actually see.
+    // Matte around the first frame. Oversized, so it still covers the
+    // window once the frame has travelled out of the middle of it.
+    put(q[0], ax, ah + h * 1.5, w * 8, h * 3, -D);
+    put(q[1], ax, -ah - h * 1.5, w * 8, h * 3, -D);
+    put(q[2], ax - aw - w * 4, 0, w * 8, h * 8, -D);
+    put(q[3], ax + aw + w * 4, 0, w * 8, h * 8, -D);
+
     const e = h * 0.006;
-    put(s[4], 0, ih, iw * 2, e, -D + 0.01);
-    put(s[5], 0, -ih, iw * 2, e, -D + 0.01);
-    put(s[6], -iw, 0, e, ih * 2, -D + 0.01);
-    put(s[7], iw, 0, e, ih * 2, -D + 0.01);
-    for (let i = 4; i < 8; i++) s[i].material.opacity = b;
+    const line = (i, x, y, sx, sy, o) => {
+      put(q[i], x, y, sx, sy, -D + 0.02);
+      q[i].material.opacity = o;
+    };
+    line(4, ax, ah, aw * 2, e, shut * (1 - open));
+    line(5, ax, -ah, aw * 2, e, shut * (1 - open));
+    line(6, ax - aw, 0, e, ah * 2, shut * (1 - open));
+    line(7, ax + aw, 0, e, ah * 2, shut * (1 - open));
+
+    // The second frame, nearer the eye so it covers the first.
+    put(q[8], bx, 0, bw * 2, bh * 2, -D + 0.04);
+    q[8].material.opacity = Math.min(1, slide * 1.6);
+    const o2 = Math.min(1, slide * 1.6) * (1 - open * 0.85);
+    line(9, bx, bh, bw * 2, e, o2);
+    line(10, bx, -bh, bw * 2, e, o2);
+    line(11, bx - bw, 0, e, bh * 2, o2);
+    line(12, bx + bw, 0, e, bh * 2, o2);
+    for (let i = 9; i <= 12; i++) q[i].position.z = -D + 0.05;
   });
+
+  const grab = (i) => (el) => {
+    if (el) parts.current[i] = el;
+  };
 
   return (
     <group ref={g} visible={false}>
       {[0, 1, 2, 3].map((i) => (
-        <mesh key={i} ref={(el) => el && (slabs.current[i] = el)}>
+        <mesh key={i} ref={grab(i)}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial color="#04050a" toneMapped={false} />
         </mesh>
       ))}
-      {[4, 5, 6, 7].map((i) => (
-        <mesh key={i} ref={(el) => el && (slabs.current[i] = el)}>
+      <mesh key={8} ref={grab(8)}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial color="#05070b" toneMapped={false} transparent />
+      </mesh>
+      {[4, 5, 6, 7, 9, 10, 11, 12].map((i) => (
+        <mesh key={i} ref={grab(i)}>
           <planeGeometry args={[1, 1]} />
           <meshBasicMaterial
             color={ACCENT.blue}
@@ -1675,7 +1733,7 @@ export default function TownScene({
       <Sky />
 
       <Adapt />
-      <Bezel />
+      <Frames />
       {WATCH && <Perf />}
       <Rig target={target} narrow={narrow} clock={clock} />
       {arriving && <Car clock={clock} />}
