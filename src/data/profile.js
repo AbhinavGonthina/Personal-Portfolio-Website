@@ -25,8 +25,14 @@ export const profile = {
   // allowed to say hello. Shorter than `tagline` and doing a
   // different job: the tagline introduces him to a reader who has
   // sat down, this one to someone who has not stopped walking.
-  pitch:
-    "Hi, I'm Abhi — an Honors CS student at Northeastern University with industry experience from small startups to global enterprises. My expertise is in full-stack development and the AWS infrastructure, automation, and data pipelines behind it.",
+  // Two sentences, and the board breaks the line between them
+  // rather than wrapping them into one block: the first says who he
+  // is, the second says what he does, and they are easier to take
+  // in as two things than as a paragraph with a full stop in it.
+  pitch: [
+    "Hi, I'm Abhi, an Honors CS student at Northeastern University with industry experience from small startups to global enterprises.",
+    "My expertise is in full-stack development, having also worked with AWS infra, DevOps tooling, and data pipelines.",
+  ],
 };
 
 // Three things link to this now (hero button, footer socials, the hand that

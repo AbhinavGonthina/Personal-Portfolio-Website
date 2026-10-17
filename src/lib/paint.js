@@ -372,10 +372,16 @@ export function paintBoard(profile, education, lampAt) {
 
   g.fillStyle = "#b6bcc8";
   sans(40);
+  // A gap between the sentences, not between the lines inside one:
+  // the break is what makes them two statements rather than one
+  // paragraph that happens to contain a full stop.
   let y = pad + 310 * S;
-  for (const line of wrap(g, profile.pitch, right - pad)) {
-    g.fillText(line, pad, y);
-    y += 56 * S;
+  for (const para of profile.pitch) {
+    for (const line of wrap(g, para, right - pad)) {
+      g.fillText(line, pad, y);
+      y += 54 * S;
+    }
+    y += 18 * S;
   }
 
   // Three standing facts across the foot of the board, a label over

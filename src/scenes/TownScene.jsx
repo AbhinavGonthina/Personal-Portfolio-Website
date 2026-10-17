@@ -446,6 +446,16 @@ function Building({
   const [hovered, setHovered] = useState(false);
   const { role, x, z, rotY, height, w, d, shaft: form, top } = tower;
   const on = focused || hovered;
+
+  // Scrolling off the arc takes the pointer handlers away with
+  // `live`, and a handler that no longer exists cannot fire its
+  // `onPointerOut` - so a building you were pointing at when you
+  // left stayed lit until you came back and pointed at it again.
+  // Nothing else clears it: the ray is only recast when the pointer
+  // moves, and scrolling away does not move the pointer.
+  useEffect(() => {
+    if (!live && hovered) setHovered(false);
+  }, [live, hovered]);
   const lit = useMemo(() => crownLight(role.accent), [role.accent]);
 
   // Two materials shared by every part of the roof emblem, lerped here
