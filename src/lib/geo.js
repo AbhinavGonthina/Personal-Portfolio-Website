@@ -130,3 +130,33 @@ export const rnd = (i, salt = 12.9898) => {
   const v = Math.sin(i * salt) * 43758.5453;
   return v - Math.floor(v);
 };
+
+/**
+ * Paint a run of parts one colour, as a vertex attribute.
+ *
+ * Colour per object normally means a material per object, and a
+ * material per object means a draw call per object - which is the
+ * one thing the town cannot spend. A colour attribute survives
+ * `merge`, so a wood of two hundred trees in half a dozen greens is
+ * still the handful of draw calls it was when it was all one grey.
+ *
+ * `to` defaults to the end, so the usual shape is: paint everything
+ * the base colour first, then paint the parts that differ over the
+ * top. That way nothing can be left without the attribute, and a
+ * merge of some geometries that have it and some that do not is a
+ * merge that fails.
+ */
+export function tint(parts, from, hex, to = parts.length) {
+  const c = new THREE.Color(hex);
+  for (let i = from; i < to; i++) {
+    const g = parts[i];
+    const n = g.attributes.position.count;
+    const col = new Float32Array(n * 3);
+    for (let v = 0; v < n; v++) {
+      col[v * 3] = c.r;
+      col[v * 3 + 1] = c.g;
+      col[v * 3 + 2] = c.b;
+    }
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  }
+}

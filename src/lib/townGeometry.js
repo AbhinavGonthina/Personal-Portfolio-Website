@@ -4,6 +4,7 @@ import {
   cyl,
   dot,
   HALF,
+  tint,
   merge,
   place,
   plane,
@@ -183,6 +184,14 @@ const T = 0.16;
  * it. The front is four boxes around a hole rather than a wall with a
  * door drawn on it, and the leaf itself swings - the scene hinges it.
  */
+/**
+ * A roof that is not the same grey as the walls under it, which is
+ * most of what made the house read as one untouched block beside a
+ * city of colour.
+ */
+const HOUSE_WALL = "#4c4859";
+const HOUSE_ROOF = "#6d3a45";
+
 export function house() {
   const base = [];
   const lit = [];
@@ -211,6 +220,7 @@ export function house() {
   }
   base.push(box(door + 0.2, 0.1, 0.22, [0, doorH, hd]));
 
+  const roofFrom = base.length;
   const rise = 1.5;
   const slope = Math.atan2(rise, hw);
   const len = Math.hypot(rise, hw);
@@ -243,6 +253,7 @@ export function house() {
     );
   }
   base.push(box(0.5, 1.3, 0.5, [hw * 0.5, HOUSE.h + rise * 0.7, -hd * 0.5]));
+  const roofTo = base.length;
 
   for (const s of [-1, 1]) {
     const x = s * (door / 2 + side / 2);
@@ -287,6 +298,8 @@ export function house() {
     }
   }
 
+  tint(base, 0, HOUSE_WALL);
+  tint(base, roofFrom, HOUSE_ROOF, roofTo);
   return { base: merge(base), lit: merge(lit) };
 }
 
@@ -615,12 +628,24 @@ const MAIL_VIEW = {
  * read as one shape stamped two hundred times, and the leafy kind is
  * kept for the near ones because a sphere costs five times a cone.
  */
+/**
+ * What a wood looks like at night: still dark, but not all one dark.
+ * Every colour here is below the city in value on purpose - the
+ * point is that the forest stops being a single grey mass, not that
+ * it starts competing with the neon.
+ */
+const BARK = ["#3a3330", "#332e2f", "#2f3034", "#3b352c"];
+const LEAF = ["#2f4a39", "#27423f", "#334257", "#3a4030", "#2b3a4c", "#43412f"];
+
 function tree(parts, i, x, z, near) {
   const kind = near ? i % 3 : i % 2;
   const h = 2.4 + rnd(i, 4.4) * 3.4;
+  const trunkFrom = parts.length;
   parts.push(
     cyl(0.1, 0.17, h, 6, [x, h / 2, z], [0, 0, (rnd(i, 6.6) - 0.5) * 0.12]),
   );
+  tint(parts, trunkFrom, BARK[i % BARK.length]);
+  const leafFrom = parts.length;
 
   if (kind === 0) {
     // Conifer: a stack of skirts, narrowing.
@@ -649,6 +674,7 @@ function tree(parts, i, x, z, near) {
     parts.push(puff(0.6, [x + 0.46, h + 1, z - 0.2], null, [1, 1.05, 1]));
     parts.push(puff(0.5, [x - 0.4, h + 0.86, z + 0.3], null, [1, 1, 1]));
   }
+  tint(parts, leafFrom, LEAF[i % LEAF.length]);
 }
 
 /**

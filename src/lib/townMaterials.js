@@ -37,6 +37,15 @@ export function useTownMaterials() {
         roughness: 0.6,
         metalness: 0.25,
       }),
+      // Anything whose colour is carried in the geometry rather than
+      // in the material. One material, one draw call per buffer, and
+      // as many colours as the buffer has vertices - which is how a
+      // wood gets to be six greens without being six draw calls.
+      painted: new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.82,
+        metalness: 0.06,
+      }),
       // The inside of something you are meant to read as open. Unlit
       // on purpose: every other surface here takes the sky, and the
       // one that does not is the one the eye calls a hole.
