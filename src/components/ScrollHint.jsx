@@ -3,6 +3,7 @@ import { useJourneyNear } from "../lib/stage";
 import { useArriving } from "../lib/arrival";
 import { useWelcomeLanded } from "../lib/welcome";
 import { usePlain } from "../lib/plain";
+import { useSwitching } from "../lib/switchView";
 
 /**
  * The one instruction on the whole site.
@@ -21,10 +22,13 @@ export default function ScrollHint() {
   const arriving = useArriving();
   const landed = useWelcomeLanded();
   const plain = usePlain();
+  // Inline opacity from motion beats a class, so these two are
+  // gated rather than faded.
+  const switching = useSwitching();
 
   return (
     <AnimatePresence>
-      {atStart && !arriving && landed && !plain && (
+      {atStart && !arriving && landed && !plain && !switching && (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -35,7 +39,7 @@ export default function ScrollHint() {
           // inside `transition` is not a thing motion reads.
           exit={{ opacity: 0, y: -6, transition: { duration: 0.3 } }}
           transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="pointer-events-none fixed inset-x-0 bottom-12 z-20 flex flex-col items-center gap-3"
+          className="sw-chrome pointer-events-none fixed inset-x-0 bottom-12 z-20 flex flex-col items-center gap-3"
         >
           <p className="font-mono text-sm uppercase tracking-[0.3em] text-fg-muted">
             Scroll to continue

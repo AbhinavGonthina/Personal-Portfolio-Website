@@ -3,7 +3,8 @@ import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
-import { setPlain, usePlain } from "../lib/plain";
+import { usePlain } from "../lib/plain";
+import { runSwitch } from "../lib/switchView";
 import { setFocused, useStopIndex } from "../lib/stage";
 import { beginJump } from "../lib/scrollLock";
 import { STOPS } from "../lib/stops";
@@ -183,7 +184,7 @@ export default function Navbar() {
         {/* The way out for anyone who would rather just read the thing. */}
         <div className="flex justify-end">
           <button
-            onClick={() => setPlain(!plain)}
+            onClick={() => runSwitch(!plain)}
             aria-pressed={plain}
             className={cn(
               LINK,

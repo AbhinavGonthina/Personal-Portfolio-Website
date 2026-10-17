@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
+import { useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import { paintBoard, paintMark, paintScreen, paintSkills } from "../lib/paint";
@@ -60,12 +61,18 @@ export default function TownStage({ refs }) {
   // The section tops as last measured, so the scroll handler can
   // clamp without laying the page out again on every event.
   const tops = useRef([]);
-  const off = !!(plain || still);
+  // Still mounted while the crane is running: the town is the thing
+  // being craned away from, and it is on screen for most of it.
+  const switching = useSwitching();
+  const off = !!((plain && !switching) || still);
 
   // Nothing moves while the car is pulling up. The camera is on its
   // own clock for those few seconds and scrolling would only put the
   // journey somewhere the sequence is about to overwrite.
-  useScrollLock(arriving && !off);
+  // Pinned while the crane is out, as well as while the car is.
+  // Scrolling through a shot that has left the ground walks the
+  // camera somewhere the crane then has to fight it back from.
+  useScrollLock((arriving && !off) || switching);
 
   // Everything the town has to say is painted into a canvas texture
   // once and only repainted when what it shows changes.

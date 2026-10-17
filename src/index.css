@@ -110,3 +110,22 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* Switching between the two readings.
+   Both of these are driven by custom properties written from the
+   switch's own frame loop, not from React: opacity on two elements
+   is a compositor job, and a render pass over the tree is not. The
+   fallbacks are the resting state, so when the properties are gone
+   so is the whole mechanism. */
+.sw-veil {
+  opacity: var(--sw-veil, 0);
+}
+
+main {
+  opacity: var(--sw-page, 1);
+}
+
+header,
+.sw-chrome {
+  opacity: var(--sw-chrome, 1);
+}
