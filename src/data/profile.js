@@ -30,7 +30,7 @@ export const profile = {
   // is, the second says what he does, and they are easier to take
   // in as two things than as a paragraph with a full stop in it.
   pitch: [
-    "Hi, I'm Abhi, an Honors CS student at Northeastern University with industry experience from small startups to global enterprises.",
+    "Hi, I'm Abhi, an Honors CS student at Northeastern University with industry experience scaling from small startups to global enterprises.",
     "My expertise is in full-stack development, having also worked with AWS infra, DevOps tooling, and data pipelines.",
   ],
 };
