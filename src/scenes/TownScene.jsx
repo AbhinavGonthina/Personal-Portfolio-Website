@@ -1081,6 +1081,9 @@ function Rig({ target, narrow, clock }) {
   // the scroll is. See the pacing below.
   const walked = useRef(null);
   const lastFrame = useRef(0);
+  // Where the camera was when the current jump was clicked. Null
+  // when nothing is jumping.
+  const jumpFrom = useRef(null);
 
   useFrame((state, delta) => {
     const k = 1 - Math.exp(-2.6 * delta);
@@ -1170,8 +1173,21 @@ function Rig({ target, narrow, clock }) {
       // Only when both ends are outside: clicking Skills from the
       // street still walks in through the door, because that is the
       // shot the walk was built for.
+      // Latched for the length of the jump, and judged on where the
+      // camera was when the link was clicked.
+      //
+      // Asking `spansHouse(walked, dest)` fresh each frame cannot
+      // work, because the answer changes the thing it is asked
+      // about: the first frame moves the camera to the far end, and
+      // on the second frame it is no longer on the near side of the
+      // house, so the skip switches itself off. The scroll is still
+      // back at the start at that point, and "going backwards is
+      // immediate" then dragged the camera home and walked it in
+      // through the front door.
       const dest = jumpTo();
-      const skipping = dest !== null && spansHouse(walked.current, dest);
+      if (dest === null) jumpFrom.current = null;
+      else if (jumpFrom.current === null) jumpFrom.current = walked.current;
+      const skipping = dest !== null && spansHouse(jumpFrom.current, dest);
       const seg =
         STOPS[Math.min(STOPS.length - 1, Math.floor(walked.current) + 1)];
       // Only an approach that asked to be walked is paced, and only
@@ -1840,9 +1856,16 @@ function Town({ town, screen, skills, board, boardFace, marks }) {
   const mailLive = useNear(STOP.contact - 0.35, STOPS.length);
   // The boxes stand there from the first shot, because a town with
   // nothing down the far end is a town that stops. The thanks is a
-  // goodbye and does not: it waits until you are out of the house
-  // and on the way to them.
-  const mailGreet = useNear(STOP.contact - 0.5, STOPS.length);
+  // goodbye and does not: it stays off for the whole walk up to the
+  // house, so it is not read on the way in.
+  //
+  // It comes on just inside Skills rather than on the way out. By
+  // then there are four walls between it and the camera, so the
+  // moment it switches on is a moment nobody can see - and when you
+  // do come out of that door it has been standing there the whole
+  // time. Switching it on as you left meant switching it on in
+  // shot.
+  const mailGreet = useNear(STOP.skills + 0.3, STOPS.length);
 
   return (
     <>
