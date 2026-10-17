@@ -122,17 +122,32 @@
 }
 
 /* Switching between the two readings.
-   Both of these are driven by custom properties written from the
-   switch's own frame loop, not from React: opacity on two elements
+
+   The second frame is the page itself, shrunk into the frame's place
+   and carried along with it - the scene writes the scale and offset
+   every frame from the same geometry it draws the first frame with.
+   The backing goes under it so the frame has something solid in it
+   rather than the town showing through the words.
+
+   All of it is custom properties written from the switch's own loop
+   rather than from React: a transform and an opacity on two elements
    is a compositor job, and a render pass over the tree is not. The
    fallbacks are the resting state, so when the properties are gone
    so is the whole mechanism. */
+.sw-pane {
+  transform-origin: 50% 0%;
+  transform: translate(var(--sw-tx, 0px), var(--sw-ty, 0px))
+    scale(var(--sw-s, 1));
+}
+
 .sw-veil {
-  opacity: var(--sw-veil, 0);
+  opacity: var(--sw-page, 0);
+  border: 1px solid rgb(143 168 255 / var(--sw-edge, 0));
 }
 
 main {
   opacity: var(--sw-page, 1);
+  clip-path: inset(0 0 calc(var(--sw-clip, 0) * (100% - 100vh)) 0);
 }
 
 header,

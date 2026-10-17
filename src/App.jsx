@@ -52,12 +52,12 @@ export default function App() {
           recalculations a frame. */}
       <div
         aria-hidden
-        className="sw-veil pointer-events-none fixed inset-0 z-[5] bg-ink-950"
+        className="sw-veil sw-pane pointer-events-none fixed inset-0 z-[5] bg-ink-950"
       />
 
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
-      <main className="pointer-events-none relative z-10">
+      <main className="sw-pane pointer-events-none relative z-10">
         <Hero ref={hero} />
         <About ref={about} />
         <Experience ref={experience} />

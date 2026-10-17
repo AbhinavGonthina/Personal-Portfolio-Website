@@ -114,7 +114,10 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 transition-colors duration-300",
+        // sw-pane: the bar is part of the page, so while the switch
+        // is running it rides inside the second frame rather than
+        // sitting over the whole window at full size.
+        "sw-pane sticky top-0 z-50 transition-colors duration-300",
         scrolled
           ? "border-b border-ink-700/70 bg-ink-950/70 backdrop-blur-xl"
           : "border-b border-transparent bg-transparent",
