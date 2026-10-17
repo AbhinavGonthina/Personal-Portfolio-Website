@@ -3,7 +3,7 @@ import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
-import { getJourney } from "../lib/stage";
+import { getSeen, setSeen, getJourney } from "../lib/stage";
 import { STOP, STOPS } from "../lib/stops";
 import { ACCENT, useTownMaterials } from "../lib/townMaterials";
 import { Billboard, Dressing, House, Interior, Mailboxes } from "./town";
@@ -13,6 +13,7 @@ import { ExtrudedText, Ground } from "./street";
 import Motes from "./motes";
 import Car from "./arrival";
 import { ARRIVAL_END, arrivalShot, ride } from "../lib/arrivalPath";
+import { jumpTo } from "../lib/scrollLock";
 import { clearReady, markReady } from "../lib/ready";
 import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
 import { markLanded } from "../lib/welcome";
@@ -941,6 +942,15 @@ const PIVOT_HOLD = 0.28;
 const APPROACH_S = 2.4;
 // The most wall time one frame may contribute to that.
 const PACE_MAX_DT = 0.25;
+
+/**
+ * Whether a trip from a to b would pass through the house. Both ends
+ * have to be outside it: going in is a walk worth watching, and only
+ * passing through is not.
+ */
+const spansHouse = (a, b) =>
+  (a <= STOP.experience + 0.25 && b >= STOP.contact - 0.25) ||
+  (a >= STOP.contact - 0.25 && b <= STOP.experience + 0.25);
 const span = (v, lo, hi) => Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
 
 const SHOT = { px: 0, py: 0, pz: 0, lx: 0, ly: 0, lz: 0 };
@@ -1124,43 +1134,56 @@ function Rig({ target, narrow, clock }) {
       // because a hard flick does not stay in the segment: the
       // scroll lands past it within a frame or two, `i` moves on to
       // the next pair of stops, and the staging it was about to
-      // play is simply not the code running any more. The camera
-      // then takes one damped straight line from the arc to the far
-      // wall - through the house rather than in at the door.
+      // play is simply not the code running any more.
       //
-      // So the camera has its own position along the walk, and it
-      // may only advance at walking pace while it is inside an
-      // approach that asked to be walked. Everywhere else it is the
-      // scroll exactly, and going backwards is never paced: leaving
-      // should answer at once.
-      // Wall time, not summed deltas. A machine drawing slowly would
-      // otherwise take several times as long to walk the same path,
-      // and a single long frame - the first wide shot is one - adds
-      // its whole length at once and skips the walk outright, which
-      // is exactly the bug this is here to fix.
-      // How fast the camera may be asked to move, in wall time.
+      // So the camera has its own position along the walk. It may
+      // only advance at walking pace while it is inside an approach
+      // that asked to be walked; everywhere else it is the scroll
+      // exactly, and going backwards is never paced, because
+      // leaving should answer at once.
       //
-      // A frame may contribute at most PACE_MAX_DT of it. That cap
-      // is doing two jobs: the canvas stops entirely when it is not
-      // active, so the first frame after an idle would otherwise
-      // arrive holding the whole idle and spend it in one step, and
-      // a machine that drops a long frame would skip the walk for
-      // the same reason. Capped, a slow machine stretches the walk
-      // and never loses it, which is the right way round.
+      // Wall time, not summed deltas, and capped at PACE_MAX_DT a
+      // frame. The cap does two jobs: the canvas stops entirely
+      // when it is not active, so the first frame after an idle
+      // would otherwise arrive holding the whole idle and spend it
+      // in one step, and a machine that drops a long frame would
+      // skip the walk for the same reason. Capped, a slow machine
+      // stretches the walk and never loses it.
       const nowMs = performance.now();
       const dt = Math.min((nowMs - lastFrame.current) / 1000, PACE_MAX_DT);
       lastFrame.current = nowMs;
 
       const want = Math.min(STOPS.length - 1.0001, Math.max(0, getJourney()));
       if (walked.current === null) walked.current = want;
+
+      // A link from one side of the house to the other does not go
+      // through the house.
+      //
+      // The walk is the point while you are scrolling; when you have
+      // clicked Contact you have said where you want to be, and four
+      // stops of somebody else's living room on the way is not
+      // continuity, it is waiting. Worse, the room is built as the
+      // camera passes through it and is still compiling when it
+      // arrives, so what you got was two seconds of a black box you
+      // did not ask to be in.
+      //
+      // Only when both ends are outside: clicking Skills from the
+      // street still walks in through the door, because that is the
+      // shot the walk was built for.
+      const dest = jumpTo();
+      const skipping = dest !== null && spansHouse(walked.current, dest);
       const seg =
         STOPS[Math.min(STOPS.length - 1, Math.floor(walked.current) + 1)];
       // Only an approach that asked to be walked is paced, and only
       // forwards: leaving should answer at once.
-      walked.current =
-        want <= walked.current || !seg?.pivot
+      walked.current = skipping
+        ? dest
+        : want <= walked.current || !seg?.pivot
           ? want
           : Math.min(want, walked.current + dt / APPROACH_S);
+      // Everything that shows or hides itself because of where the
+      // camera is reads this, not the scroll.
+      setSeen(walked.current);
       const j = walked.current;
       const i = Math.floor(j);
       const f = ease(j - i);
@@ -1531,11 +1554,11 @@ function useWide() {
  */
 function useNear(from, to) {
   const [on, setOn] = useState(() => {
-    const j = getJourney();
+    const j = getSeen();
     return j >= from && j <= to;
   });
   useFrame(() => {
-    const j = getJourney();
+    const j = getSeen();
     const want = j >= from && j <= to;
     if (want !== on) setOn(want);
   });

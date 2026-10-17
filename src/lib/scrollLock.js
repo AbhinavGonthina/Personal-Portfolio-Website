@@ -52,6 +52,7 @@ function release() {
 
 let jumpUntil = 0;
 let jumpMoved = false;
+let jumpDest = null;
 
 /**
  * A link is taking you somewhere, so get out of the way.
@@ -62,12 +63,26 @@ let jumpMoved = false;
  * turns the link into a link to somewhere else. The stage checks this
  * before arming either the pause or the pin.
  */
-export function beginJump(ms = 2500) {
+export function beginJump(ms = 2500, to = null) {
   jumpUntil = performance.now() + ms;
   jumpMoved = false;
+  jumpDest = to;
 }
 
 export const isJumping = () => performance.now() < jumpUntil;
+
+/**
+ * Where the jump is going, as a stop index, or null if nothing is
+ * going anywhere.
+ *
+ * The scroll position cannot answer this while a jump is in flight:
+ * it ramps towards the destination over half a second, so for most
+ * of the trip "where the page is" is somewhere in the middle. The
+ * camera needs the destination at the first frame to decide whether
+ * the route passes through anything it should not be routed
+ * through.
+ */
+export const jumpTo = () => (isJumping() ? jumpDest : null);
 
 /**
  * Called once a frame while the page is being read, with whether the
@@ -79,7 +94,10 @@ export const isJumping = () => performance.now() < jumpUntil;
 export function trackJump(moving) {
   if (!isJumping()) return;
   if (moving) jumpMoved = true;
-  else if (jumpMoved) jumpUntil = 0;
+  else if (jumpMoved) {
+    jumpUntil = 0;
+    jumpDest = null;
+  }
 }
 
 /** Ignores forward scroll input for `ms`. Programmatic scrolling is untouched. */
