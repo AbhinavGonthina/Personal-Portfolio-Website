@@ -1236,17 +1236,28 @@ function crane(state, cam) {
 /**
  * Four slabs that close in around the view like a bezel.
  *
- * Carried on the camera rather than placed in the world, so they
+ * Parented to the camera rather than placed in the world, so they
  * frame the screen from wherever the crane has got to. Their inner
  * edges start just outside the frustum at the distance they sit at
  * and travel inwards, which is a matte closing rather than a border
  * being drawn.
+ *
+ * Parented, not copied. Copying the camera's transform in here meant
+ * reading it in one `useFrame` and writing it in another, and this
+ * one is registered first - so the border wore the camera from the
+ * frame before while the town inside it wore the current one. A
+ * fixed lag would only have been an offset; what made it shake is
+ * that the gap is a frame's worth of camera motion and frames are
+ * not all the same length. Hanging the group off the camera means
+ * three.js derives the matrix during the same traversal it draws
+ * with, so there is no order to get wrong.
  */
 const CLOSE = 0.42;
 
 function Frames() {
   const g = useRef();
   const parts = useRef([]);
+  const camera = useThree((s) => s.camera);
   useFrame((state) => {
     const grp = g.current;
     const q = parts.current;
@@ -1257,9 +1268,6 @@ function Frames() {
     if (shut <= 0) return;
 
     const cam = state.camera;
-    grp.position.copy(cam.position);
-    grp.quaternion.copy(cam.quaternion);
-
     const { h, w } = frameBox(cam);
     const step = frameStep(cam);
     const slide = SLIDE(sw);
@@ -1327,24 +1335,26 @@ function Frames() {
   };
 
   return (
-    <group ref={g} visible={false}>
-      {[0, 1, 2, 3].map((i) => (
-        <mesh key={i} ref={grab(i)}>
-          <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial color="#04050a" toneMapped={false} />
-        </mesh>
-      ))}
-      {[4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
-        <mesh key={i} ref={grab(i)}>
-          <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial
-            color={ACCENT.blue}
-            toneMapped={false}
-            transparent
-          />
-        </mesh>
-      ))}
-    </group>
+    <primitive object={camera}>
+      <group ref={g} visible={false}>
+        {[0, 1, 2, 3].map((i) => (
+          <mesh key={i} ref={grab(i)}>
+            <planeGeometry args={[1, 1]} />
+            <meshBasicMaterial color="#04050a" toneMapped={false} />
+          </mesh>
+        ))}
+        {[4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
+          <mesh key={i} ref={grab(i)}>
+            <planeGeometry args={[1, 1]} />
+            <meshBasicMaterial
+              color={ACCENT.blue}
+              toneMapped={false}
+              transparent
+            />
+          </mesh>
+        ))}
+      </group>
+    </primitive>
   );
 }
 
