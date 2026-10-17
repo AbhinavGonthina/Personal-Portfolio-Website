@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ACCENT } from "./townMaterials";
 
 /**
  * Canvas textures for the things in the town that have to show content:
@@ -192,31 +193,25 @@ export function paintScreen(project, index, total) {
 
 /* ------------------------------------------------------------------ */
 
-const wrap = (g, text, maxW) => {
-  const out = [];
-  let line = "";
-  for (const w of String(text).split(" ")) {
-    const next = line ? line + " " + w : w;
-    if (g.measureText(next).width > maxW && line) {
-      out.push(line);
-      line = w;
-    } else line = next;
-  }
-  if (line) out.push(line);
-  return out;
-};
-
 /**
  * The right-hand half of the hoarding: who the face belongs to.
  *
- * Same words as the landing page used to carry, laid out as a sign
- * rather than as a page. Left-aligned prose on black read as a
- * profile readme - a column of text that happens to be outdoors - so
- * it is built now out of the marks the rest of the town is built
- * from: the ground grid faint underneath, ticks at the corners, the
- * hairline rule under the name that every section heading carries,
- * and the two standing facts set as a labelled footer across the
- * bottom instead of trailing off the end of a paragraph.
+ * A hoarding is read from a moving car and the version before this
+ * was written to be read at a desk - a paragraph of prose on black,
+ * which is a profile readme that happens to be outdoors. Nothing
+ * else in this town is made of sentences: the towers carry mono
+ * caps, the headings carry a number and a rule. So the paragraph is
+ * gone, and what is left is the four things a sign can say before
+ * you have driven past it - who, what they do, what they build with,
+ * and where they are up to. The paragraph is not lost, but it is not
+ * here either: it is in the Hero and the About section, which is to
+ * say it is one toggle away in the simpler read, where there is a
+ * chair under the reader and no reason to be brief.
+ *
+ * One accent, and it is the blue the frame around this board is lit
+ * in, so the paint and the geometry agree. The corner ticks came off
+ * with the prose: this is half of a board that already has a frame,
+ * and ticking its own corners made it a card sitting on one.
  *
  * Drawn at 2x, because at 1024 across a board that fills half the
  * screen the type was visibly soft.
@@ -227,9 +222,13 @@ export function paintBoard(profile, education) {
   const W = 1100 * S;
   const H = 880 * S;
   const [c, g] = canvas(W, H);
-  const pad = 74 * S;
+  const pad = 70 * S;
+  const ACC = ACCENT.blue;
+  const RULE = "#23232b";
 
-  g.fillStyle = "#000000";
+  // The same black the board face is painted, not pure black: this
+  // sits on that face, and a shade between them is a rectangle.
+  g.fillStyle = "#05050a";
   g.fillRect(0, 0, W, H);
 
   // The ground grid, carried up onto the board.
@@ -246,82 +245,67 @@ export function paintBoard(profile, education) {
   }
   g.stroke();
 
-  // Ticks at the corners rather than a border, like the readout in
-  // the car and the frames around everything else here.
-  g.strokeStyle = "#2e2e38";
-  g.lineWidth = 3 * S;
-  const m = 26 * S;
-  const t = 44 * S;
-  for (const [cx, sx] of [
-    [m, 1],
-    [W - m, -1],
-  ]) {
-    for (const [cy, sy] of [
-      [m, 1],
-      [H - m, -1],
-    ]) {
-      g.beginPath();
-      g.moveTo(cx + sx * t, cy);
-      g.lineTo(cx, cy);
-      g.lineTo(cx, cy + sy * t);
-      g.stroke();
-    }
-  }
-
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
 
-  // Eyebrow: mono caps, wide tracking, the subtle grey.
-  g.fillStyle = "#71717a";
-  g.font = `400 ${25 * S}px ${MONO}`;
-  if ("letterSpacing" in g) g.letterSpacing = `${5 * S}px`;
+  const mono = (px, space) => {
+    g.font = `400 ${px * S}px ${MONO}`;
+    if ("letterSpacing" in g) g.letterSpacing = `${space * S}px`;
+  };
+  const sans = (px, weight = 400) => {
+    g.font = `${weight} ${px * S}px ${SANS}`;
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+  };
+  const rule = (y) => {
+    g.fillStyle = RULE;
+    g.fillRect(pad, y, W - pad * 2, 2 * S);
+  };
+
+  // Eyebrow, in the accent. The board is a lit sign, so the small
+  // type on it is lit too rather than being another shade of grey.
+  g.fillStyle = ACC;
+  mono(26, 6);
   g.fillText(
     `${profile.role.toUpperCase()}  ·  ${profile.location.toUpperCase()}`,
     pad,
-    pad + 24 * S,
+    pad + 26 * S,
   );
-  if ("letterSpacing" in g) g.letterSpacing = "0px";
 
+  // The name, stacked. Two lines carry half again the type size of
+  // one across the same width, and on a hoarding the size is the
+  // whole argument.
+  const [first, ...rest] = profile.name.split(" ");
   g.fillStyle = "#ffffff";
-  g.font = `600 ${104 * S}px ${SANS}`;
-  g.fillText(profile.name, pad - 5 * S, pad + 142 * S);
-  g.fillRect(pad, pad + 176 * S, 104 * S, 3 * S);
+  sans(140, 600);
+  g.fillText(first, pad - 6 * S, pad + 182 * S);
+  g.fillText(rest.join(" "), pad - 6 * S, pad + 320 * S);
+  rule(pad + 364 * S);
 
-  g.fillStyle = "#a1a1aa";
-  g.font = `400 ${38 * S}px ${SANS}`;
-  let y = pad + 256 * S;
-  for (const line of wrap(g, profile.tagline, W - pad * 2)) {
-    g.fillText(line, pad, y);
-    y += 54 * S;
-  }
+  // What the work is made of, in the mono caps the towers wear.
+  g.fillStyle = "#9aa0ab";
+  mono(25, 4);
+  g.fillText(
+    profile.focus.map((f) => f.toUpperCase()).join("  ·  "),
+    pad,
+    pad + 432 * S,
+  );
 
-  // Two standing facts, set as a footer. A rule across the board and
-  // a labelled column each - a plaque, not the last paragraph.
-  const base = H - pad + 28 * S;
-  g.fillStyle = "#2b2b34";
-  g.fillRect(pad, base - 186 * S, W - pad * 2, 2 * S);
-
-  const col = [pad, pad + (W - pad * 2) * 0.52];
-  const label = ["CURRENTLY", "GRADUATING"];
-  const body = [
-    profile.currently,
-    `${education.graduation}  ·  GPA ${education.gpa}`,
+  // Two standing facts, a label and a value on one line each: a
+  // plaque, not the last paragraph.
+  const rows = [
+    ["CURRENTLY", profile.currently],
+    ["GRADUATING", `${education.graduation}  ·  GPA ${education.gpa}`],
   ];
-  for (let i = 0; i < 2; i++) {
-    g.fillStyle = "#6fe3f5";
-    g.font = `400 ${23 * S}px ${MONO}`;
-    if ("letterSpacing" in g) g.letterSpacing = `${4 * S}px`;
-    g.fillText(label[i], col[i], base - 132 * S);
-    if ("letterSpacing" in g) g.letterSpacing = "0px";
-
+  let y = pad + 556 * S;
+  for (const [label, value] of rows) {
+    rule(y - 44 * S);
+    g.fillStyle = ACC;
+    mono(23, 5);
+    g.fillText(label, pad, y);
     g.fillStyle = "#d4d4d8";
-    g.font = `400 ${30 * S}px ${SANS}`;
-    const width = (i === 0 ? (W - pad * 2) * 0.46 : W - col[1] - pad) | 0;
-    let ly = base - 86 * S;
-    for (const line of wrap(g, body[i], width)) {
-      g.fillText(line, col[i], ly);
-      ly += 40 * S;
-    }
+    sans(29);
+    g.fillText(value, pad, y + 46 * S);
+    y += 128 * S;
   }
 
   return finish(c);
