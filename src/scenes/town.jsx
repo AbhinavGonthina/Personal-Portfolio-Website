@@ -85,6 +85,17 @@ export function Billboard({ mats, visible, board }) {
     >
       <Shell geo={built.base} mat={mats.shell} />
       <Shell geo={built.lit} mat={mats.cool} />
+      {/* The face, edge to edge, before anything is put on it. The
+          painted half is black and the structure behind it is the
+          grey everything in this town is built from, so without this
+          the type sat in a darker rectangle than the board around it
+          and read as a card propped against a hoarding rather than
+          as the hoarding. Black to the frame, and the only thing on
+          it that is not black is the one thing that should be. */}
+      <mesh position={[0, built.mid, 0.05]}>
+        <planeGeometry args={[BOARD.w, BOARD.h]} />
+        <meshBasicMaterial color="#05050a" toneMapped={false} />
+      </mesh>
       <mesh position={[-BOARD.w / 2 + gap + BOARD_PHOTO / 2, built.mid, 0.06]}>
         <planeGeometry args={[BOARD_PHOTO, BOARD_PHOTO]} />
         <meshBasicMaterial map={photo} toneMapped={false} />

@@ -102,6 +102,25 @@ export function billboard() {
     lit.push(dot(0.1, [side * 2, mid + hh + 0.55, 0.47], null, [1, 0.7, 1]));
   }
 
+  // Ticks at the portrait's corners. A photograph is the one thing on
+  // this board that is not made of lines, and left bare it sat on the
+  // black as a rectangle of colour that had arrived from somewhere
+  // else. Ticks rather than a border, which is how everything here is
+  // framed, and in the merged buffer with the rest of the lit work so
+  // the whole board stays one draw call.
+  const px = -hw + BOARD.pad + BOARD_PHOTO / 2;
+  const pr = BOARD_PHOTO / 2 + 0.05;
+  const t = 0.025;
+  const arm = 0.3;
+  for (const sx of [-1, 1]) {
+    for (const sy of [-1, 1]) {
+      const x = px + sx * pr;
+      const y = mid + sy * pr;
+      lit.push(box(arm, t, t, [x - (sx * (arm - t)) / 2, y, 0.08]));
+      lit.push(box(t, arm, t, [x, y - (sy * (arm - t)) / 2, 0.08]));
+    }
+  }
+
   return { base: merge(base), lit: merge(lit), mid, hw, hh };
 }
 
