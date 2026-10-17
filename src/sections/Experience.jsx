@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
-import LookHint from "../components/LookHint";
 import { usePlain } from "../lib/plain";
-import { setFocused, useFocused, useJourneyNear } from "../lib/stage";
-import { STOP } from "../lib/stops";
+import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
 
@@ -167,11 +165,6 @@ export default function Experience({ ref }) {
   // pinned until you come back out.
   useScrollLock(Boolean(focused) && !plain);
 
-  // The hint belongs to the arc, not to the section box. Tied to the
-  // section it stayed on screen while the camera was already inside
-  // the house, telling you to click a building you could not see.
-  const atArc = useJourneyNear(STOP.experience - 0.4, STOP.experience + 0.4);
-
   // Escape is the shortcut everyone already tries for this.
   useEffect(() => {
     if (!focused) return;
@@ -253,8 +246,6 @@ export default function Experience({ ref }) {
         onSelect={setFocused}
         className="pointer-events-auto sr-only z-20 focus-within:not-sr-only focus-within:absolute focus-within:inset-x-0 focus-within:top-20 focus-within:mx-auto focus-within:flex focus-within:max-w-6xl focus-within:gap-8 focus-within:px-6"
       />
-
-      <LookHint show={!focused && atArc} />
 
       <AnimatePresence>
         {current && (
