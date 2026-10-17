@@ -150,8 +150,13 @@
    pivots on each element's own top edge - the page would land a bar
    lower than its frame and hang out of the bottom of it. It gets the
    offset taken back out, and it is clipped to a screenful less that
-   same height, which is the part of it the frame can hold. */
-main {
+   same height, which is the part of it the frame can hold.
+
+   `main.sw-pane`, not `main`: an element selector loses to the class
+   it is overriding, so written as `main` this transform was quietly
+   replaced by the shared one and the page overhung its frame by
+   exactly the bar-height it was supposed to be giving back. */
+main.sw-pane {
   opacity: var(--sw-page, 1);
   transform: translate(
       var(--sw-tx, 0px),
