@@ -1789,6 +1789,11 @@ function Town({ town, screen, skills, board, boardFace, marks }) {
   // are part of the garden, and a garden that assembles itself as you
   // approach is a garden you have caught in the act.
   const mailLive = useNear(STOP.contact - 0.35, STOPS.length);
+  // The boxes stand there from the first shot, because a town with
+  // nothing down the far end is a town that stops. The thanks is a
+  // goodbye and does not: it waits until you are out of the house
+  // and on the way to them.
+  const mailGreet = useNear(STOP.contact - 0.5, STOPS.length);
 
   return (
     <>
@@ -1799,7 +1804,13 @@ function Town({ town, screen, skills, board, boardFace, marks }) {
       <Billboard mats={town} visible board={board} face={boardFace} />
       <House mats={town} visible open={open} />
       <Interior mats={town} visible={inside} screen={screen} skills={skills} />
-      <Mailboxes mats={town} visible labels={marks} live={mailLive} />
+      <Mailboxes
+        mats={town}
+        visible
+        labels={marks}
+        live={mailLive}
+        greet={mailGreet}
+      />
     </>
   );
 }
