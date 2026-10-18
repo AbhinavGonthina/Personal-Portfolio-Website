@@ -16,8 +16,8 @@ export default function About({ ref }) {
         <img
           src={profile.photo}
           alt={`Portrait of ${profile.name}`}
-          width={820}
-          height={820}
+          width={896}
+          height={896}
           className="mb-8 w-full max-w-[280px] rounded-lg border border-ink-700"
         />
       )}
