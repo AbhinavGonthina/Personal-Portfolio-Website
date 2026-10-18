@@ -17,8 +17,22 @@ export const EXPERIENCE_GROUPS = [
 // It is not `brand`: that is the logo plate's background, and it is white
 // for half of these, which makes it useless as a signal.
 
-// Reverse-chronological. `branch` positions each role on the organic tree:
-// side = which way the branch grows, t = how far up the trunk it attaches (0..1).
+/**
+ * Reverse-chronological. `branch` positions each role on the organic tree:
+ * side = which way the branch grows, t = how far up the trunk it attaches.
+ *
+ * Each role reads in four parts, in the order somebody who has never
+ * heard of the place needs them: what the organisation is, what I did
+ * there, what the work was built out of, and the one or two numbers
+ * worth quoting.
+ *
+ * `blurb` is about the company, not about me. Half of these are names
+ * a reader will not know, and a list of what somebody shipped is no
+ * use until you know what it was shipped into.
+ *
+ * `stats` holds at most two, and empty is normal - a role that has to
+ * reach for a third number does not have two good ones.
+ */
 export const experience = [
   {
     id: "athenahealth",
@@ -35,11 +49,12 @@ export const experience = [
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "right", t: 0.94 },
-    bullets: [
-      "Implemented AWS auto-scaling (ECS tasks + EC2 ASG) via Terraform, cutting EC2 instances from 10 to ~4 and reducing compute costs by ~$5,000/year; confirmed behavior with JMeter load tests at 2,500 concurrent threads.",
-      "Engineered a Consumer Data Store app (React, Express, DynamoDB) to consolidate tenant, service, and workflow-migration data, provisioning EKS infrastructure and a Jenkins CI/CD pipeline for deployment.",
-      "Designed a Python data-generation pipeline that created and inserted ~722M rows of production-scale test data into an Oracle database across 30 contexts via checkpointed Kubernetes jobs, with an S3 backup for traceability.",
-      "Constructed a Grafana/Prometheus observability dashboard with 34 panels spanning 8 microservices, exposing metrics through Spring Boot Actuator to establish the team's first centralized real-time health monitoring.",
+    blurb:
+      "Cloud software that medical practices use to run billing, patient records, and day-to-day operations.",
+    did: "I was on a platform team that maintains the shared infrastructure other teams build on. I set up auto-scaling so our servers grow and shrink with traffic instead of running at full size all the time. I also built an internal app that puts tenant and service data in one place, wrote a pipeline to generate large-scale test data, and created the team's first monitoring dashboard.",
+    stats: [
+      { value: "~$5k", label: "saved a year in compute" },
+      { value: "~722M", label: "rows of test data" },
     ],
     tech: [
       "AWS",
@@ -50,8 +65,11 @@ export const experience = [
       "Express",
       "DynamoDB",
       "Python",
+      "Oracle",
       "Grafana",
+      "Prometheus",
       "Spring Boot",
+      "JMeter",
     ],
   },
   {
@@ -66,15 +84,16 @@ export const experience = [
     start: "Jan 2026",
     end: "May 2026",
     logo: "/logos/badges/philips.png",
-    // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.8 },
-    bullets: [
-      "Developed device management, configuration propagation, physiological data streaming, and network logging features for an SDC-device simulator using React, TypeScript, and C#/.NET, demoing it to 50+ stakeholders.",
-      "Enhanced Event Notification functionality in Philips' PIC iX patient monitoring system through tooltip infrastructure, third-party device category labeling, and search improvements.",
-      "Collaborated with System Integration, Automation, and UI/UX teams to resolve cross-VM multicast networking failures, deliver Swagger API tooling, and eliminate interface bugs across 6 repositories.",
+    blurb:
+      "Patient monitoring systems that nurses use to watch vital signs and alarms in hospital ICUs.",
+    did: "Most of my time went into a simulator that mimics real bedside monitors, so the system can be tested without physical hardware. I owned most of its frontend and contributed to the backend, building things like a live log viewer and a way to configure many devices at once. On the main product, I added help tooltips to the alarm settings and fixed how third-party devices were labeled.",
+    stats: [
+      { value: "50+", label: "stakeholders at the demo" },
+      { value: "6", label: "repositories worked in" },
     ],
-    tech: ["C#", ".NET", "TypeScript", "React", "Swagger", "SQL Server"],
+    tech: ["React", "TypeScript", "Redux", "C#/.NET", "Tauri", "Swagger"],
   },
   {
     id: "quak",
@@ -88,22 +107,23 @@ export const experience = [
     start: "Mar 2025",
     end: "Jan 2026",
     logo: "/logos/badges/quak.png",
-    // Matches the logo art's own background, so the banner is seamless.
     brand: "#FC3600",
     branch: { side: "right", t: 0.66 },
-    bullets: [
-      "Architected hotel booking, payment-splitting, and itinerary features with RESTful APIs using Express, Prisma, and TypeScript, delivering a prototype 33% faster than scheduled and helping secure $140K in funding.",
-      "Implemented a mobile platform frontend redesign using React Native, Tailwind CSS, and Material UI, creating production-ready components shipped in a beta launch that reached 200+ users across 4 universities in 90 days.",
-      "Integrated Redis caching into hotel search, reducing query latency by up to 80% for high-traffic destinations.",
+    blurb:
+      "A startup that makes group travel easier, from booking stays to splitting costs.",
+    did: "I joined early and built much of the backend, including hotel booking, payment splitting, and itinerary planning. I also sped up hotel search by caching popular results. When Quak pivoted to an itinerary marketplace, I led the mobile app's redesign.",
+    stats: [
+      { value: "80%", label: "faster hotel search" },
+      { value: "200+", label: "beta users, 4 universities" },
     ],
     tech: [
-      "React Native",
-      "Expo",
       "TypeScript",
       "Express",
       "Prisma",
-      "PostgreSQL",
       "Redis",
+      "React Native",
+      "Tailwind CSS",
+      "Material UI",
     ],
   },
   {
@@ -118,21 +138,13 @@ export const experience = [
     start: "Jan 2025",
     end: "Apr 2026",
     logo: "/logos/badges/ner.png",
-    // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.52 },
-    bullets: [
-      "Engineered a scalable parts-review overview component in FinishLine using React and Material UI, with dynamic status tracking, reviewer progress indicators, and notifications that improved ticket visibility.",
-      "Developed a confirmation modal, API layer, and React hook for a cascading rule-deletion feature, implementing recursive logic to calculate and display every dependent rule affected within a competition ruleset.",
-    ],
-    tech: [
-      "React",
-      "Material UI",
-      "TypeScript",
-      "Express",
-      "Prisma",
-      "PostgreSQL",
-    ],
+    blurb:
+      "Northeastern's student team that builds an electric race car for Formula SAE competitions.",
+    did: "I work on FinishLine, the team's project management app. I built a page that shows where every part is in the review process, and a tool that warns you about every rule that depends on one before you delete it.",
+    stats: [],
+    tech: ["React", "Material UI", "Express", "Prisma"],
   },
   {
     id: "rainfall",
@@ -146,22 +158,12 @@ export const experience = [
     start: "Jun 2025",
     end: "Dec 2025",
     logo: "/logos/badges/rainfall.png",
-    // Matches the logo art's own background, so the banner is seamless.
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
-    bullets: [
-      "Led the Payments and Internal Tools team at a Northeastern student-led e-learning startup, integrating the Stripe API to connect tutors with students.",
-      "Managed 3 sub-team members and reviewed tickets across a group of 20+ developers and designers.",
-    ],
-    tech: [
-      "React",
-      "TypeScript",
-      "Express",
-      "Prisma",
-      "PostgreSQL",
-      "Stripe",
-      "Material UI",
-    ],
+    blurb: "A platform that connects students with tutors.",
+    did: "I wrote feature specs as GitHub issues, reviewed other developers' code, and helped plan the backend for tutor payments.",
+    stats: [],
+    tech: ["Express", "Prisma", "Stripe API", "GitHub"],
   },
   {
     id: "khoury",
@@ -170,52 +172,63 @@ export const experience = [
     category: "northeastern",
     short: "Khoury",
     company: "Khoury",
-    role: "Teaching Assistant — CS1800",
+    role: "Teaching Assistant — Discrete Structures",
     location: "Boston, MA",
     start: "Aug 2025",
     end: "Dec 2025",
     logo: "/logos/badges/khoury.png",
-    // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.24 },
-    bullets: [
-      "Teaching Assistant for Discrete Structures (CS1800), supporting a cohort of 500+ students across combinatorics, graph theory, algorithmic efficiency, logic, induction, and proofs.",
-      "Personally assisted 30+ students each week at recitations and graded close to 100 assignments weekly.",
+    blurb:
+      "Northeastern's intro CS theory course, where students first learn proofs, logic, and the math behind computing.",
+    did: "I run weekly recitations, hold office hours, answer questions on Piazza, and grade assignments. Most of the job is finding a different way to explain a concept when the first one does not click.",
+    stats: [
+      { value: "500+", label: "students in the course" },
+      { value: "30+", label: "students per recitation" },
     ],
-    tech: [],
+    tech: ["Piazza"],
   },
   {
     id: "oasis",
     emblem: "palm",
     category: "northeastern",
-    // TODO(abhinav): fill in. Everything below this line is a placeholder.
     short: "Oasis",
     company: "Oasis",
     accent: "#2E8B9A",
+    // TODO(abhinav): the role title and `did` are still unwritten. The
+    // panel leaves both out rather than printing a placeholder.
     role: "Role TBD",
     location: "Boston, MA",
     start: "Jan 2026",
     end: "Present",
     logo: "/logos/badges/oasis.png",
     brand: "#FFFFFF",
-    bullets: [],
+    blurb:
+      "A hiring simulation game where students preparing for co-op play the recruiter instead of the candidate.",
+    did: "",
+    stats: [],
     tech: [],
   },
   {
     id: "pawtograder",
     emblem: "husky",
     category: "northeastern",
-    // TODO(abhinav): fill in the role, dates and bullets.
     short: "Pawtograder",
     company: "Pawtograder",
     accent: "#8A6FD6",
+    // TODO(abhinav): the role title and the stack are still unwritten.
+    // Not guessed at: a wrong stack on a portfolio is worse than a
+    // missing one, and this one would have been a guess.
     role: "Role TBD",
     location: "Boston, MA",
     start: "Jan 2026",
     end: "Present",
     logo: "/logos/badges/pawtograder.png",
     brand: "#FFFFFF",
-    bullets: [],
+    blurb:
+      "The open-source platform Northeastern CS courses use to submit and grade assignments.",
+    did: "I am on the team adding support for paper exams. I build the exam templates and answer regions that tell the system where each answer sits on a scanned page.",
+    stats: [],
     tech: [],
   },
 ];
