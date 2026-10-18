@@ -109,8 +109,8 @@ export default function Hero({ ref }) {
               <img
                 src={profile.photo}
                 alt={`Portrait of ${profile.name}`}
-                width={820}
-                height={820}
+                width={896}
+                height={896}
                 className="w-full rounded-sm [transform:translateZ(22px)]"
               />
               <div
