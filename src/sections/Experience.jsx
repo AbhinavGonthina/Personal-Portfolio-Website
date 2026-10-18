@@ -78,7 +78,31 @@ function Steps({ role, onStep, onBack }) {
   );
 }
 
+/** A mono label over a block, the way the hoarding sets its facts. */
+const Label = ({ children }) => (
+  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-fg-subtle">
+    {children}
+  </p>
+);
+
+/**
+ * One role, in four parts: what the place is, what I did there, what
+ * it was built with, and the numbers.
+ *
+ * The last two share a line, tech on the left and the numbers on the
+ * right. They are the two parts you skim rather than read, so putting
+ * them side by side at the foot keeps the prose above uninterrupted
+ * and lets the eye land on either without going through the other.
+ *
+ * Every part except the first is dropped when it is empty. A role
+ * with no numbers gets the full width for its stack, and a role with
+ * nothing written yet shows its blurb and stops - an empty heading
+ * over nothing reads as broken rather than as unfinished.
+ */
 function Detail({ role, onBack, onStep, inScene }) {
+  const hasStats = role.stats?.length > 0;
+  const hasTech = role.tech.length > 0;
+
   return (
     <>
       {inScene && <Steps role={role} onStep={onStep} onBack={onBack} />}
@@ -89,33 +113,65 @@ function Detail({ role, onBack, onStep, inScene }) {
         {role.start} &ndash; {role.end} &middot; {role.location}
       </p>
 
-      <ul className="mt-6 space-y-3">
-        {role.bullets.map((b) => (
-          <li
-            key={b.slice(0, 40)}
-            className="flex gap-3 text-sm leading-relaxed text-fg-muted"
-          >
-            <span
-              aria-hidden
-              className="mt-2 size-1.5 shrink-0 rounded-full"
-              style={{ background: role.accent }}
-            />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
+      {/* What the place is. Set against the accent rule rather than
+          as another paragraph, because it is context for everything
+          under it and not the first thing I want to say. */}
+      <p
+        className="mt-6 border-l-2 pl-4 text-sm leading-relaxed text-fg-muted"
+        style={{ borderColor: role.accent }}
+      >
+        {role.blurb}
+      </p>
 
-      {role.tech.length > 0 && (
-        <ul className="mt-6 flex flex-wrap gap-2">
-          {role.tech.map((t) => (
-            <li
-              key={t}
-              className="rounded-md border border-ink-700 bg-ink-900/80 px-2.5 py-1 text-xs text-fg-muted"
-            >
-              {t}
-            </li>
-          ))}
-        </ul>
+      {role.did && (
+        <div className="mt-6">
+          <Label>What I did</Label>
+          <p className="text-sm leading-relaxed text-fg-muted">{role.did}</p>
+        </div>
+      )}
+
+      {(hasTech || hasStats) && (
+        <div className="mt-7 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-7">
+          {hasTech && (
+            <div className="min-w-0 flex-1">
+              <Label>Built with</Label>
+              <ul className="flex flex-wrap gap-2">
+                {role.tech.map((t) => (
+                  <li
+                    key={t}
+                    className="rounded-md border border-ink-700 bg-ink-900/80 px-2.5 py-1 text-xs text-fg-muted"
+                  >
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {hasStats && (
+            <div className="shrink-0">
+              <Label>By the numbers</Label>
+              <div className="flex gap-3">
+                {role.stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="w-[7.5rem] rounded-lg border border-ink-700 bg-ink-900/60 px-3 py-3"
+                  >
+                    <p
+                      className="text-lg font-semibold leading-none tracking-tight"
+                      style={{ color: role.accent }}
+                    >
+                      {s.value}
+                    </p>
+                    <p className="mt-1.5 text-[11px] leading-snug text-fg-subtle">
+                      {s.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </>
   );
