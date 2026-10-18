@@ -26,6 +26,7 @@ import {
   mailrail,
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
+import { PICKING, PICKS, usePick } from "../lib/photoPick";
 import { ACCENT } from "../lib/townMaterials";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText } from "./street";
@@ -115,7 +116,16 @@ function Outline({ geo, color = ACCENT.blue, opacity = EDGE, angle = 18 }) {
  */
 export function Billboard({ mats, visible, board, face }) {
   const built = useBuilt(billboard);
-  const photo = useLoader(THREE.TextureLoader, profile.photo);
+  // All of the candidates at once while picking, so switching
+  // between them does not suspend the canvas and blank the town.
+  // One url otherwise, which is the only one that gets fetched.
+  const urls = useMemo(
+    () => (PICKING ? PICKS.map((o) => o.src) : [profile.photo]),
+    [],
+  );
+  const maps = useLoader(THREE.TextureLoader, urls);
+  const pick = usePick();
+  const photo = maps[Math.min(pick, maps.length - 1)];
   const gap = BOARD.pad;
   const textW = BOARD_TEXT;
 
