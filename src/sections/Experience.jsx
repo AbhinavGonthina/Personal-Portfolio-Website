@@ -123,10 +123,23 @@ function Detail({ role, onBack, onStep, inScene }) {
         {role.blurb}
       </p>
 
-      {role.did && (
+      {role.did.length > 0 && (
         <div className="mt-6">
           <Label>What I did</Label>
-          <p className="text-sm leading-relaxed text-fg-muted">{role.did}</p>
+          {/* Paragraphs, because some of these are two things rather
+              than one: Oasis is an accelerator and a project series,
+              and running them together made the second read as a
+              continuation of the first. */}
+          <div className="space-y-3">
+            {role.did.map((para) => (
+              <p
+                key={para.slice(0, 40)}
+                className="text-sm leading-relaxed text-fg-muted"
+              >
+                {para}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 

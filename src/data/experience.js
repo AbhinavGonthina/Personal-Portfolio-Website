@@ -51,7 +51,9 @@ export const experience = [
     branch: { side: "right", t: 0.94 },
     blurb:
       "Cloud software that medical practices use to run billing, patient records, and day-to-day operations.",
-    did: "I was on a platform team that maintains the shared infrastructure other teams build on. I set up auto-scaling so our servers grow and shrink with traffic instead of running at full size all the time. I also built an internal app that puts tenant and service data in one place, wrote a pipeline to generate large-scale test data, and created the team's first monitoring dashboard.",
+    did: [
+      "I was on a platform team that maintains the shared infrastructure other teams build on. I set up auto-scaling so our servers grow and shrink with traffic instead of running at full size all the time. I also built an internal app that puts tenant and service data in one place, wrote a pipeline to generate large-scale test data, and created the team's first monitoring dashboard.",
+    ],
     // Four, which is the exception. The stack here is long enough to
     // run past the foot of the panel on its own, and a second column
     // of numbers beside it takes some of that height back instead of
@@ -92,8 +94,10 @@ export const experience = [
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.8 },
     blurb:
-      "Patient monitoring systems that nurses use to watch vital signs and alarms in hospital ICUs.",
-    did: "Most of my time went into a simulator that mimics real bedside monitors, so the system can be tested without physical hardware. I owned most of its frontend and contributed to the backend, building things like a live log viewer and a way to configure many devices at once. On the main product, I added help tooltips to the alarm settings and fixed how third-party devices were labeled.",
+      "Patient monitoring systems that nurses use to watch vital signs and alarms at the bedside in hospitals.",
+    did: [
+      "Most of my time went into a simulator that mimics real bedside monitors, so the system can be tested without physical hardware. I owned most of its frontend and contributed to the backend, building things like a live log viewer and a way to configure many devices at once. On the main product, I added help tooltips to the alarm settings and fixed how third-party devices were labeled.",
+    ],
     stats: [
       { value: "50+", label: "stakeholders at the demo" },
       { value: "6", label: "repositories worked in" },
@@ -116,9 +120,11 @@ export const experience = [
     branch: { side: "right", t: 0.66 },
     blurb:
       "A startup that makes group travel easier, from booking stays to splitting costs.",
-    did: "I joined early and built much of the backend, including hotel booking, payment splitting, and itinerary planning. I also sped up hotel search by caching popular results. When Quak pivoted to an itinerary marketplace, I led the mobile app's redesign.",
+    did: [
+      "I joined early and built much of the backend: group hotel booking through the Duffel API, per-hotel cost splitting through Stripe, and the itinerary planning around both. I also put a Redis cache in front of hotel search, which cut latency by up to 80% on the destinations people actually search for. When Quak pivoted to an itinerary marketplace I led the mobile app's redesign.",
+    ],
     stats: [
-      { value: "80%", label: "faster hotel search" },
+      { value: "$140K", label: "funding round" },
       { value: "200+", label: "beta users, 4 universities" },
     ],
     tech: [
@@ -147,7 +153,9 @@ export const experience = [
     branch: { side: "left", t: 0.52 },
     blurb:
       "Northeastern's student team that builds an electric race car for Formula SAE competitions.",
-    did: "I worked on FinishLine, the app the team runs its own engineering on. I built the parts overview, which lists every part in the car with its description, its status in the review process and who it is waiting on, so a stalled part is visible rather than discovered. I also built the guard that runs before a deletion, which finds every rule depending on the thing you are about to remove and tells you about all of them first, and extended the backend services and hooks behind the PDF parsing system.",
+    did: [
+      "I worked on FinishLine, the app the team runs its own engineering on. I built the parts overview, which lists every part in the car with its description, its status in the review process and who it is waiting on, so a stalled part is visible rather than discovered. I also built the guard that runs before a deletion, which finds every rule depending on the thing you are about to remove and tells you about all of them first, and extended the backend services and hooks behind the PDF parsing system.",
+    ],
     stats: [],
     tech: ["React", "Material UI", "Express", "Prisma"],
   },
@@ -161,12 +169,15 @@ export const experience = [
     role: "Tech Lead — Payments & Internal Tools",
     location: "Boston, MA",
     start: "Jun 2025",
-    end: "Dec 2025",
+    end: "Aug 2026",
     logo: "/logos/badges/rainfall.png",
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
     blurb: "A student-run platform that connects tutees with tutors.",
-    did: "I led the payments subteam and built the money side of the product. That meant a Stripe Connect integration that verifies raw-body HMAC signatures on every incoming webhook before it is trusted, dispatches the events to Prisma handlers, and is covered by 91 Vitest and Supertest tests across three API layers. I also scoped the Stripe Elements checkout into issues detailed enough to hand to someone else, with decline-code handling, payment status tracking and the prop interfaces written out rather than left to be guessed at.",
+    did: [
+      "I ran the payments side of Rainfall, which meant getting money from a tutee to a tutor without the product ever holding it. That is what Stripe Connect is for, and most of the work was in not trusting it blindly: Stripe tells you a payment succeeded by calling your server, so every one of those calls gets checked against its signature before anything downstream acts on it. I wrote 91 tests around that path, because payment code that is wrong tends to be wrong quietly.",
+      "The other half was the checkout itself, and breaking it into pieces small enough that four of us could build it at the same time without stepping on each other.",
+    ],
     stats: [
       { value: "4", label: "engineers led" },
       { value: "17", label: "issues scoped" },
@@ -189,7 +200,9 @@ export const experience = [
     branch: { side: "left", t: 0.24 },
     blurb:
       "Northeastern's intro CS theory course, where students first learn proofs, logic, and the math behind computing.",
-    did: "I ran weekly recitations, held office hours, answered questions on Piazza and graded assignments. Most of the job was finding a different way to explain a concept when the first one did not land. Combinatorics, graph theory, induction and proofs are all things people get stuck on in their own particular way.",
+    did: [
+      "I ran weekly recitations, held office hours, answered questions on Piazza and graded assignments. Most of the job was finding a different way to explain a concept when the first one did not land. Combinatorics, graph theory, induction and proofs are all things people get stuck on in their own particular way.",
+    ],
     stats: [
       { value: "500+", label: "students in the course" },
       { value: "30+", label: "students per recitation" },
@@ -207,13 +220,16 @@ export const experience = [
     accent: "#2E8B9A",
     role: "Accelerator Series",
     location: "Boston, MA",
-    start: "Jan 2026",
+    start: "Sep 2026",
     end: "Present",
     logo: "/logos/badges/oasis.png",
     brand: "#FFFFFF",
     blurb:
       "Northeastern's student-run product incubator. The Project Series takes an idea to a demo in a semester; the Accelerator is for the teams that keep building after it.",
-    did: "I am in the Accelerator, working on NUHire, a hiring simulation where students preparing for co-op sit on the other side of the table and play the recruiter instead of the candidate. Before that I was in the Project Series, where I built CoDesign, a platform for finding people to collaborate with on creative work, and presented it at Demo Day.",
+    did: [
+      "I am in the Accelerator on NUHire, a hiring simulation where students preparing for co-op sit on the recruiter's side of the table instead of the candidate's. I am rebuilding the frontend: reworking the screens people spend the whole session inside, so the thing reads like the hiring tools it is imitating rather than like a demo of one.",
+      "From January to April 2025 I was in the Project Series, where I built CoDesign, a platform for finding people to collaborate with on creative work. I led the frontend and built the posts, profiles, messaging, matchmaking and authentication out of one set of reusable components, and we showed it at Demo Day.",
+    ],
     stats: [{ value: "100+", label: "at Oasis Demo Day" }],
     // TODO(abhinav): the stack for NUHire is not written down yet.
     tech: [],
@@ -227,13 +243,15 @@ export const experience = [
     accent: "#8A6FD6",
     role: "Paper Exams, CS4535",
     location: "Boston, MA",
-    start: "Jan 2026",
+    start: "Sep 2026",
     end: "Present",
     logo: "/logos/badges/pawtograder.png",
     brand: "#FFFFFF",
     blurb:
       "The open-source platform Northeastern CS courses use to submit assignments, run autograders and manage grades.",
-    did: "I am on the Paper Exams team, which is adding support for exams that are printed, sat on paper, then scanned and graded inside Pawtograder. I am implementing exam templates and answer regions: a template defines the layout of an exam, and the answer regions mark where each question's answer sits on the page, so the system knows what to crop out of a scan and hand to a grader.",
+    did: [
+      "I am on the Paper Exams team, which is adding support for exams written on paper and then scanned in to be graded in Pawtograder. My part is templates and answer regions: a template describes the layout of an exam, and the regions mark where each question's answer sits on the page, so when a scan arrives the system knows which piece of it to put in front of a grader.",
+    ],
     stats: [],
     tech: ["TypeScript", "Next.js", "PostgreSQL", "Supabase"],
   },
