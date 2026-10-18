@@ -151,7 +151,11 @@ function Detail({ role, onBack, onStep, inScene }) {
           {hasStats && (
             <div className="shrink-0">
               <Label>By the numbers</Label>
-              <div className="flex gap-3">
+              {/* Two across, however many there are. A role with four
+                  wraps into a block rather than a strip, which is what
+                  lets it stand beside a long stack instead of pushing
+                  the whole panel past the foot of the screen. */}
+              <div className="flex max-w-[15.75rem] flex-wrap gap-3">
                 {role.stats.map((s) => (
                   <div
                     key={s.label}
@@ -346,7 +350,19 @@ export default function Experience({ ref }) {
               }}
             />
 
-            <div className="relative max-h-full max-w-xl overflow-y-auto px-6 py-24 pr-12">
+            {/* `2xl` and not `xl`, and 16 of padding rather than 24.
+                On a 1366 by 700 laptop the old pair spent 192 of the
+                700 on padding and then wrapped the longest stack into
+                five rows inside 504 pixels, which put the tallest
+                role 78 pixels past the bottom of its own column. The
+                46% column clamps the width anyway, so the wider cap
+                only ever helps. */}
+            {/* Asymmetric on purpose. The top padding is there to
+                clear the bar, which is four rems of it; the bottom
+                has nothing to clear and was matching it out of
+                habit, at the cost of two rems of a 700 pixel
+                screen. */}
+            <div className="relative max-h-full max-w-2xl overflow-y-auto px-6 pb-8 pt-16 pr-12">
               <Detail
                 role={current}
                 inScene

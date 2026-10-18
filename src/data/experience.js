@@ -52,9 +52,15 @@ export const experience = [
     blurb:
       "Cloud software that medical practices use to run billing, patient records, and day-to-day operations.",
     did: "I was on a platform team that maintains the shared infrastructure other teams build on. I set up auto-scaling so our servers grow and shrink with traffic instead of running at full size all the time. I also built an internal app that puts tenant and service data in one place, wrote a pipeline to generate large-scale test data, and created the team's first monitoring dashboard.",
+    // Four, which is the exception. The stack here is long enough to
+    // run past the foot of the panel on its own, and a second column
+    // of numbers beside it takes some of that height back instead of
+    // leaving the space empty.
     stats: [
       { value: "~$5k", label: "saved a year in compute" },
       { value: "~722M", label: "rows of test data" },
+      { value: "10 → 4", label: "EC2 instances running" },
+      { value: "34", label: "panels, 8 microservices" },
     ],
     tech: [
       "AWS",
@@ -65,7 +71,6 @@ export const experience = [
       "Express",
       "DynamoDB",
       "Python",
-      "Oracle",
       "Grafana",
       "Prometheus",
       "Spring Boot",
@@ -142,7 +147,7 @@ export const experience = [
     branch: { side: "left", t: 0.52 },
     blurb:
       "Northeastern's student team that builds an electric race car for Formula SAE competitions.",
-    did: "I work on FinishLine, the team's project management app. I built a page that shows where every part is in the review process, and a tool that warns you about every rule that depends on one before you delete it.",
+    did: "I worked on FinishLine, the app the team runs its own engineering on. I built the parts overview — every part in the car with its description, its status in the review process and who it is waiting on — so a stalled part is visible rather than discovered. I also built the guard that runs before a deletion, which finds every rule depending on the thing you are about to remove and tells you about all of them first, and extended the backend services and hooks behind the PDF parsing system.",
     stats: [],
     tech: ["React", "Material UI", "Express", "Prisma"],
   },
@@ -160,10 +165,13 @@ export const experience = [
     logo: "/logos/badges/rainfall.png",
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
-    blurb: "A platform that connects students with tutors.",
-    did: "I wrote feature specs as GitHub issues, reviewed other developers' code, and helped plan the backend for tutor payments.",
-    stats: [],
-    tech: ["Express", "Prisma", "Stripe API", "GitHub"],
+    blurb: "A student-run platform that connects tutees with tutors.",
+    did: "I led the payments subteam and built the money side of the product. That meant a Stripe Connect integration that verifies raw-body HMAC signatures on every incoming webhook before it is trusted, dispatches the events to Prisma handlers, and is covered by 91 Vitest and Supertest tests across three API layers. I also scoped the Stripe Elements checkout into issues detailed enough to hand to someone else — decline-code handling, payment status tracking and the prop interfaces written out rather than left to be guessed at.",
+    stats: [
+      { value: "4", label: "engineers led" },
+      { value: "17", label: "issues scoped" },
+    ],
+    tech: ["TypeScript", "Express", "Prisma", "Stripe API", "Vitest", "GitHub"],
   },
   {
     id: "khoury",
@@ -181,12 +189,14 @@ export const experience = [
     branch: { side: "left", t: 0.24 },
     blurb:
       "Northeastern's intro CS theory course, where students first learn proofs, logic, and the math behind computing.",
-    did: "I run weekly recitations, hold office hours, answer questions on Piazza, and grade assignments. Most of the job is finding a different way to explain a concept when the first one does not click.",
+    did: "I ran weekly recitations, held office hours, answered questions on Piazza and graded assignments. Most of the job was finding a different way to explain a concept when the first one did not land — combinatorics, graph theory, induction and proofs are all things people get stuck on in their own particular way.",
     stats: [
       { value: "500+", label: "students in the course" },
       { value: "30+", label: "students per recitation" },
     ],
-    tech: ["Piazza"],
+    // Nothing worth listing. Piazza is not a stack, and a block with
+    // one tool in it says less than no block at all.
+    tech: [],
   },
   {
     id: "oasis",
@@ -195,18 +205,17 @@ export const experience = [
     short: "Oasis",
     company: "Oasis",
     accent: "#2E8B9A",
-    // TODO(abhinav): the role title and `did` are still unwritten. The
-    // panel leaves both out rather than printing a placeholder.
-    role: "Role TBD",
+    role: "Accelerator Series",
     location: "Boston, MA",
     start: "Jan 2026",
     end: "Present",
     logo: "/logos/badges/oasis.png",
     brand: "#FFFFFF",
     blurb:
-      "A hiring simulation game where students preparing for co-op play the recruiter instead of the candidate.",
-    did: "",
-    stats: [],
+      "Northeastern's student-run product incubator. The Project Series takes an idea to a demo in a semester; the Accelerator is for the teams that keep building after it.",
+    did: "I am in the Accelerator, working on NUHire — a hiring simulation where students preparing for co-op sit on the other side of the table and play the recruiter instead of the candidate. Before that I was in the Project Series, where I built CoDesign, a platform for finding people to collaborate with on creative work, and presented it at Demo Day.",
+    stats: [{ value: "100+", label: "at Oasis Demo Day" }],
+    // TODO(abhinav): the stack for NUHire is not written down yet.
     tech: [],
   },
   {
@@ -216,20 +225,17 @@ export const experience = [
     short: "Pawtograder",
     company: "Pawtograder",
     accent: "#8A6FD6",
-    // TODO(abhinav): the role title and the stack are still unwritten.
-    // Not guessed at: a wrong stack on a portfolio is worse than a
-    // missing one, and this one would have been a guess.
-    role: "Role TBD",
+    role: "Paper Exams — CS4535",
     location: "Boston, MA",
     start: "Jan 2026",
     end: "Present",
     logo: "/logos/badges/pawtograder.png",
     brand: "#FFFFFF",
     blurb:
-      "The open-source platform Northeastern CS courses use to submit and grade assignments.",
-    did: "I am on the team adding support for paper exams. I build the exam templates and answer regions that tell the system where each answer sits on a scanned page.",
+      "The open-source platform Northeastern CS courses use to submit assignments, run autograders and manage grades.",
+    did: "I am on the Paper Exams team, which is adding support for exams that are printed, sat on paper, then scanned and graded inside Pawtograder. I am implementing exam templates and answer regions: a template defines the layout of an exam, and the answer regions mark where each question's answer sits on the page, so the system knows what to crop out of a scan and hand to a grader.",
     stats: [],
-    tech: [],
+    tech: ["TypeScript", "Next.js", "PostgreSQL", "Supabase"],
   },
 ];
 
