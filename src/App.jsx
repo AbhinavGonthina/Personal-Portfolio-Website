@@ -12,6 +12,7 @@ import Connect from "./sections/Connect";
 import { useSwitching } from "./lib/switchView";
 import { usePlain } from "./lib/plain";
 import { useReady } from "./lib/ready";
+import PhotoPicker from "./components/PhotoPicker";
 
 /**
  * The page is a walk through one town, and these are its stops in
@@ -62,6 +63,7 @@ export default function App() {
   return (
     <>
       <Navbar />
+      <PhotoPicker />
       <TownStage refs={refs} />
       <SectionTitle />
       <ScrollHint />
