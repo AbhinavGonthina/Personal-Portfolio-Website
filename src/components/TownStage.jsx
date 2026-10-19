@@ -6,9 +6,10 @@ import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
   paintBoard,
+  paintProjectDetail,
+  paintProjectsGrid,
   paintBoardFace,
   paintMark,
-  paintScreen,
   paintSkillPreview,
   paintSkills,
 } from "../lib/paint";
@@ -17,6 +18,7 @@ import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
 import { skillDetail, skillGroups } from "../data/skills";
+import { useStills } from "../lib/stills";
 import {
   holdScroll,
   isJumping,
@@ -26,6 +28,14 @@ import {
 import { cn } from "../lib/cn";
 
 const TownScene = lazy(() => import("../scenes/TownScene"));
+
+/**
+ * How far into the held Projects section the list has finished
+ * travelling. The rest of the section is the bottom of the list
+ * holding still, so the last row can be read before the camera
+ * leaves.
+ */
+const REEL_DONE = 0.86;
 
 /**
  * The one canvas, fixed behind the page.
@@ -52,7 +62,7 @@ export default function TownStage({ refs }) {
   const [ready, setReady] = useState(false);
   const [live, setLive] = useState(false);
   const [grab, setGrab] = useState(false);
-  const [shot, setShot] = useState(0);
+  const [reel, setReel] = useState(0);
   const [still] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -111,16 +121,28 @@ export default function TownStage({ refs }) {
     () => (off ? null : paintSkillPreview(hovered, skillDetail[hovered?.item])),
     [off, hovered],
   );
-  const screen = useMemo(
-    () => (off ? null : paintScreen(projects[shot], shot, projects.length)),
-    [off, shot],
-  );
+  // Which repository is open, and the stills the detail view draws.
+  //
+  // The grid is painted once onto a canvas taller than the monitor
+  // and scrolled by moving the texture, so it does not belong to
+  // `shot` and is not repainted as the page moves. Only opening a
+  // project repaints anything.
+  const [opened, setOpened] = useState(null);
+  const stills = useStills(off);
+  const grid = useMemo(() => (off ? null : paintProjectsGrid(projects)), [off]);
+  const detail = useMemo(() => {
+    if (off || !opened) return null;
+    const p = projects.find((x) => x.id === opened);
+    return p ? paintProjectDetail(p, stills[p.id]) : null;
+  }, [off, opened, stills]);
+  const screen = detail ?? grid;
   useEffect(() => () => marks.forEach((m) => m.dispose()), [marks]);
   useEffect(() => () => board?.dispose(), [board]);
   useEffect(() => () => boardFace?.dispose(), [boardFace]);
   useEffect(() => () => skills?.tex?.dispose(), [skills]);
   useEffect(() => () => preview?.dispose(), [preview]);
-  useEffect(() => () => screen?.dispose(), [screen]);
+  useEffect(() => () => grid?.tex?.dispose(), [grid]);
+  useEffect(() => () => detail?.tex?.dispose(), [detail]);
 
   useEffect(() => {
     if (off) return;
@@ -243,14 +265,30 @@ export default function TownStage({ refs }) {
 
       // The camera holds still across the Projects section; the screen
       // is what moves. One scroll of that section walks the whole list.
+      //
+      // The list finishes before the section does. Run it to the very
+      // end of the hold and the last row arrives on the same frame the
+      // camera starts walking out of the room, so the one card you
+      // scrolled all that way for is the one card you never get to
+      // read. Ending the travel at REEL_DONE leaves the bottom of the
+      // list sitting still for the last stretch of the section.
       const t = Math.min(
         1,
         Math.max(
           0,
-          (j - STOP.projects) / (STOP["projects-hold"] - STOP.projects),
+          (j - STOP.projects) /
+            ((STOP["projects-hold"] - STOP.projects) * REEL_DONE),
         ),
       );
-      setShot(Math.min(projects.length - 1, Math.floor(t * projects.length)));
+      setReel(t);
+
+      // Walking away closes whatever card was open. Without this you
+      // come back to the desk on the detail page you left on, with no
+      // sign that there is a grid behind it - the way back is a button
+      // you have to already know is there.
+      if (j < STOP.projects - 0.3 || j > STOP["projects-hold"] + 0.3) {
+        setOpened((o) => (o === null ? o : null));
+      }
 
       const last = els[els.length - 1];
       setLive(last.getBoundingClientRect().bottom > 40);
@@ -333,6 +371,8 @@ export default function TownStage({ refs }) {
             skills={skills}
             preview={preview}
             onHover={setHovered}
+            reel={reel}
+            onOpen={setOpened}
             board={board}
             boardFace={boardFace}
             marks={marks}

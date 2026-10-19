@@ -1897,6 +1897,8 @@ function Town({
   skills,
   preview,
   onHover,
+  reel,
+  onOpen,
   board,
   boardFace,
   marks,
@@ -1949,6 +1951,8 @@ function Town({
         skills={skills}
         preview={preview}
         onHover={onHover}
+        reel={reel}
+        onOpen={onOpen}
         live={inside}
       />
       <Mailboxes
@@ -1971,6 +1975,8 @@ export default function TownScene({
   skills,
   preview,
   onHover,
+  reel,
+  onOpen,
   board,
   boardFace,
   marks,
@@ -2051,6 +2057,8 @@ export default function TownScene({
         skills={skills}
         preview={preview}
         onHover={onHover}
+        reel={reel}
+        onOpen={onOpen}
         board={board}
         boardFace={boardFace}
         marks={marks}
