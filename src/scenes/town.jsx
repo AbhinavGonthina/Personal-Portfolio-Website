@@ -142,9 +142,12 @@ export function Billboard({ mats, visible, board, face }) {
         <planeGeometry args={[BOARD_PHOTO, BOARD_PHOTO]} />
         <meshBasicMaterial map={photo} toneMapped={false} />
       </mesh>
+      {/* Ink only. The grid, the scanlines and the lamplight are on
+          the face behind this, so the panel has to let them through
+          rather than paint its own rectangle of them. */}
       <mesh position={[BOARD.w / 2 - gap - textW / 2, built.mid, 0.06]}>
         <planeGeometry args={[textW, BOARD.h - gap * 2]} />
-        <meshBasicMaterial map={board} toneMapped={false} />
+        <meshBasicMaterial map={board} transparent toneMapped={false} />
       </mesh>
     </group>
   );
