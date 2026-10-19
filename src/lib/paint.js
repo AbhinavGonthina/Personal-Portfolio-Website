@@ -397,7 +397,7 @@ export function paintBoard(profile, education) {
 }
 
 import dvamazonwebservices from "devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg?raw";
-import dvazuresqldatabase from "devicon/icons/azuresqldatabase/azuresqldatabase-original.svg?raw";
+import dvazuresqldatabase from "devicon/icons/azuresqldatabase/azuresqldatabase-plain.svg?raw";
 import dvc from "devicon/icons/c/c-original.svg?raw";
 import dvcplusplus from "devicon/icons/cplusplus/cplusplus-original.svg?raw";
 import dvcsharp from "devicon/icons/csharp/csharp-original.svg?raw";
@@ -405,11 +405,9 @@ import dvcss3 from "devicon/icons/css3/css3-original.svg?raw";
 import dvdocker from "devicon/icons/docker/docker-original.svg?raw";
 import dvdotnetcore from "devicon/icons/dotnetcore/dotnetcore-original.svg?raw";
 import dvexpress from "devicon/icons/express/express-original.svg?raw";
-import dvfigma from "devicon/icons/figma/figma-original.svg?raw";
 import dvflask from "devicon/icons/flask/flask-original.svg?raw";
 import dvgit from "devicon/icons/git/git-original.svg?raw";
-import dvgithub from "devicon/icons/github/github-original.svg?raw";
-import dvgrafana from "devicon/icons/grafana/grafana-original.svg?raw";
+import dvgrafana from "devicon/icons/grafana/grafana-plain.svg?raw";
 import dvhtml5 from "devicon/icons/html5/html5-original.svg?raw";
 import dvjava from "devicon/icons/java/java-original.svg?raw";
 import dvjavascript from "devicon/icons/javascript/javascript-original.svg?raw";
@@ -417,16 +415,15 @@ import dvjenkins from "devicon/icons/jenkins/jenkins-original.svg?raw";
 import dvjest from "devicon/icons/jest/jest-plain.svg?raw";
 import dvjunit from "devicon/icons/junit/junit-original.svg?raw";
 import dvkubernetes from "devicon/icons/kubernetes/kubernetes-original.svg?raw";
-import dvmaterialui from "devicon/icons/materialui/materialui-original.svg?raw";
-import dvnextjs from "devicon/icons/nextjs/nextjs-original.svg?raw";
+import dvnextjs from "devicon/icons/nextjs/nextjs-plain.svg?raw";
 import dvpostman from "devicon/icons/postman/postman-original.svg?raw";
 import dvprisma from "devicon/icons/prisma/prisma-original.svg?raw";
 import dvprometheus from "devicon/icons/prometheus/prometheus-original.svg?raw";
-import dvpython from "devicon/icons/python/python-original.svg?raw";
+import dvpython from "devicon/icons/python/python-plain.svg?raw";
 import dvreact from "devicon/icons/react/react-original.svg?raw";
 import dvredis from "devicon/icons/redis/redis-original.svg?raw";
+import dvredux from "devicon/icons/redux/redux-original.svg?raw";
 import dvspring from "devicon/icons/spring/spring-original.svg?raw";
-import dvtailwindcss from "devicon/icons/tailwindcss/tailwindcss-original.svg?raw";
 import dvterraform from "devicon/icons/terraform/terraform-original.svg?raw";
 import dvtypescript from "devicon/icons/typescript/typescript-original.svg?raw";
 import dvvitest from "devicon/icons/vitest/vitest-original.svg?raw";
@@ -439,6 +436,12 @@ import dvvitest from "devicon/icons/vitest/vitest-original.svg?raw";
  * has Java, C#, AWS, Oracle or DynamoDB - all pulled over trademark
  * complaints, the same way LinkedIn was. Devicon has every skill on
  * the board but one: JMeter, which keeps a Simple Icons path.
+ *
+ * The file chosen per mark is whichever variant this reader can
+ * actually draw. It cannot resolve gradients, and a mark made
+ * entirely of them collapses into one flat silhouette - Next.js
+ * came out as a filled disc with no N in it. Where the original is
+ * gradients, the plain variant is taken instead.
  */
 const DEVICON = {
   amazonwebservices: dvamazonwebservices,
@@ -450,10 +453,8 @@ const DEVICON = {
   docker: dvdocker,
   dotnetcore: dvdotnetcore,
   express: dvexpress,
-  figma: dvfigma,
   flask: dvflask,
   git: dvgit,
-  github: dvgithub,
   grafana: dvgrafana,
   html5: dvhtml5,
   java: dvjava,
@@ -462,7 +463,6 @@ const DEVICON = {
   jest: dvjest,
   junit: dvjunit,
   kubernetes: dvkubernetes,
-  materialui: dvmaterialui,
   nextjs: dvnextjs,
   postman: dvpostman,
   prisma: dvprisma,
@@ -470,8 +470,8 @@ const DEVICON = {
   python: dvpython,
   react: dvreact,
   redis: dvredis,
+  redux: dvredux,
   spring: dvspring,
-  tailwindcss: dvtailwindcss,
   terraform: dvterraform,
   typescript: dvtypescript,
   vitest: dvvitest,
@@ -726,11 +726,35 @@ export function paintSkillPreview(hit, detail) {
   g.textBaseline = "alphabetic";
 
   if (!hit) {
-    g.fillStyle = "#39415e";
-    g.font = "500 30px " + MONO;
-    const lines = ["// point at a skill", "// to see where", "// it was used"];
-    for (const [i, line] of lines.entries()) {
-      g.fillText(line, mid, H / 2 - 36 + i * 46);
+    // A prompt waiting on input, not a comment explaining itself.
+    // Three grey slashes in the middle of a terminal read as
+    // chrome; a caret and a block cursor read as a thing that is
+    // about to do something.
+    let y = H / 2 - 110;
+
+    g.fillStyle = ACCENT.blue;
+    g.font = "600 86px " + MONO;
+    g.fillText(">", mid - 44, y);
+    // The cursor, sitting on the baseline beside it.
+    g.fillRect(mid + 8, y - 54, 34, 58);
+
+    y += 120;
+    g.fillStyle = "#ffffff";
+    g.font = "500 40px " + MONO;
+    if ("letterSpacing" in g) g.letterSpacing = "8px";
+    g.fillText("SELECT A SKILL", mid + 4, y);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+    y += 34;
+    g.fillStyle = "#2b3350";
+    g.fillRect(mid - 110, y, 220, 2);
+
+    y += 66;
+    g.fillStyle = "#6f7694";
+    g.font = "400 29px " + SANS;
+    for (const line of ["Point at any tag to see", "where it was used."]) {
+      g.fillText(line, mid, y);
+      y += 42;
     }
     return finish(c);
   }
