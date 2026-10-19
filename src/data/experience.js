@@ -121,7 +121,7 @@ export const experience = [
     blurb:
       "A startup that makes group travel easier, from booking stays to splitting costs.",
     did: [
-      "I joined early and built much of the backend: group hotel booking through the Duffel API, per-hotel cost splitting through Stripe, and the itinerary planning around both. I also put a Redis cache in front of hotel search, which cut latency by up to 80% on the destinations people actually search for. When Quak pivoted to an itinerary marketplace I led the mobile app's redesign.",
+      "I joined early and built much of the backend: group hotel booking through Duffel API, per-hotel cost splitting through Stripe, and the itinerary planning around both. I implemented a Redis cache, which cut latency by up to 80% on destinations people actually search for. When Quak pivoted to an itinerary marketplace I led the mobile app's redesign.",
     ],
     stats: [
       { value: "$140K", label: "funding round" },
@@ -169,7 +169,7 @@ export const experience = [
     role: "Tech Lead — Payments & Internal Tools",
     location: "Boston, MA",
     start: "Jun 2025",
-    end: "Aug 2026",
+    end: "Aug 2025",
     logo: "/logos/badges/rainfall.png",
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
@@ -227,7 +227,7 @@ export const experience = [
     blurb:
       "Northeastern's student-run product incubator. The Project Series takes an idea to a demo in a semester; the Accelerator is for the teams that keep building after it.",
     did: [
-      "I am in the Accelerator on NUHire, a hiring simulation where students preparing for co-op sit on the recruiter's side of the table instead of the candidate's. I am rebuilding the frontend: reworking the screens people spend the whole session inside, so the thing reads like the hiring tools it is imitating rather than like a demo of one.",
+      "I am in the Accelerator Series working on NUHire, a hiring simulation where students preparing for co-op sit on the recruiter's side of the table instead of the candidate's. I am rebuilding the frontend: reworking the screens people spend the whole session inside, so the thing reads like the hiring tools it is imitating rather than like a demo of one.",
       "From January to April 2025 I was in the Project Series, where I built CoDesign, a platform for finding people to collaborate with on creative work. I led the frontend and built the posts, profiles, messaging, matchmaking and authentication out of one set of reusable components, and we showed it at Demo Day.",
     ],
     stats: [{ value: "100+", label: "at Oasis Demo Day" }],
@@ -250,7 +250,7 @@ export const experience = [
     blurb:
       "The open-source platform Northeastern CS courses use to submit assignments, run autograders and manage grades.",
     did: [
-      "I am on the Paper Exams team, which is adding support for exams written on paper and then scanned in to be graded in Pawtograder. My part is templates and answer regions: a template describes the layout of an exam, and the regions mark where each question's answer sits on the page, so when a scan arrives the system knows which piece of it to put in front of a grader.",
+      "I am on the Paper Exams team, which is adding support for exams written on paper and then scanned in to be graded in Pawtograder. My part is integrating templates and answer regions: a template describes the layout of an exam, and the regions mark where each question's answer sits on the page, so when a scan arrives the system knows which piece of it to put in front of a grader.",
     ],
     stats: [],
     tech: ["TypeScript", "Next.js", "PostgreSQL", "Supabase"],

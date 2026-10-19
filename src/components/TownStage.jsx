@@ -11,10 +11,7 @@ import {
   paintScreen,
   paintSkills,
 } from "../lib/paint";
-import {
-  BOARD_LAMPS as LAMPS_AT,
-  BOARD_PANEL_LAMP as PANEL_LAMP,
-} from "../lib/townGeometry";
+import { BOARD_LAMPS as LAMPS_AT } from "../lib/townGeometry";
 import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
@@ -91,7 +88,7 @@ export default function TownStage({ refs }) {
     [off],
   );
   const board = useMemo(
-    () => (off ? null : paintBoard(profile, education, PANEL_LAMP)),
+    () => (off ? null : paintBoard(profile, education)),
     [off],
   );
   // Where the two lamps hang, as a fraction across the board, so the

@@ -232,12 +232,37 @@ const wrap = (g, text, maxW) => {
  * lamps themselves are still the geometry they always were.
  */
 export function paintBoardFace(lamps) {
-  const W = 1024;
-  const H = 500;
+  // Big enough to carry the grid and the scanlines for the whole
+  // board. They used to live on the panel, which is a smaller plane
+  // sitting on this one - so the texture stopped dead at the panel's
+  // edge and the words looked like a screenshot pasted onto a sign.
+  // Everything that covers the board is painted here now, at board
+  // scale, and the panel over it carries nothing but ink.
+  const W = 2048;
+  const H = 999;
   const [c, g] = canvas(W, H);
 
   g.fillStyle = "#05050a";
   g.fillRect(0, 0, W, H);
+
+  // The ground grid, carried up onto the board.
+  g.strokeStyle = "#11131c";
+  g.lineWidth = 2;
+  g.beginPath();
+  for (let x = 0; x <= W; x += 50) {
+    g.moveTo(x, 0);
+    g.lineTo(x, H);
+  }
+  for (let y = 0; y <= H; y += 50) {
+    g.moveTo(0, y);
+    g.lineTo(W, y);
+  }
+  g.stroke();
+
+  // Scanlines, at the opacity where you stop seeing them and start
+  // seeing a screen. Any heavier and the type sits behind a comb.
+  g.fillStyle = "rgba(143,168,255,0.035)";
+  for (let y = 0; y < H; y += 7) g.fillRect(0, y, W, 2);
 
   // Added, not drawn over: where two pools overlap they should get
   // brighter, the way two lamps on one board do.
@@ -284,7 +309,7 @@ export function paintBoardFace(lamps) {
  */
 const S = 2;
 
-export function paintBoard(profile, education, lampAt) {
+export function paintBoard(profile, education) {
   const W = 1100 * S;
   const H = 990 * S;
   const [c, g] = canvas(W, H);
@@ -293,50 +318,11 @@ export function paintBoard(profile, education, lampAt) {
   const ACC = ACCENT.blue;
   const RULE = "#23232b";
 
-  // The same black the board face is painted, not pure black: this
-  // sits on that face, and a shade between them is a rectangle.
-  g.fillStyle = "#05050a";
-  g.fillRect(0, 0, W, H);
-
-  // The ground grid, carried up onto the board.
-  g.strokeStyle = "#11131c";
-  g.lineWidth = 1 * S;
-  g.beginPath();
-  for (let x = 0; x <= W; x += 55 * S) {
-    g.moveTo(x, 0);
-    g.lineTo(x, H);
-  }
-  for (let y = 0; y <= H; y += 55 * S) {
-    g.moveTo(0, y);
-    g.lineTo(W, y);
-  }
-  g.stroke();
-
-  // The half of the gantry lamp's pool that falls on this panel.
-  // Painted before the type so the type stays at full strength
-  // inside it, which is what a lit sign looks like - the light is on
-  // the board, not over the words.
-  g.globalCompositeOperation = "lighter";
-  const pool = g.createRadialGradient(
-    W * lampAt,
-    -H * 0.08,
-    0,
-    W * lampAt,
-    -H * 0.08,
-    H * 1.1,
-  );
-  pool.addColorStop(0, "rgba(152,174,255,0.26)");
-  pool.addColorStop(0.4, "rgba(132,154,235,0.10)");
-  pool.addColorStop(1, "rgba(110,130,200,0)");
-  g.fillStyle = pool;
-  g.fillRect(0, 0, W, H);
-  g.globalCompositeOperation = "source-over";
-
-  // Scanlines, at the opacity where you stop seeing them and start
-  // seeing a screen. Any heavier and the type sits behind a comb.
-  g.fillStyle = "rgba(143,168,255,0.035)";
-  for (let y = 0; y < H; y += 4 * S) g.fillRect(0, y, W, 1 * S);
-
+  // Nothing is painted behind the words. The grid, the scanlines and
+  // the light from the gantry are on the board face underneath, which
+  // runs the full width of the sign - so there is one surface and one
+  // grid rather than a smaller rectangle of them sitting in the
+  // middle of a larger one.
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
 

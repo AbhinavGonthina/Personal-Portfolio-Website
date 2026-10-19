@@ -78,16 +78,6 @@ export const BOARD_LAMPS = [
 /** The painted panel, which takes whatever the portrait leaves. */
 export const BOARD_TEXT = BOARD.w - BOARD_PHOTO - BOARD.pad * 3;
 
-/**
- * Where the right-hand lamp falls across that panel, as a fraction
- * of its width. The panel is its own plane drawn over the face, so
- * a pool painted on the face stops at its edge - the light has to be
- * painted into the panel as well to carry on across it, and this is
- * the only number that keeps the two halves of one pool in line.
- */
-export const BOARD_PANEL_LAMP =
-  (LAMP_X - (BOARD.w / 2 - BOARD.pad - BOARD_TEXT)) / BOARD_TEXT;
-
 export function billboard() {
   const base = [];
   const lit = [];
