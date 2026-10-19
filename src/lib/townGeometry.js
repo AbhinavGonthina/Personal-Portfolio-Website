@@ -322,7 +322,11 @@ export const DESK_SCREEN = { w: 1.5, h: 0.92 };
  * left the type unreadable; on the back wall it can be the size it
  * needs to be and the racks still fill the left of the shot.
  */
-export const WALL_PANEL = { w: 2.3, h: 1.71, x: -0.95, y: 1.72 };
+// Wider than it was, because the board is a terminal window now and
+// the right third of it is a screen that answers what the pointer is
+// on. The back wall is 6.2 across, so this still has room either
+// side.
+export const WALL_PANEL = { w: 3.4, h: 1.71, x: -0.55, y: 1.72 };
 
 /**
  * The room: servers down the left wall, a desk and monitor on the

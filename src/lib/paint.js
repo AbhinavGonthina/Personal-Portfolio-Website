@@ -4,6 +4,7 @@ import githubMark from "bootstrap-icons/icons/github.svg?raw";
 import linkedinMark from "bootstrap-icons/icons/linkedin.svg?raw";
 import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
 import resumeMark from "bootstrap-icons/icons/file-earmark-text.svg?raw";
+import { siApachejmeter } from "simple-icons";
 
 /**
  * Canvas textures for the things in the town that have to show content:
@@ -395,11 +396,195 @@ export function paintBoard(profile, education) {
   return finish(c);
 }
 
-/** The board above the racks: every skill, grouped. */
+import dvamazonwebservices from "devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg?raw";
+import dvazuresqldatabase from "devicon/icons/azuresqldatabase/azuresqldatabase-original.svg?raw";
+import dvcsharp from "devicon/icons/csharp/csharp-original.svg?raw";
+import dvcss3 from "devicon/icons/css3/css3-original.svg?raw";
+import dvdocker from "devicon/icons/docker/docker-original.svg?raw";
+import dvdotnetcore from "devicon/icons/dotnetcore/dotnetcore-original.svg?raw";
+import dvdynamodb from "devicon/icons/dynamodb/dynamodb-original.svg?raw";
+import dvexpress from "devicon/icons/express/express-original.svg?raw";
+import dvfigma from "devicon/icons/figma/figma-original.svg?raw";
+import dvflask from "devicon/icons/flask/flask-original.svg?raw";
+import dvgit from "devicon/icons/git/git-original.svg?raw";
+import dvgithub from "devicon/icons/github/github-original.svg?raw";
+import dvgrafana from "devicon/icons/grafana/grafana-original.svg?raw";
+import dvhtml5 from "devicon/icons/html5/html5-original.svg?raw";
+import dvjava from "devicon/icons/java/java-original.svg?raw";
+import dvjavascript from "devicon/icons/javascript/javascript-original.svg?raw";
+import dvjenkins from "devicon/icons/jenkins/jenkins-original.svg?raw";
+import dvjest from "devicon/icons/jest/jest-plain.svg?raw";
+import dvjunit from "devicon/icons/junit/junit-original.svg?raw";
+import dvkubernetes from "devicon/icons/kubernetes/kubernetes-original.svg?raw";
+import dvmaterialui from "devicon/icons/materialui/materialui-original.svg?raw";
+import dvmongodb from "devicon/icons/mongodb/mongodb-original.svg?raw";
+import dvmysql from "devicon/icons/mysql/mysql-original.svg?raw";
+import dvnextjs from "devicon/icons/nextjs/nextjs-original.svg?raw";
+import dvnodejs from "devicon/icons/nodejs/nodejs-original.svg?raw";
+import dvnumpy from "devicon/icons/numpy/numpy-original.svg?raw";
+import dvoracle from "devicon/icons/oracle/oracle-original.svg?raw";
+import dvpandas from "devicon/icons/pandas/pandas-original.svg?raw";
+import dvpostgresql from "devicon/icons/postgresql/postgresql-original.svg?raw";
+import dvpostman from "devicon/icons/postman/postman-original.svg?raw";
+import dvprisma from "devicon/icons/prisma/prisma-original.svg?raw";
+import dvprometheus from "devicon/icons/prometheus/prometheus-original.svg?raw";
+import dvpython from "devicon/icons/python/python-original.svg?raw";
+import dvr from "devicon/icons/r/r-original.svg?raw";
+import dvreact from "devicon/icons/react/react-original.svg?raw";
+import dvredis from "devicon/icons/redis/redis-original.svg?raw";
+import dvspring from "devicon/icons/spring/spring-original.svg?raw";
+import dvsqlite from "devicon/icons/sqlite/sqlite-original.svg?raw";
+import dvtailwindcss from "devicon/icons/tailwindcss/tailwindcss-original.svg?raw";
+import dvterraform from "devicon/icons/terraform/terraform-original.svg?raw";
+import dvtypescript from "devicon/icons/typescript/typescript-original.svg?raw";
+import dvvitest from "devicon/icons/vitest/vitest-original.svg?raw";
+
+/**
+ * Devicon's marks, one import per file so the bundler leaves the
+ * other five hundred behind.
+ *
+ * Devicon rather than Simple Icons because Simple Icons no longer
+ * has Java, C#, AWS, Oracle or DynamoDB - all pulled over trademark
+ * complaints, the same way LinkedIn was. Devicon has forty-three of
+ * the forty-four on the board. JMeter is the one it does not, and
+ * that one keeps its Simple Icons path.
+ */
+const DEVICON = {
+  amazonwebservices: dvamazonwebservices,
+  azuresqldatabase: dvazuresqldatabase,
+  csharp: dvcsharp,
+  css3: dvcss3,
+  docker: dvdocker,
+  dotnetcore: dvdotnetcore,
+  dynamodb: dvdynamodb,
+  express: dvexpress,
+  figma: dvfigma,
+  flask: dvflask,
+  git: dvgit,
+  github: dvgithub,
+  grafana: dvgrafana,
+  html5: dvhtml5,
+  java: dvjava,
+  javascript: dvjavascript,
+  jenkins: dvjenkins,
+  jest: dvjest,
+  junit: dvjunit,
+  kubernetes: dvkubernetes,
+  materialui: dvmaterialui,
+  mongodb: dvmongodb,
+  mysql: dvmysql,
+  nextjs: dvnextjs,
+  nodejs: dvnodejs,
+  numpy: dvnumpy,
+  oracle: dvoracle,
+  pandas: dvpandas,
+  postgresql: dvpostgresql,
+  postman: dvpostman,
+  prisma: dvprisma,
+  prometheus: dvprometheus,
+  python: dvpython,
+  r: dvr,
+  react: dvreact,
+  redis: dvredis,
+  spring: dvspring,
+  sqlite: dvsqlite,
+  tailwindcss: dvtailwindcss,
+  terraform: dvterraform,
+  typescript: dvtypescript,
+  vitest: dvvitest,
+};
+
+const JMETER = `<svg viewBox="0 0 24 24"><path d="${siApachejmeter.path}"/></svg>`;
+
+/**
+ * An SVG file, reduced to what a canvas can draw.
+ *
+ * Paths, circles and ellipses, each with whatever fill it declared.
+ * That is every shape the forty-three marks on this board use - and
+ * it has to be all three, because React and Next.js draw their
+ * orbits as circles and Redis draws its drum as ellipses. Dropping
+ * those would have left two logos as fragments and one as a pile of
+ * loose paths.
+ *
+ * Parsed on first use and kept: a Path2D is a compiled path, and
+ * these are redrawn every time the pointer moves to a new tag.
+ */
+const parsed = {};
+
+function svgShapes(src) {
+  const box = /viewBox="([\d.\-\s]+)"/.exec(src);
+  const [, , vw, vh] = box
+    ? box[1].trim().split(/\s+/).map(Number)
+    : [0, 0, 24, 24];
+  const shapes = [];
+  const fillOf = (tag) => {
+    const m = /fill="([^"]+)"/.exec(tag);
+    return !m || m[1] === "none" || m[1] === "currentColor" ? null : m[1];
+  };
+
+  for (const m of src.matchAll(/<path\b([^>]*)\/?>/g)) {
+    const d = /\sd="([^"]+)"/.exec(m[1]);
+    if (d) shapes.push({ p: new Path2D(d[1]), fill: fillOf(m[1]) });
+  }
+  for (const m of src.matchAll(/<circle\b([^>]*)\/?>/g)) {
+    const n = (k) =>
+      Number(new RegExp(`\\s${k}="([^"]+)"`).exec(m[1])?.[1] ?? 0);
+    const p = new Path2D();
+    p.arc(n("cx"), n("cy"), n("r"), 0, Math.PI * 2);
+    shapes.push({ p, fill: fillOf(m[1]) });
+  }
+  for (const m of src.matchAll(/<ellipse\b([^>]*)\/?>/g)) {
+    const n = (k) =>
+      Number(new RegExp(`\\s${k}="([^"]+)"`).exec(m[1])?.[1] ?? 0);
+    const p = new Path2D();
+    p.ellipse(n("cx"), n("cy"), n("rx"), n("ry"), 0, 0, Math.PI * 2);
+    shapes.push({ p, fill: fillOf(m[1]) });
+  }
+  return { vw: vw || 24, vh: vh || 24, shapes };
+}
+
+/** The mark for a Devicon directory name, or null if there is none. */
+function techIcon(dir) {
+  if (!dir) return null;
+  const src = dir === "jmeter" ? JMETER : DEVICON[dir];
+  if (!src) return null;
+  if (!(dir in parsed)) parsed[dir] = svgShapes(src);
+  return parsed[dir];
+}
+
+/**
+ * Centred in a box at its own aspect, never stretched to fill one.
+ * Half of these are square and the AWS mark is a wordmark three
+ * times as wide as it is tall.
+ */
+function drawTech(g, icon, x, y, box) {
+  const s = Math.min(box / icon.vw, box / icon.vh);
+  g.save();
+  g.translate(x + (box - icon.vw * s) / 2, y + (box - icon.vh * s) / 2);
+  g.scale(s, s);
+  for (const sh of icon.shapes) {
+    g.fillStyle = sh.fill ?? "#dfe6ff";
+    g.fill(sh.p);
+  }
+  g.restore();
+}
+
+/**
+ * The board above the racks, as a terminal window.
+ *
+ * Returns the hit boxes along with the texture. The board is one
+ * plane, so a pointer over it arrives as a UV coordinate and
+ * nothing else - the only way to know which tag is under it is for
+ * whatever drew the tags to say where it put them. They come back
+ * in UV, origin top left, which is what the raycaster hands over.
+ */
+export const SKILL_PANE = { x0: 0.638, x1: 0.974, y0: 0.115, y1: 0.93 };
+
 export function paintSkills(groups) {
-  const W = 1024;
-  const H = 760;
+  const W = 1600;
+  const H = 805;
   const [c, g] = canvas(W, H);
+  const hits = [];
 
   g.fillStyle = "#080a12";
   g.fillRect(0, 0, W, H);
@@ -407,45 +592,187 @@ export function paintSkills(groups) {
   g.lineWidth = 6;
   g.strokeRect(3, 3, W - 6, H - 6);
 
-  g.textAlign = "left";
-  g.textBaseline = "alphabetic";
-  g.fillStyle = "#ffffff";
-  g.font = "600 52px " + SANS;
-  g.fillText("Skills", 44, 78);
-  g.strokeStyle = "#ffffff";
-  g.lineWidth = 3;
+  // Title bar. Three dots and a filename, which is the one piece of
+  // furniture that says "terminal" before a single word is read.
+  const BAR = 62;
+  g.fillStyle = "#0d101b";
+  g.fillRect(3, 3, W - 6, BAR);
+  g.strokeStyle = "#232942";
+  g.lineWidth = 2;
   g.beginPath();
-  g.moveTo(46, 96);
-  g.lineTo(118, 96);
+  g.moveTo(3, BAR + 3);
+  g.lineTo(W - 3, BAR + 3);
   g.stroke();
 
-  let y = 158;
+  const DOTS = ["#ff5f57", "#febc2e", "#28c840"];
+  DOTS.forEach((col, i) => {
+    g.fillStyle = col;
+    g.beginPath();
+    g.arc(42 + i * 30, 3 + BAR / 2, 9, 0, Math.PI * 2);
+    g.fill();
+  });
+
+  g.textAlign = "left";
+  g.textBaseline = "alphabetic";
+  g.fillStyle = "#6f7694";
+  g.font = "500 24px " + MONO;
+  if ("letterSpacing" in g) g.letterSpacing = "2px";
+  g.fillText("skills_manifest.sh", 150, 3 + BAR / 2 + 9);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+  // The bezel the preview screen sits in. Drawn here so the hole is
+  // part of the window; the screen itself is its own plane over it,
+  // because it repaints whenever the pointer moves and the rest of
+  // this does not.
+  const px0 = SKILL_PANE.x0 * W;
+  const py0 = SKILL_PANE.y0 * H;
+  const pw = (SKILL_PANE.x1 - SKILL_PANE.x0) * W;
+  const ph = (SKILL_PANE.y1 - SKILL_PANE.y0) * H;
+  g.fillStyle = "#05070e";
+  g.fillRect(px0, py0, pw, ph);
+  g.strokeStyle = "#262c45";
+  g.lineWidth = 2;
+  g.strokeRect(px0, py0, pw, ph);
+
+  // The tags, in the space left of the screen.
+  const LEFT = 44;
+  const RIGHT = px0 - 46;
+  let y = 150;
+
   for (const group of groups) {
     g.fillStyle = "#6f7694";
     g.font = "500 22px " + MONO;
     if ("letterSpacing" in g) g.letterSpacing = "4px";
-    g.fillText(group.label.toUpperCase(), 44, y);
+    g.fillText(group.label.toUpperCase(), LEFT, y);
     if ("letterSpacing" in g) g.letterSpacing = "0px";
 
     g.font = "500 24px " + MONO;
-    let x = 44;
-    y += 36;
+    let x = LEFT;
+    y += 34;
     for (const item of group.items) {
       const w = g.measureText(item).width + 30;
-      if (x + w > W - 44) {
-        x = 44;
-        y += 44;
+      if (x + w > RIGHT) {
+        x = LEFT;
+        y += 42;
       }
       g.strokeStyle = "#262c45";
       g.lineWidth = 2;
       g.beginPath();
-      g.roundRect(x, y - 26, w, 38, 9);
+      g.roundRect(x, y - 26, w, 36, 9);
       g.stroke();
       g.fillStyle = "#c6cde4";
       g.fillText(item, x + 15, y);
+      hits.push({
+        item,
+        group: group.label,
+        x0: x / W,
+        y0: (y - 26) / H,
+        x1: (x + w) / W,
+        y1: (y + 10) / H,
+      });
       x += w + 10;
     }
-    y += 56;
+    y += 50;
+  }
+
+  return { tex: finish(c), hits };
+}
+
+/**
+ * The preview screen: one skill, blown up.
+ *
+ * Repainted every time the pointer crosses onto a different tag, so
+ * it is its own small canvas rather than part of the board - a
+ * board-sized repaint and re-upload on every hover is a stutter
+ * nobody asked for.
+ */
+export function paintSkillPreview(hit, detail) {
+  // 820 by 1000 because the plane it goes on is 1.142 by 1.394,
+  // which is an aspect of 0.82. At 540 it was being stretched half
+  // as wide again across, and every logo on it with it.
+  const W = 820;
+  const H = 1000;
+  const [c, g] = canvas(W, H);
+  const pad = 62;
+
+  g.fillStyle = "#05070e";
+  g.fillRect(0, 0, W, H);
+
+  g.textAlign = "left";
+  g.textBaseline = "alphabetic";
+
+  if (!hit) {
+    g.fillStyle = "#4d5570";
+    g.font = "500 30px " + MONO;
+    for (const [i, line] of [
+      "// point at a skill",
+      "// to see where it",
+      "// was actually used",
+    ].entries()) {
+      g.fillText(line, pad, H / 2 - 44 + i * 48);
+    }
+    return finish(c);
+  }
+
+  // The mark, in a bezel so the ones with no logo still have
+  // somewhere to be.
+  const box = 210;
+  const bx = pad;
+  const by = pad + 10;
+  g.strokeStyle = "#262c45";
+  g.lineWidth = 2;
+  g.strokeRect(bx, by, box, box);
+
+  const icon = techIcon(detail?.icon);
+  if (icon) {
+    drawTech(g, icon, bx + box * 0.16, by + box * 0.16, box * 0.68);
+  } else {
+    // A lettered tile. Not a logo, and not pretending to be one.
+    const label = hit.item.replace(/[^A-Za-z#.+]/g, "").slice(0, 2) || "?";
+    g.fillStyle = "#8fa8ff";
+    g.font = "600 58px " + SANS;
+    g.textAlign = "center";
+    g.fillText(label, bx + box / 2, by + box / 2 + 20);
+    g.textAlign = "left";
+  }
+
+  g.fillStyle = "#6f7694";
+  g.font = "500 24px " + MONO;
+  if ("letterSpacing" in g) g.letterSpacing = "4px";
+  g.fillText(hit.group.toUpperCase(), pad, by + box + 62);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+  g.fillStyle = "#ffffff";
+  g.font = "600 50px " + SANS;
+  for (const [i, line] of wrap(g, hit.item, W - pad * 2).entries()) {
+    g.fillText(line, pad, by + box + 126 + i * 56);
+  }
+
+  g.fillStyle = "#262c45";
+  g.fillRect(pad, by + box + 168, W - pad * 2, 2);
+
+  if (detail?.proof) {
+    g.fillStyle = "#6f7694";
+    g.font = "500 22px " + MONO;
+    if ("letterSpacing" in g) g.letterSpacing = "3px";
+    g.fillText("USED IN", pad, by + box + 216);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+
+    g.fillStyle = "#c6cde4";
+    g.font = "400 31px " + SANS;
+    for (const [i, line] of wrap(g, detail.proof, W - pad * 2).entries()) {
+      g.fillText(line, pad, by + box + 268 + i * 42);
+    }
+  } else {
+    g.fillStyle = "#4d5570";
+    g.font = "400 30px " + SANS;
+    for (const [i, line] of wrap(
+      g,
+      "On the list, with no single project worth pointing at.",
+      W - pad * 2,
+    ).entries()) {
+      g.fillText(line, pad, by + box + 222 + i * 42);
+    }
   }
 
   return finish(c);

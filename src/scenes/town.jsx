@@ -28,6 +28,7 @@ import {
 import { profile, socials } from "../data/profile";
 import { ACCENT } from "../lib/townMaterials";
 import { makeTextTexture } from "../lib/canvasText";
+import { SKILL_PANE } from "../lib/paint";
 import { ExtrudedText } from "./street";
 
 /**
@@ -193,7 +194,15 @@ export function House({ mats, visible, open }) {
  * over them, a desk and monitor on the right, a bed and a plant so it
  * reads as somewhere someone lives.
  */
-export function Interior({ mats, visible, screen, skills }) {
+export function Interior({
+  mats,
+  visible,
+  screen,
+  skills,
+  preview,
+  onHover,
+  live,
+}) {
   const built = useBuilt(interior);
   const leds = useRef();
 
@@ -246,10 +255,49 @@ export function Interior({ mats, visible, screen, skills }) {
         decay={2}
       />
 
-      {/* The skills board, on the back wall. */}
-      <mesh position={[WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]}>
+      {/* The skills board, on the back wall.
+          
+          Pointer events read a UV off the plane and the painter says
+          which tag is where, so the whole grid is one mesh and one
+          draw call rather than forty little ones. */}
+      <mesh
+        position={[WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]}
+        onPointerMove={(e) => {
+          if (!live || !e.uv) return;
+          e.stopPropagation();
+          // UV runs from the bottom, the hit boxes from the top.
+          const u = e.uv.x;
+          const v = 1 - e.uv.y;
+          const found = skills?.hits?.find(
+            (h) => u >= h.x0 && u <= h.x1 && v >= h.y0 && v <= h.y1,
+          );
+          onHover(found ?? null);
+        }}
+        onPointerOut={() => live && onHover(null)}
+      >
         <planeGeometry args={[WALL_PANEL.w, WALL_PANEL.h]} />
-        <meshBasicMaterial map={skills} toneMapped={false} />
+        <meshBasicMaterial map={skills?.tex} toneMapped={false} />
+      </mesh>
+
+      {/* The screen inside it. Its own plane because it repaints on
+          every change of pointer and the board behind it does not -
+          one is a 540 by 1000 upload, the other is 1600 by 805. */}
+      <mesh
+        position={[
+          WALL_PANEL.x +
+            WALL_PANEL.w * ((SKILL_PANE.x0 + SKILL_PANE.x1) / 2 - 0.5),
+          WALL_PANEL.y -
+            WALL_PANEL.h * ((SKILL_PANE.y0 + SKILL_PANE.y1) / 2 - 0.5),
+          -HOUSE.d / 2 + 0.205,
+        ]}
+      >
+        <planeGeometry
+          args={[
+            WALL_PANEL.w * (SKILL_PANE.x1 - SKILL_PANE.x0),
+            WALL_PANEL.h * (SKILL_PANE.y1 - SKILL_PANE.y0),
+          ]}
+        />
+        <meshBasicMaterial map={preview} toneMapped={false} />
       </mesh>
 
       <mesh
