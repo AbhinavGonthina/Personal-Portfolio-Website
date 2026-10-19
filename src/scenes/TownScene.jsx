@@ -945,6 +945,10 @@ const PACE_MAX_DT = 0.25;
 // The longest a skip may hold the camera at its destination while
 // it waits for the page to catch up.
 const SKIP_CEILING = 4000;
+// How close the page has to get to the destination before the hold
+// lets go. A nav scroll settles a little short of the stop it aims
+// at, so this cannot be zero.
+const SKIP_ARRIVED = 0.25;
 
 /**
  * Which side of the house a point on the walk is: before it, after
@@ -1224,9 +1228,20 @@ function Rig({ target, narrow, clock }) {
         skipTo.current = dest;
         skipUntil.current = nowMs + SKIP_CEILING;
       }
+      // Released when the page has actually arrived, not when it has
+      // merely come out the other side of the house.
+      //
+      // Testing the side was wrong in one direction. Going back from
+      // Contact to About, the camera is held at About while the
+      // scroll travels 6 to 1 - and it crosses onto About's side of
+      // the house at 2.9, four fifths of the way through the trip.
+      // The hold let go there, the camera dropped to 2.9, and then
+      // walked down to 1 a second time. From the chair that is the
+      // view arriving, flinching back and arriving again.
       if (
         skipTo.current !== null &&
-        (side(want) === side(skipTo.current) || nowMs > skipUntil.current)
+        (Math.abs(want - skipTo.current) < SKIP_ARRIVED ||
+          nowMs > skipUntil.current)
       ) {
         skipTo.current = null;
       }

@@ -146,12 +146,16 @@ export function billboard() {
     }
   }
 
-  // A hairline just inside the photograph's edge, inside the ticks.
+  // A hairline just outside the photograph's edge, inside the ticks.
   // The ticks say where the portrait is; this says it is behind
   // glass. It is drawn in the lit material with the rest, so the
   // bloom picks it up and it reads as an edge that is lit rather
   // than an edge that is drawn.
-  const ir = BOARD_PHOTO / 2 - 0.045;
+  // Outside the photograph, not inside it. Set 45mm in, the frame
+  // sat on top of the picture with the picture overhanging it on
+  // all four sides, which is a line drawn across a photo rather
+  // than a frame around one.
+  const ir = BOARD_PHOTO / 2 + 0.02;
   const it = 0.012;
   for (const dy of [ir, -ir]) {
     lit.push(box(ir * 2 + it, it, it, [px, mid + dy, 0.075]));
