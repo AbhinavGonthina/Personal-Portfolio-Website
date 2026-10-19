@@ -10,7 +10,16 @@ export const skillGroups = [
   {
     id: "languages",
     label: "Languages",
-    items: ["Python", "Java", "JavaScript", "TypeScript", "C#", "SQL", "R"],
+    items: [
+      "Python",
+      "Java",
+      "JavaScript",
+      "TypeScript",
+      "C",
+      "C++",
+      "C#",
+      "SQL",
+    ],
   },
   {
     id: "cloud",
@@ -29,7 +38,7 @@ export const skillGroups = [
   {
     id: "backend",
     label: "Backend",
-    items: ["Spring Boot", ".NET", "Node.js", "Express", "Flask", "Prisma"],
+    items: ["Spring Boot", ".NET", "Express", "Flask"],
   },
   {
     id: "frontend",
@@ -48,21 +57,14 @@ export const skillGroups = [
     id: "data",
     label: "Data & Tooling",
     items: [
-      "PostgreSQL",
-      "DynamoDB",
+      "Prisma",
       "Redis",
-      "MongoDB",
-      "MySQL",
-      "SQLite",
-      "Oracle",
       "Git",
       "GitHub",
       "Postman",
       "Jest",
       "Vitest",
       "JUnit",
-      "Pandas",
-      "NumPy",
       "Figma",
     ],
   },
@@ -107,6 +109,8 @@ export const skillDetail = {
     proof:
       "Quak, Rainfall and Pawtograder: the language most of that work is written in.",
   },
+  C: { icon: "c", proof: null },
+  "C++": { icon: "cplusplus", proof: null },
   "C#": {
     icon: "csharp",
     proof: "Philips: the .NET side of the bedside monitor simulator.",
@@ -116,7 +120,6 @@ export const skillDetail = {
     proof:
       "OnTrack: a LAG() window function deriving stage-to-stage conversion from status events.",
   },
-  R: { icon: "r", proof: null },
 
   "AWS (ECS, EKS, S3, EC2)": {
     icon: "amazonwebservices",
@@ -165,7 +168,6 @@ export const skillDetail = {
     proof:
       "Philips: device management and data streaming in the monitor simulator.",
   },
-  "Node.js": { icon: "nodejs", proof: null },
   Express: {
     icon: "express",
     proof:
@@ -201,26 +203,10 @@ export const skillDetail = {
   HTML: { icon: "html5", proof: null },
   CSS: { icon: "css3", proof: null },
 
-  PostgreSQL: {
-    icon: "postgresql",
-    proof: "OnTrack: the pipeline store behind the Sankey diagram.",
-  },
-  DynamoDB: {
-    icon: "dynamodb",
-    proof:
-      "athenahealth: the Consumer Data Store's tenant and service records.",
-  },
   Redis: {
     icon: "redis",
     proof:
       "Quak: per-route caches over 26 GET endpoints, cutting search latency up to 80%.",
-  },
-  MongoDB: { icon: "mongodb", proof: null },
-  MySQL: { icon: "mysql", proof: null },
-  SQLite: { icon: "sqlite", proof: null },
-  Oracle: {
-    icon: "oracle",
-    proof: "athenahealth: the database those ~722M test rows went into.",
   },
   Git: { icon: "git", proof: null },
   GitHub: {
@@ -236,8 +222,6 @@ export const skillDetail = {
       "Rainfall: 91 tests around the payment path, across three API layers.",
   },
   JUnit: { icon: "junit", proof: null },
-  Pandas: { icon: "pandas", proof: null },
-  NumPy: { icon: "numpy", proof: null },
   Figma: {
     icon: "figma",
     proof: "Quak: turned the redesign mockups into components.",

@@ -398,11 +398,12 @@ export function paintBoard(profile, education) {
 
 import dvamazonwebservices from "devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg?raw";
 import dvazuresqldatabase from "devicon/icons/azuresqldatabase/azuresqldatabase-original.svg?raw";
+import dvc from "devicon/icons/c/c-original.svg?raw";
+import dvcplusplus from "devicon/icons/cplusplus/cplusplus-original.svg?raw";
 import dvcsharp from "devicon/icons/csharp/csharp-original.svg?raw";
 import dvcss3 from "devicon/icons/css3/css3-original.svg?raw";
 import dvdocker from "devicon/icons/docker/docker-original.svg?raw";
 import dvdotnetcore from "devicon/icons/dotnetcore/dotnetcore-original.svg?raw";
-import dvdynamodb from "devicon/icons/dynamodb/dynamodb-original.svg?raw";
 import dvexpress from "devicon/icons/express/express-original.svg?raw";
 import dvfigma from "devicon/icons/figma/figma-original.svg?raw";
 import dvflask from "devicon/icons/flask/flask-original.svg?raw";
@@ -417,23 +418,14 @@ import dvjest from "devicon/icons/jest/jest-plain.svg?raw";
 import dvjunit from "devicon/icons/junit/junit-original.svg?raw";
 import dvkubernetes from "devicon/icons/kubernetes/kubernetes-original.svg?raw";
 import dvmaterialui from "devicon/icons/materialui/materialui-original.svg?raw";
-import dvmongodb from "devicon/icons/mongodb/mongodb-original.svg?raw";
-import dvmysql from "devicon/icons/mysql/mysql-original.svg?raw";
 import dvnextjs from "devicon/icons/nextjs/nextjs-original.svg?raw";
-import dvnodejs from "devicon/icons/nodejs/nodejs-original.svg?raw";
-import dvnumpy from "devicon/icons/numpy/numpy-original.svg?raw";
-import dvoracle from "devicon/icons/oracle/oracle-original.svg?raw";
-import dvpandas from "devicon/icons/pandas/pandas-original.svg?raw";
-import dvpostgresql from "devicon/icons/postgresql/postgresql-original.svg?raw";
 import dvpostman from "devicon/icons/postman/postman-original.svg?raw";
 import dvprisma from "devicon/icons/prisma/prisma-original.svg?raw";
 import dvprometheus from "devicon/icons/prometheus/prometheus-original.svg?raw";
 import dvpython from "devicon/icons/python/python-original.svg?raw";
-import dvr from "devicon/icons/r/r-original.svg?raw";
 import dvreact from "devicon/icons/react/react-original.svg?raw";
 import dvredis from "devicon/icons/redis/redis-original.svg?raw";
 import dvspring from "devicon/icons/spring/spring-original.svg?raw";
-import dvsqlite from "devicon/icons/sqlite/sqlite-original.svg?raw";
 import dvtailwindcss from "devicon/icons/tailwindcss/tailwindcss-original.svg?raw";
 import dvterraform from "devicon/icons/terraform/terraform-original.svg?raw";
 import dvtypescript from "devicon/icons/typescript/typescript-original.svg?raw";
@@ -445,18 +437,18 @@ import dvvitest from "devicon/icons/vitest/vitest-original.svg?raw";
  *
  * Devicon rather than Simple Icons because Simple Icons no longer
  * has Java, C#, AWS, Oracle or DynamoDB - all pulled over trademark
- * complaints, the same way LinkedIn was. Devicon has forty-three of
- * the forty-four on the board. JMeter is the one it does not, and
- * that one keeps its Simple Icons path.
+ * complaints, the same way LinkedIn was. Devicon has every skill on
+ * the board but one: JMeter, which keeps a Simple Icons path.
  */
 const DEVICON = {
   amazonwebservices: dvamazonwebservices,
   azuresqldatabase: dvazuresqldatabase,
+  c: dvc,
+  cplusplus: dvcplusplus,
   csharp: dvcsharp,
   css3: dvcss3,
   docker: dvdocker,
   dotnetcore: dvdotnetcore,
-  dynamodb: dvdynamodb,
   express: dvexpress,
   figma: dvfigma,
   flask: dvflask,
@@ -471,23 +463,14 @@ const DEVICON = {
   junit: dvjunit,
   kubernetes: dvkubernetes,
   materialui: dvmaterialui,
-  mongodb: dvmongodb,
-  mysql: dvmysql,
   nextjs: dvnextjs,
-  nodejs: dvnodejs,
-  numpy: dvnumpy,
-  oracle: dvoracle,
-  pandas: dvpandas,
-  postgresql: dvpostgresql,
   postman: dvpostman,
   prisma: dvprisma,
   prometheus: dvprometheus,
   python: dvpython,
-  r: dvr,
   react: dvreact,
   redis: dvredis,
   spring: dvspring,
-  sqlite: dvsqlite,
   tailwindcss: dvtailwindcss,
   terraform: dvterraform,
   typescript: dvtypescript,
