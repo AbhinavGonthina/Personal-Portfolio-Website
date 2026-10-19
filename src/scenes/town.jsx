@@ -28,7 +28,7 @@ import {
 import { profile, socials } from "../data/profile";
 import { ACCENT } from "../lib/townMaterials";
 import { makeTextTexture } from "../lib/canvasText";
-import { SKILL_PANE } from "../lib/paint";
+import { SCREEN_VIEW, SKILL_PANE } from "../lib/paint";
 import { ExtrudedText } from "./street";
 
 /**
@@ -62,6 +62,8 @@ function useBuilt(build) {
   );
   return made;
 }
+
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
 const yawOf = (b) => [0, b.yaw, 0];
 const posOf = (b) => [b.x, 0, b.z];
@@ -194,6 +196,67 @@ export function House({ mats, visible, open }) {
  * over them, a desk and monitor on the right, a bed and a plant so it
  * reads as somewhere someone lives.
  */
+/**
+ * The monitor on the desk: a profile page of pinned repositories,
+ * and one of them opened.
+ *
+ * The grid is taller than the screen, so the plane shows a window
+ * onto it and scrolling moves the window rather than repainting
+ * anything. `reel` is where the page has got to through the
+ * Projects section, 0 at the top of the list and 1 at the bottom.
+ *
+ * Clicks arrive as a UV, which has to be put back into canvas
+ * pixels - including the scroll - before the hit boxes mean
+ * anything. UV counts up from the bottom and the canvas counts
+ * down from the top, which is the one place this is easy to get
+ * backwards.
+ */
+function Monitor({ screen, reel, onOpen, live }) {
+  const { tex, hits } = screen ?? {};
+  const tall = screen?.height ?? SCREEN_VIEW.h;
+  const span = Math.max(0.0001, SCREEN_VIEW.h / tall);
+
+  useEffect(() => {
+    if (!tex) return;
+    tex.repeat.set(1, Math.min(1, span));
+    tex.offset.set(0, Math.max(0, 1 - span) * (1 - clamp01(reel ?? 0)));
+    tex.needsUpdate = true;
+  }, [tex, span, reel]);
+
+  const pick = (e) => {
+    if (!live || !e.uv || !hits) return;
+    e.stopPropagation();
+    const v = Math.max(0, 1 - span) * (1 - clamp01(reel ?? 0)) + e.uv.y * span;
+    const cx = e.uv.x * SCREEN_VIEW.w;
+    const cy = (1 - v) * tall;
+    const hit = hits.find(
+      (h) => cx >= h.x0 && cx <= h.x1 && cy >= h.y0 && cy <= h.y1,
+    );
+    if (!hit) return;
+    if (hit.id === "__back") onOpen(null);
+    else if (hit.id === "__live" || hit.id === "__github") {
+      window.open(hit.href, "_blank", "noopener,noreferrer");
+    } else onOpen(hit.id);
+  };
+
+  return (
+    <mesh
+      position={[DESK.x - 0.055, DESK.y, DESK.z]}
+      rotation={[0, -Math.PI / 2, 0]}
+      onClick={pick}
+      onPointerOver={() => {
+        if (live) document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = "";
+      }}
+    >
+      <planeGeometry args={[DESK_SCREEN.w, DESK_SCREEN.h]} />
+      <meshBasicMaterial map={tex} toneMapped={false} />
+    </mesh>
+  );
+}
+
 export function Interior({
   mats,
   visible,
@@ -201,6 +264,8 @@ export function Interior({
   skills,
   preview,
   onHover,
+  reel,
+  onOpen,
   live,
 }) {
   const built = useBuilt(interior);
@@ -300,13 +365,7 @@ export function Interior({
         <meshBasicMaterial map={preview} toneMapped={false} />
       </mesh>
 
-      <mesh
-        position={[DESK.x - 0.055, DESK.y, DESK.z]}
-        rotation={[0, -Math.PI / 2, 0]}
-      >
-        <planeGeometry args={[DESK_SCREEN.w, DESK_SCREEN.h]} />
-        <meshBasicMaterial map={screen} toneMapped={false} />
-      </mesh>
+      <Monitor screen={screen} reel={reel} onOpen={onOpen} live={live} />
     </group>
   );
 }

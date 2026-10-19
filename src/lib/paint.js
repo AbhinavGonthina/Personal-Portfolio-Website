@@ -132,6 +132,319 @@ export function paintMark(icon, name) {
  * What is on the monitor in the study: the selected project, laid out
  * like an editor window so the screen reads as a screen.
  */
+/**
+ * The monitor, as a profile page of pinned repositories.
+ *
+ * Two things shape this. The screen is 1024 by 628 and the grid is
+ * far taller than that, so the whole grid is drawn once onto a tall
+ * canvas and the plane shows a window onto it - scrolling is then a
+ * texture offset, not a repaint. A repaint every frame of a scroll
+ * is half a megapixel of canvas work and an upload to match, for a
+ * picture that has not changed.
+ *
+ * And the hit boxes come back in canvas pixels rather than UV,
+ * because the caller has to add the scroll offset before it can
+ * know what is under the pointer.
+ */
+export const SCREEN_VIEW = { w: 1024, h: 628 };
+
+/** GitHub's dot colour for the languages on this board. */
+const LANG_DOT = {
+  "Next.js": "#3178c6",
+  React: "#61dafb",
+  "React Native": "#61dafb",
+  TypeScript: "#3178c6",
+  JavaScript: "#f1e05a",
+  Java: "#b07219",
+  Python: "#3572a5",
+  Racket: "#3c5caa",
+  "Spring Boot": "#6db33f",
+};
+
+function roundRect(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+
+/** The little book the repo lists put in front of every name. */
+function repoGlyph(g, x, y, s, colour) {
+  g.strokeStyle = colour;
+  g.lineWidth = s * 0.09;
+  g.lineJoin = "round";
+  g.beginPath();
+  g.moveTo(x + s * 0.18, y + s * 0.12);
+  g.lineTo(x + s * 0.18, y + s * 0.88);
+  g.lineTo(x + s * 0.82, y + s * 0.88);
+  g.stroke();
+  g.beginPath();
+  g.moveTo(x + s * 0.3, y + s * 0.12);
+  g.lineTo(x + s * 0.82, y + s * 0.12);
+  g.lineTo(x + s * 0.82, y + s * 0.7);
+  g.lineTo(x + s * 0.3, y + s * 0.7);
+  g.stroke();
+}
+
+export function paintProjectsGrid(list) {
+  const W = SCREEN_VIEW.w;
+  const PAD = 26;
+  const GAP = 18;
+  const CARD_W = (W - PAD * 2 - GAP) / 2;
+  const CARD_H = 196;
+  const HEAD = 128;
+  const rows = Math.ceil(list.length / 2);
+  const H = HEAD + rows * (CARD_H + GAP) + PAD;
+
+  const [c, g] = canvas(W, H);
+  const hits = [];
+
+  g.fillStyle = "#0d1117";
+  g.fillRect(0, 0, W, H);
+  g.textBaseline = "alphabetic";
+  g.textAlign = "left";
+
+  // The bar across the top: a search field and the handle, which is
+  // what tells you at a glance what kind of page this is.
+  g.fillStyle = "#161b22";
+  g.fillRect(0, 0, W, 58);
+  g.strokeStyle = "#30363d";
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(0, 58);
+  g.lineTo(W, 58);
+  g.stroke();
+
+  g.strokeStyle = "#30363d";
+  roundRect(g, PAD, 14, 300, 30, 7);
+  g.stroke();
+  g.fillStyle = "#545d68";
+  g.font = `400 17px ${MONO}`;
+  g.fillText("Search or jump to...", PAD + 14, 35);
+
+  g.fillStyle = "#c9d1d9";
+  g.font = `500 18px ${MONO}`;
+  g.fillText("github.com/abhinavgonthina", PAD + 332, 35);
+
+  g.fillStyle = "#7d8590";
+  g.font = `600 19px ${SANS}`;
+  g.fillText("Pinned", PAD, 100);
+  g.strokeStyle = "#21262d";
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(PAD + 76, 94);
+  g.lineTo(W - PAD, 94);
+  g.stroke();
+
+  list.forEach((p, i) => {
+    const col = i % 2;
+    const row = (i - col) / 2;
+    const x = PAD + col * (CARD_W + GAP);
+    const y = HEAD + row * (CARD_H + GAP);
+
+    g.fillStyle = "#0d1117";
+    g.strokeStyle = "#30363d";
+    g.lineWidth = 2;
+    roundRect(g, x, y, CARD_W, CARD_H, 8);
+    g.fill();
+    g.stroke();
+
+    repoGlyph(g, x + 16, y + 18, 22, "#7d8590");
+
+    g.fillStyle = "#4493f8";
+    g.font = `600 22px ${SANS}`;
+    const name = p.title.replace(/\s+/g, "-");
+    g.fillText(name, x + 48, y + 36);
+
+    const nameW = g.measureText(name).width;
+    g.strokeStyle = "#30363d";
+    g.lineWidth = 2;
+    roundRect(g, x + 58 + nameW, y + 18, 62, 24, 12);
+    g.stroke();
+    g.fillStyle = "#7d8590";
+    g.font = `400 14px ${SANS}`;
+    g.fillText("Public", x + 70 + nameW, y + 35);
+
+    g.fillStyle = "#7d8590";
+    g.font = `400 17px ${SANS}`;
+    let ty = y + 72;
+    for (const line of wrap(g, p.blurb ?? "", CARD_W - 32).slice(0, 3)) {
+      g.fillText(line, x + 16, ty);
+      ty += 24;
+    }
+
+    // Language dot and the rest of the stack, the way a repo card
+    // puts its one language first and nothing else.
+    const lang = (p.tech ?? [])[0];
+    const dot = LANG_DOT[lang] ?? "#8b949e";
+    const by = y + CARD_H - 24;
+    g.fillStyle = dot;
+    g.beginPath();
+    g.arc(x + 22, by - 5, 6, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#7d8590";
+    g.font = `400 16px ${SANS}`;
+    g.fillText(lang ?? "", x + 36, by);
+
+    let tx = x + 44 + g.measureText(lang ?? "").width;
+    g.font = `400 13px ${MONO}`;
+    for (const t of (p.tech ?? []).slice(1, 4)) {
+      const w = g.measureText(t).width + 16;
+      if (tx + w > x + CARD_W - 14) break;
+      g.strokeStyle = "#21304a";
+      g.lineWidth = 1.5;
+      roundRect(g, tx, by - 16, w, 22, 11);
+      g.stroke();
+      g.fillStyle = "#6e94c9";
+      g.fillText(t, tx + 8, by);
+      tx += w + 7;
+    }
+
+    hits.push({ id: p.id, x0: x, y0: y, x1: x + CARD_W, y1: y + CARD_H });
+  });
+
+  return { tex: finish(c), hits, height: H };
+}
+
+/**
+ * One repository, opened.
+ *
+ * Exactly the height of the screen, unlike the grid: there is no
+ * scrolling in here, so everything has to fit, and the description
+ * is clamped rather than allowed to push the links off the bottom.
+ *
+ * `shot` is an already-decoded image or null. Four of these
+ * projects have a video rather than a still and canvas cannot draw
+ * one of those into a texture, so those get a framed placeholder
+ * that says so instead of an empty box.
+ */
+export function paintProjectDetail(p, shot) {
+  const W = SCREEN_VIEW.w;
+  const H = SCREEN_VIEW.h;
+  const PAD = 26;
+  const [c, g] = canvas(W, H);
+  const hits = [];
+
+  g.fillStyle = "#0d1117";
+  g.fillRect(0, 0, W, H);
+  g.textBaseline = "alphabetic";
+  g.textAlign = "left";
+
+  // Back bar.
+  g.fillStyle = "#161b22";
+  g.fillRect(0, 0, W, 58);
+  g.strokeStyle = "#30363d";
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(0, 58);
+  g.lineTo(W, 58);
+  g.stroke();
+  g.fillStyle = "#4493f8";
+  g.font = `500 18px ${SANS}`;
+  g.fillText("\u2190  Back to pinned", PAD, 36);
+  hits.push({ id: "__back", x0: 0, y0: 0, x1: 300, y1: 58 });
+
+  const LEFT = PAD;
+  const COL = 560;
+
+  repoGlyph(g, LEFT, 84, 26, "#7d8590");
+  g.fillStyle = "#ffffff";
+  g.font = `600 34px ${SANS}`;
+  g.fillText(p.title, LEFT + 38, 108);
+
+  g.fillStyle = "#7d8590";
+  g.font = `400 16px ${MONO}`;
+  g.fillText(p.period ?? "", LEFT + 38, 134);
+
+  g.fillStyle = "#c9d1d9";
+  g.font = `400 18px ${SANS}`;
+  let y = 174;
+  for (const line of wrap(g, p.description ?? p.blurb ?? "", COL).slice(0, 7)) {
+    g.fillText(line, LEFT, y);
+    y += 26;
+  }
+
+  // The whole stack here, not the first four.
+  y += 18;
+  let x = LEFT;
+  g.font = `400 15px ${MONO}`;
+  for (const t of p.tech ?? []) {
+    const w = g.measureText(t).width + 20;
+    if (x + w > LEFT + COL) {
+      x = LEFT;
+      y += 34;
+    }
+    g.strokeStyle = "#21304a";
+    g.lineWidth = 1.5;
+    roundRect(g, x, y - 20, w, 28, 14);
+    g.stroke();
+    g.fillStyle = "#6e94c9";
+    g.fillText(t, x + 10, y);
+    x += w + 8;
+  }
+
+  // The links, pinned to the bottom of the column so a long
+  // description cannot push them off the screen.
+  const by = H - 56;
+  const button = (label, bx, wide, primary, id, href) => {
+    g.fillStyle = primary ? "#238636" : "#21262d";
+    g.strokeStyle = primary ? "#2ea043" : "#30363d";
+    g.lineWidth = 2;
+    roundRect(g, bx, by, wide, 40, 8);
+    g.fill();
+    g.stroke();
+    g.fillStyle = primary ? "#ffffff" : "#c9d1d9";
+    g.font = `600 16px ${SANS}`;
+    g.textAlign = "center";
+    g.fillText(label, bx + wide / 2, by + 26);
+    g.textAlign = "left";
+    hits.push({ id, href, x0: bx, y0: by, x1: bx + wide, y1: by + 40 });
+  };
+
+  let bx = LEFT;
+  if (p.live) {
+    button("Live site", bx, 170, true, "__live", p.live);
+    bx += 182;
+  }
+  if (p.github) button("GitHub repo", bx, 180, false, "__github", p.github);
+
+  // The preview, down the right.
+  const px = LEFT + COL + 30;
+  const pw = W - px - PAD;
+  const ph = Math.round((pw * 9) / 16);
+  const py = 92;
+  g.fillStyle = "#010409";
+  g.strokeStyle = "#30363d";
+  g.lineWidth = 2;
+  roundRect(g, px, py, pw, ph, 8);
+  g.fill();
+  g.stroke();
+
+  if (shot) {
+    // Cover, not stretch: these are screenshots of real pages and
+    // squashing one is worse than cropping it.
+    const s = Math.max(pw / shot.width, ph / shot.height);
+    const sw = shot.width * s;
+    const sh = shot.height * s;
+    g.save();
+    roundRect(g, px, py, pw, ph, 8);
+    g.clip();
+    g.drawImage(shot, px + (pw - sw) / 2, py + (ph - sh) / 2, sw, sh);
+    g.restore();
+  } else {
+    g.fillStyle = "#30363d";
+    g.font = `400 15px ${MONO}`;
+    g.textAlign = "center";
+    g.fillText("no still — see the live site", px + pw / 2, py + ph / 2 + 5);
+    g.textAlign = "left";
+  }
+
+  return { tex: finish(c), hits };
+}
+
 export function paintScreen(project, index, total) {
   const W = 1024;
   const H = 600;
