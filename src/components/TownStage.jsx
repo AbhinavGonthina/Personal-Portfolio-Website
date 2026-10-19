@@ -9,13 +9,14 @@ import {
   paintBoardFace,
   paintMark,
   paintScreen,
+  paintSkillPreview,
   paintSkills,
 } from "../lib/paint";
 import { BOARD_LAMPS as LAMPS_AT } from "../lib/townGeometry";
 import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
-import { skillGroups } from "../data/skills";
+import { skillDetail, skillGroups } from "../data/skills";
 import {
   holdScroll,
   isJumping,
@@ -98,6 +99,18 @@ export default function TownStage({ refs }) {
     [off],
   );
   const skills = useMemo(() => (off ? null : paintSkills(skillGroups)), [off]);
+
+  // Which tag the pointer is on, and the screen painted for it.
+  //
+  // Held here rather than in the scene because painting a canvas is
+  // not frame work: it happens when the answer changes, which is a
+  // few times a second at the very most, and never while nothing is
+  // moving.
+  const [hovered, setHovered] = useState(null);
+  const preview = useMemo(
+    () => (off ? null : paintSkillPreview(hovered, skillDetail[hovered?.item])),
+    [off, hovered],
+  );
   const screen = useMemo(
     () => (off ? null : paintScreen(projects[shot], shot, projects.length)),
     [off, shot],
@@ -105,7 +118,8 @@ export default function TownStage({ refs }) {
   useEffect(() => () => marks.forEach((m) => m.dispose()), [marks]);
   useEffect(() => () => board?.dispose(), [board]);
   useEffect(() => () => boardFace?.dispose(), [boardFace]);
-  useEffect(() => () => skills?.dispose(), [skills]);
+  useEffect(() => () => skills?.tex?.dispose(), [skills]);
+  useEffect(() => () => preview?.dispose(), [preview]);
   useEffect(() => () => screen?.dispose(), [screen]);
 
   useEffect(() => {
@@ -317,6 +331,8 @@ export default function TownStage({ refs }) {
             narrow={false}
             screen={screen}
             skills={skills}
+            preview={preview}
+            onHover={setHovered}
             board={board}
             boardFace={boardFace}
             marks={marks}

@@ -83,6 +83,17 @@ export const STOPS = [
     // the path, face the door and go through it.
     id: "skills",
     title: "Skills",
+    // Still, unlike every other stop.
+    //
+    // The board here is pointed at rather than looked at: each tag
+    // is a target a few millimetres across on screen, and the usual
+    // look-around swings the whole wall by a fifth of a radian as
+    // the cursor crosses it. The tag you aimed at has moved by the
+    // time you arrive, and then moves again as the damping settles.
+    // A surface you are meant to point at cannot drift under the
+    // pointer.
+    sway: 0,
+    rise: 0,
     frame: {
       at: toWorld(TOWN.house, [WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]),
       yaw: TOWN.house.yaw,

@@ -1891,7 +1891,16 @@ function Sky() {
  * The landmarks stay on throughout, because the establishing shot has
  * to show the whole town at once - that is what it is for.
  */
-function Town({ town, screen, skills, board, boardFace, marks }) {
+function Town({
+  town,
+  screen,
+  skills,
+  preview,
+  onHover,
+  board,
+  boardFace,
+  marks,
+}) {
   // Craned out far enough to see the edges of the map.
   const wide = useWide();
   // The door starts opening as the camera leaves the city, so arriving
@@ -1933,7 +1942,15 @@ function Town({ town, screen, skills, board, boardFace, marks }) {
       <Dressing mats={town} visible wide={wide} />
       <Billboard mats={town} visible board={board} face={boardFace} />
       <House mats={town} visible open={open} />
-      <Interior mats={town} visible={inside} screen={screen} skills={skills} />
+      <Interior
+        mats={town}
+        visible={inside}
+        screen={screen}
+        skills={skills}
+        preview={preview}
+        onHover={onHover}
+        live={inside}
+      />
       <Mailboxes
         mats={town}
         visible
@@ -1952,6 +1969,8 @@ export default function TownScene({
   narrow,
   screen,
   skills,
+  preview,
+  onHover,
   board,
   boardFace,
   marks,
@@ -2030,6 +2049,8 @@ export default function TownScene({
         town={town}
         screen={screen}
         skills={skills}
+        preview={preview}
+        onHover={onHover}
         board={board}
         boardFace={boardFace}
         marks={marks}
