@@ -11,14 +11,14 @@ export const skillGroups = [
     id: "languages",
     label: "Languages",
     items: [
-      "Python",
-      "Java",
       "JavaScript",
       "TypeScript",
+      "Python",
+      "Java",
+      "SQL",
+      "C#",
       "C",
       "C++",
-      "C#",
-      "SQL",
     ],
   },
   {
@@ -38,34 +38,17 @@ export const skillGroups = [
   {
     id: "backend",
     label: "Backend",
-    items: ["Spring Boot", ".NET", "Express", "Flask"],
+    items: ["Express", "Prisma", "Spring Boot", ".NET", "Flask"],
   },
   {
     id: "frontend",
     label: "Frontend",
-    items: [
-      "React",
-      "Next.js",
-      "React Native",
-      "Tailwind CSS",
-      "Material UI",
-      "HTML",
-      "CSS",
-    ],
+    items: ["React", "Next.js", "Redux", "HTML", "CSS"],
   },
   {
     id: "data",
     label: "Data & Tooling",
-    items: [
-      "Prisma",
-      "Redis",
-      "Git",
-      "GitHub",
-      "Postman",
-      "Jest",
-      "Vitest",
-      "JUnit",
-    ],
+    items: ["Prisma", "Redis", "Postman", "Git", "Jest", "Vitest", "JUnit"],
   },
 ];
 
@@ -187,17 +170,10 @@ export const skillDetail = {
     icon: "nextjs",
     proof: "OnTrack: the whole frontend. Pawtograder: the paper exams UI.",
   },
-  "React Native": {
-    icon: "react",
-    proof: "Quak: the itinerary and expense views in the mobile app.",
-  },
-  "Tailwind CSS": {
-    icon: "tailwindcss",
-    proof: "Quak and CoDesign: the component layer on both.",
-  },
-  "Material UI": {
-    icon: "materialui",
-    proof: "NER: FinishLine's parts overview. Quak: the marketplace redesign.",
+  Redux: {
+    icon: "redux",
+    proof:
+      "Philips: device state in the monitor simulator, including the corruption behind the labeling bugs.",
   },
   HTML: { icon: "html5", proof: null },
   CSS: { icon: "css3", proof: null },
@@ -208,11 +184,6 @@ export const skillDetail = {
       "Quak: per-route caches over 26 GET endpoints, cutting search latency up to 80%.",
   },
   Git: { icon: "git", proof: null },
-  GitHub: {
-    icon: "github",
-    proof:
-      "Rainfall: scoped the checkout into 17 issues and reviewed the team's work.",
-  },
   Postman: { icon: "postman", proof: null },
   Jest: { icon: "jest", proof: null },
   Vitest: {
