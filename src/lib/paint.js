@@ -494,6 +494,21 @@ const JMETER = `<svg viewBox="0 0 24 24"><path d="${siApachejmeter.path}"/></svg
  */
 const parsed = {};
 
+/** How bright a declared fill is, or null if it is not a plain hex. */
+function luma(fill) {
+  if (!fill) return null;
+  let h = fill.trim().replace("#", "");
+  if (h.length === 3) h = [...h].map((c) => c + c).join("");
+  if (!/^[0-9a-f]{6}$/i.test(h)) return null;
+  const n = parseInt(h, 16);
+  return (
+    (0.2126 * ((n >> 16) & 255) +
+      0.7152 * ((n >> 8) & 255) +
+      0.0722 * (n & 255)) /
+    255
+  );
+}
+
 function svgShapes(src) {
   const box = /viewBox="([\d.\-\s]+)"/.exec(src);
   const [, , vw, vh] = box
@@ -523,6 +538,28 @@ function svgShapes(src) {
     p.ellipse(n("cx"), n("cy"), n("rx"), n("ry"), 0, 0, Math.PI * 2);
     shapes.push({ p, fill: fillOf(m[1]) });
   }
+  // Whether this mark can be seen at all on a near-black panel.
+  //
+  // Three things make a logo invisible here and all three are
+  // common. Some declare their colour as `url(#gradient)`, which
+  // this cannot resolve and canvas will not accept. Some declare no
+  // fill on the shapes at all and put it on a wrapping group. And
+  // some are simply black - GitHub is #181616 and Flask is #010101,
+  // which on this background is a hole.
+  //
+  // So: if nothing in the file is bright enough to see, the whole
+  // mark is drawn in one light tone. If something is, the declared
+  // colours are kept and only the unreadable ones are lifted - that
+  // way Kubernetes stays blue and Python stops being a void.
+  const bright = shapes
+    .map((s) => luma(s.fill))
+    .reduce((a, b) => (b === null ? a : Math.max(a ?? 0, b)), null);
+  const mono = bright === null || bright < 0.18;
+  for (const s of shapes) {
+    const l = luma(s.fill);
+    if (mono || l === null || l < 0.18) s.fill = null;
+  }
+
   return { vw: vw || 24, vh: vh || 24, shapes };
 }
 
@@ -618,143 +655,163 @@ export function paintSkills(groups) {
   g.strokeRect(px0, py0, pw, ph);
 
   // The tags, in the space left of the screen.
-  const LEFT = 44;
-  const RIGHT = px0 - 46;
+  const LEFT = 52;
+  const RIGHT = px0 - 52;
+  // 150 / 40 / 48 / 48 is the largest this grid goes before the last
+  // group runs off the bottom of an 805 tall board. Nine rows of tags
+  // and five headings is what has to fit.
   let y = 150;
 
   for (const group of groups) {
     g.fillStyle = "#6f7694";
-    g.font = "500 22px " + MONO;
-    if ("letterSpacing" in g) g.letterSpacing = "4px";
+    g.font = "500 25px " + MONO;
+    if ("letterSpacing" in g) g.letterSpacing = "5px";
     g.fillText(group.label.toUpperCase(), LEFT, y);
     if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-    g.font = "500 24px " + MONO;
+    g.font = "500 28px " + MONO;
     let x = LEFT;
-    y += 34;
+    y += 40;
     for (const item of group.items) {
-      const w = g.measureText(item).width + 30;
+      const w = g.measureText(item).width + 36;
       if (x + w > RIGHT) {
         x = LEFT;
-        y += 42;
+        y += 48;
       }
       g.strokeStyle = "#262c45";
       g.lineWidth = 2;
       g.beginPath();
-      g.roundRect(x, y - 26, w, 36, 9);
+      g.roundRect(x, y - 30, w, 42, 10);
       g.stroke();
       g.fillStyle = "#c6cde4";
-      g.fillText(item, x + 15, y);
+      g.fillText(item, x + 18, y);
       hits.push({
         item,
         group: group.label,
         x0: x / W,
-        y0: (y - 26) / H,
+        y0: (y - 30) / H,
         x1: (x + w) / W,
-        y1: (y + 10) / H,
+        y1: (y + 12) / H,
       });
-      x += w + 10;
+      x += w + 12;
     }
-    y += 50;
+    y += 48;
   }
 
   return { tex: finish(c), hits };
 }
 
 /**
- * The preview screen: one skill, blown up.
+ * The preview screen: one skill, blown up, centred.
  *
  * Repainted every time the pointer crosses onto a different tag, so
  * it is its own small canvas rather than part of the board - a
  * board-sized repaint and re-upload on every hover is a stutter
  * nobody asked for.
+ *
+ * 820 by 1000 because the plane it goes on is 1.142 by 1.394, an
+ * aspect of 0.82. At 540 it was stretched half as wide again across
+ * and every logo on it with it.
  */
 export function paintSkillPreview(hit, detail) {
-  // 820 by 1000 because the plane it goes on is 1.142 by 1.394,
-  // which is an aspect of 0.82. At 540 it was being stretched half
-  // as wide again across, and every logo on it with it.
   const W = 820;
   const H = 1000;
   const [c, g] = canvas(W, H);
-  const pad = 62;
+  const mid = W / 2;
+  const pad = 56;
 
   g.fillStyle = "#05070e";
   g.fillRect(0, 0, W, H);
-
-  g.textAlign = "left";
+  g.textAlign = "center";
   g.textBaseline = "alphabetic";
 
   if (!hit) {
-    g.fillStyle = "#4d5570";
+    g.fillStyle = "#39415e";
     g.font = "500 30px " + MONO;
-    for (const [i, line] of [
-      "// point at a skill",
-      "// to see where it",
-      "// was actually used",
-    ].entries()) {
-      g.fillText(line, pad, H / 2 - 44 + i * 48);
+    const lines = ["// point at a skill", "// to see where", "// it was used"];
+    for (const [i, line] of lines.entries()) {
+      g.fillText(line, mid, H / 2 - 36 + i * 46);
     }
     return finish(c);
   }
 
-  // The mark, in a bezel so the ones with no logo still have
-  // somewhere to be.
-  const box = 210;
-  const bx = pad;
-  const by = pad + 10;
-  g.strokeStyle = "#262c45";
-  g.lineWidth = 2;
-  g.strokeRect(bx, by, box, box);
+  // A pool of light under the mark. The brief asked for a glowing
+  // icon and a glow is light on the surface behind a thing, not an
+  // outline around it.
+  const BOX = 300;
+  const bx = mid - BOX / 2;
+  const by = 120;
+  const halo = g.createRadialGradient(
+    mid,
+    by + BOX / 2,
+    0,
+    mid,
+    by + BOX / 2,
+    BOX,
+  );
+  halo.addColorStop(0, "rgba(143,168,255,0.16)");
+  halo.addColorStop(0.5, "rgba(143,168,255,0.05)");
+  halo.addColorStop(1, "rgba(143,168,255,0)");
+  g.fillStyle = halo;
+  g.fillRect(bx - BOX / 2, by - BOX / 2, BOX * 2, BOX * 2);
 
   const icon = techIcon(detail?.icon);
   if (icon) {
-    drawTech(g, icon, bx + box * 0.16, by + box * 0.16, box * 0.68);
+    drawTech(g, icon, bx, by, BOX);
   } else {
-    // A lettered tile. Not a logo, and not pretending to be one.
-    const label = hit.item.replace(/[^A-Za-z#.+]/g, "").slice(0, 2) || "?";
+    const label = hit.item.replace(/[^A-Za-z#+]/g, "").slice(0, 2) || "?";
     g.fillStyle = "#8fa8ff";
-    g.font = "600 58px " + SANS;
-    g.textAlign = "center";
-    g.fillText(label, bx + box / 2, by + box / 2 + 20);
-    g.textAlign = "left";
+    g.font = "600 110px " + SANS;
+    g.fillText(label, mid, by + BOX / 2 + 38);
   }
 
-  g.fillStyle = "#6f7694";
+  let y = by + BOX + 96;
+
+  g.fillStyle = ACCENT.blue;
   g.font = "500 24px " + MONO;
-  if ("letterSpacing" in g) g.letterSpacing = "4px";
-  g.fillText(hit.group.toUpperCase(), pad, by + box + 62);
+  if ("letterSpacing" in g) g.letterSpacing = "6px";
+  g.fillText(hit.group.toUpperCase(), mid, y);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
+  y += 72;
   g.fillStyle = "#ffffff";
-  g.font = "600 50px " + SANS;
-  for (const [i, line] of wrap(g, hit.item, W - pad * 2).entries()) {
-    g.fillText(line, pad, by + box + 126 + i * 56);
+  g.font = "600 58px " + SANS;
+  for (const line of wrap(g, hit.item, W - pad * 2)) {
+    g.fillText(line, mid, y);
+    y += 66;
   }
 
-  g.fillStyle = "#262c45";
-  g.fillRect(pad, by + box + 168, W - pad * 2, 2);
+  // A short rule rather than a full-width one: it is closing the
+  // name, not dividing the screen.
+  y += 14;
+  g.fillStyle = "#2b3350";
+  g.fillRect(mid - 90, y, 180, 2);
+  y += 62;
 
   if (detail?.proof) {
     g.fillStyle = "#6f7694";
     g.font = "500 22px " + MONO;
-    if ("letterSpacing" in g) g.letterSpacing = "3px";
-    g.fillText("USED IN", pad, by + box + 216);
+    if ("letterSpacing" in g) g.letterSpacing = "5px";
+    g.fillText("USED IN", mid, y);
     if ("letterSpacing" in g) g.letterSpacing = "0px";
 
+    y += 52;
     g.fillStyle = "#c6cde4";
     g.font = "400 31px " + SANS;
-    for (const [i, line] of wrap(g, detail.proof, W - pad * 2).entries()) {
-      g.fillText(line, pad, by + box + 268 + i * 42);
+    for (const line of wrap(g, detail.proof, W - pad * 2)) {
+      g.fillText(line, mid, y);
+      y += 44;
     }
   } else {
     g.fillStyle = "#4d5570";
-    g.font = "400 30px " + SANS;
-    for (const [i, line] of wrap(
+    g.font = "400 29px " + SANS;
+    for (const line of wrap(
       g,
-      "On the list, with no single project worth pointing at.",
+      "On the list, with no one project worth pointing at.",
       W - pad * 2,
-    ).entries()) {
-      g.fillText(line, pad, by + box + 222 + i * 42);
+    )) {
+      g.fillText(line, mid, y);
+      y += 42;
     }
   }
 
