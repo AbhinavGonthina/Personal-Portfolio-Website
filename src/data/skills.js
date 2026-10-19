@@ -65,7 +65,6 @@ export const skillGroups = [
       "Jest",
       "Vitest",
       "JUnit",
-      "Figma",
     ],
   },
 ];
@@ -222,8 +221,4 @@ export const skillDetail = {
       "Rainfall: 91 tests around the payment path, across three API layers.",
   },
   JUnit: { icon: "junit", proof: null },
-  Figma: {
-    icon: "figma",
-    proof: "Quak: turned the redesign mockups into components.",
-  },
 };
