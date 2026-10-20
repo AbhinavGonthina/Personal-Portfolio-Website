@@ -652,21 +652,21 @@ export function paintProjectDetail(p, shot) {
   const LW = RX - PAD - 34;
 
   g.fillStyle = "#8b949e";
-  g.font = `600 15px ${SANS}`;
-  if ("letterSpacing" in g) g.letterSpacing = "1px";
+  g.font = `600 18px ${SANS}`;
+  if ("letterSpacing" in g) g.letterSpacing = "1.5px";
   g.fillText("ABOUT", PAD, TOP);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
   g.fillStyle = "#7d8590";
-  g.font = `400 15px ${MONO}`;
-  g.fillText(p.period ?? "", PAD + 90, TOP);
+  g.font = `400 17px ${MONO}`;
+  g.fillText(p.period ?? "", PAD + 108, TOP);
 
   g.fillStyle = "#c9d1d9";
-  g.font = `400 18px ${SANS}`;
-  let y = TOP + 36;
+  g.font = `400 23px ${SANS}`;
+  let y = TOP + 40;
   for (const line of wrap(g, p.description ?? p.blurb ?? "", LW).slice(0, 7)) {
     g.fillText(line, PAD, y);
-    y += 26;
+    y += 33;
   }
 
   // The language bar: the one piece of GitHub furniture that is
@@ -679,20 +679,21 @@ export function paintProjectDetail(p, shot) {
     tech.forEach((t, i) => {
       g.fillStyle = LANG_DOT[t] ?? ["#8b949e", "#6e7681", "#484f58"][i % 3];
       const sx = PAD + i * seg;
-      g.fillRect(sx, y, Math.ceil(seg) + (i === tech.length - 1 ? 0 : 1), 10);
+      g.fillRect(sx, y, Math.ceil(seg) + (i === tech.length - 1 ? 0 : 1), 12);
     });
     y += 42;
 
     let px = PAD;
     for (const t of tech) {
-      g.font = `400 14px ${MONO}`;
-      const tw = g.measureText(t).width + 20;
+      g.font = `400 17px ${MONO}`;
+      const tw = g.measureText(t).width + 26;
       if (px + tw > PAD + LW) {
         px = PAD;
-        y += 36;
+        y += 44;
       }
       px +=
-        pill(g, px, y, t, `400 14px ${MONO}`, "#6e94c9", "#21304a", 10, 28) + 8;
+        pill(g, px, y, t, `400 17px ${MONO}`, "#6e94c9", "#21304a", 13, 34) +
+        10;
     }
     y += 28;
   }
@@ -701,28 +702,28 @@ export function paintProjectDetail(p, shot) {
   // screen. Pinned to the bottom they read as a toolbar belonging to
   // the window instead of to the repository, and on a short
   // description there was a hand's width of nothing above them.
-  const by = Math.min(y + 22, H - 118);
+  const by = Math.min(y + 24, H - 132);
   const button = (label, bx, wide, primary, id, href) => {
     g.fillStyle = primary ? "#238636" : "#21262d";
     g.strokeStyle = primary ? "#2ea043" : "#30363d";
     g.lineWidth = 2;
-    roundRect(g, bx, by, wide, 44, 8);
+    roundRect(g, bx, by, wide, 56, 10);
     g.fill();
     g.stroke();
     g.fillStyle = primary ? "#ffffff" : "#c9d1d9";
-    g.font = `600 17px ${SANS}`;
+    g.font = `600 22px ${SANS}`;
     g.textAlign = "center";
-    g.fillText(label, bx + wide / 2, by + 28);
+    g.fillText(label, bx + wide / 2, by + 36);
     g.textAlign = "left";
-    hits.push({ id, href, x0: bx, y0: by, x1: bx + wide, y1: by + 44 });
+    hits.push({ id, href, x0: bx, y0: by, x1: bx + wide, y1: by + 56 });
   };
 
   let bx = PAD;
   if (p.live) {
-    button("Live site", bx, 180, true, "__live", p.live);
-    bx += 194;
+    button("Live site", bx, 224, true, "__live", p.live);
+    bx += 242;
   }
-  if (p.github) button("GitHub repo", bx, 190, false, "__github", p.github);
+  if (p.github) button("GitHub repo", bx, 238, false, "__github", p.github);
 
   // The preview, down the right and nearly the full height of what
   // is left under the tabs.
