@@ -47,17 +47,8 @@ export default function App() {
   const experience = useRef(null);
   const skills = useRef(null);
   const projects = useRef(null);
-  const projectsHold = useRef(null);
   const connect = useRef(null);
-  const refs = [
-    hero,
-    about,
-    experience,
-    skills,
-    projects,
-    projectsHold,
-    connect,
-  ];
+  const refs = [hero, about, experience, skills, projects, connect];
 
   return (
     <>
@@ -103,7 +94,7 @@ export default function App() {
         <About ref={about} />
         <Experience ref={experience} />
         <Skills ref={skills} />
-        <Projects ref={projects} markRef={projectsHold} />
+        <Projects ref={projects} />
         <Connect ref={connect} />
       </main>
     </>

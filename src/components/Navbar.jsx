@@ -43,16 +43,14 @@ const scrollTo = (id) => {
 };
 
 /**
- * Which nav item a camera stop belongs to. Two stops share Projects -
- * the camera holds still across that section while the screen on the
- * desk changes - and the landing belongs to none of them.
+ * Which nav item a camera stop belongs to. The landing belongs to
+ * none of them.
  */
 const NAV_FOR = {
   about: "about",
   experience: "experience",
   skills: "skills",
   projects: "projects",
-  "projects-hold": "projects",
   contact: "connect",
 };
 

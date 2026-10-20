@@ -3,23 +3,17 @@ import { usePlain } from "../lib/plain";
 import { projects } from "../data/projects";
 
 /**
- * The monitor on the desk. One scroll of this section walks the whole
- * list across the screen, which is why the section is two viewports
- * tall and the camera holds still across it - the marker below is the
- * second of the two stops it holds between.
+ * The monitor on the desk. The list is scrolled on the monitor itself
+ * rather than by the page, so this is one ordinary section - it used
+ * to be two viewports tall with a second camera stop at the bottom,
+ * and all that bought was a viewport of scrolling where nothing
+ * appeared to happen.
  */
-export default function Projects({ ref, markRef }) {
+export default function Projects({ ref }) {
   const plain = usePlain();
 
   return (
-    <Stop
-      id="projects"
-      title="Projects"
-      plain={plain}
-      refEl={ref}
-      markRef={plain ? null : markRef}
-      tall
-    >
+    <Stop id="projects" title="Projects" plain={plain} refEl={ref}>
       <ul className={plain ? "grid grid-cols-1 gap-4 md:grid-cols-2" : ""}>
         {projects.map((p) => (
           <li

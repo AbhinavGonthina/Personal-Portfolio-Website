@@ -314,8 +314,27 @@ const R = { w: HOUSE.w - T * 2, d: HOUSE.d - T * 2, h: HOUSE.h - T };
 
 /** Where the two things on the walls sit, in house-local coordinates. */
 export const RACKS = { x: -R.w / 2 + 0.42, y: 1.2 };
-export const DESK = { x: R.w / 2 - 0.4, y: 1.26, z: -0.1 };
-export const DESK_SCREEN = { w: 1.5, h: 0.92 };
+export const DESK = { x: R.w / 2 - 0.4, y: 1.56, z: -0.1 };
+/**
+ * An ultrawide, and deliberately not the shape of the skills board.
+ *
+ * Both are a lit rectangle on a dark wall at about the same distance,
+ * and at 1.5 x 0.92 this one was close enough to the board's 3.4 x
+ * 1.71 that the two stops read as the same room furniture twice. At
+ * 21:9 it is a monitor, which is also the shape that fits three
+ * repository cards across instead of two.
+ */
+export const DESK_SCREEN = { w: 2.52, h: 1.35 };
+
+/**
+ * The part of the panel the page is on, under the browser chrome.
+ *
+ * Still 21:9: the monitor grew to make room for an address bar, not
+ * to make the page a different shape. Everything that scrolls, the
+ * scrollbar and the hint are measured against this and not against
+ * the glass.
+ */
+export const DESK_PAGE = { w: 2.52, h: 1.09 };
 /**
  * The skills board hangs on the back wall rather than over the racks.
  * Above them it had to be small enough to clear the rack tops, which
@@ -379,12 +398,14 @@ export function interior() {
   }
   base.push(box(0.1, 0.1, R.d - 0.6, [RACKS.x - 0.2, 2.45, 0]));
 
-  base.push(box(0.9, 0.07, 2.3, [DESK.x, 0.78, DESK.z]));
-  for (const z of [DESK.z - 1.05, DESK.z + 1.05]) {
+  base.push(box(0.9, 0.07, 3.3, [DESK.x, 0.78, DESK.z]));
+  for (const z of [DESK.z - 1.55, DESK.z + 1.55]) {
     base.push(box(0.07, 0.78, 0.8, [DESK.x, 0.39, z]));
   }
-  base.push(box(0.22, 0.05, 0.5, [DESK.x, 0.88, DESK.z]));
-  base.push(cyl(0.035, 0.035, 0.34, 8, [DESK.x, 1.03, DESK.z]));
+  // A wide flat foot and a plate for a neck, not a pole. An ultrawide
+  // on a 3.5cm pole looks like it is about to go over.
+  base.push(box(0.26, 0.04, 0.72, [DESK.x, 0.835, DESK.z]));
+  base.push(box(0.05, 0.22, 0.26, [DESK.x, 0.95, DESK.z]));
   base.push(
     box(0.06, DESK_SCREEN.h + 0.1, DESK_SCREEN.w + 0.1, [
       DESK.x - 0.02,
@@ -395,21 +416,28 @@ export function interior() {
   base.push(
     box(0.3, 0.025, 0.85, [DESK.x - 0.38, 0.83, DESK.z - 0.1], [0, 0, 0.05]),
   );
-  base.push(cyl(0.07, 0.065, 0.14, 10, [DESK.x - 0.3, 0.89, DESK.z + 0.75]));
-  base.push(cyl(0.1, 0.11, 0.03, 10, [DESK.x - 0.1, 0.83, DESK.z - 1]));
+  base.push(cyl(0.07, 0.065, 0.14, 10, [DESK.x - 0.3, 0.89, DESK.z + 1.34]));
+  base.push(cyl(0.1, 0.11, 0.03, 10, [DESK.x - 0.1, 0.83, DESK.z - 1.5]));
   base.push(
-    cyl(0.018, 0.018, 0.42, 6, [DESK.x - 0.1, 1.03, DESK.z - 1], [0, 0, 0.18]),
+    cyl(
+      0.018,
+      0.018,
+      0.42,
+      6,
+      [DESK.x - 0.1, 1.03, DESK.z - 1.5],
+      [0, 0, 0.18],
+    ),
   );
   base.push(
     cone(
       0.13,
       0.16,
       10,
-      [DESK.x - 0.22, 1.25, DESK.z - 1],
+      [DESK.x - 0.22, 1.25, DESK.z - 1.5],
       [0, 0, Math.PI + 0.6],
     ),
   );
-  lit.push(dot(0.05, [DESK.x - 0.24, 1.18, DESK.z - 1]));
+  lit.push(dot(0.05, [DESK.x - 0.24, 1.18, DESK.z - 1.5]));
   base.push(box(0.5, 0.06, 0.5, [DESK.x - 0.95, 0.5, DESK.z]));
   base.push(box(0.07, 0.6, 0.48, [DESK.x - 1.18, 0.78, DESK.z]));
   base.push(cyl(0.045, 0.045, 0.4, 8, [DESK.x - 0.95, 0.27, DESK.z]));
