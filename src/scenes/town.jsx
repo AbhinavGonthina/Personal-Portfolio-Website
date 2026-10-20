@@ -211,7 +211,7 @@ export function House({ mats, visible, open }) {
  * down from the top, which is the one place this is easy to get
  * backwards.
  */
-function Monitor({ screen, chrome, hint, onOpen, live }) {
+function Monitor({ screen, chrome, hint, bias, biasMask, onOpen, live }) {
   const { tex, hits } = screen ?? {};
   const tall = screen?.height ?? SCREEN_VIEW.h;
   const span = Math.min(1, SCREEN_VIEW.h / tall);
@@ -221,10 +221,15 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
   const thumb = useRef();
   const bar = useRef();
   const tip = useRef();
+  const glow = useRef();
   const drag = useRef(null);
+  // The scroll fraction already written to the texture, so a frame
+  // in which nothing moved does not write it again.
+  const put = useRef(-1);
   const slid = useRef(false);
 
   useEffect(() => {
+    put.current = -1;
     reel.max = Math.max(0, tall - SCREEN_VIEW.h);
     reel.cur = Math.min(reel.cur, reel.max);
     reel.target = Math.min(reel.target, reel.max);
@@ -238,18 +243,29 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
   // floats and a texture field; doing the same thing through state
   // was a render of the whole room per pointer move.
   useFrame((_, dt) => {
+    // The lights behind the panel, cycling slowly. One float a
+    // frame; the texture itself is never touched again.
+    if (bias) bias.offset.x -= dt * 0.045;
     if (!tex) return;
+
     const k = 1 - Math.pow(0.0015, Math.min(dt, 0.1));
     reel.cur += (reel.target - reel.cur) * k;
     if (Math.abs(reel.target - reel.cur) < 0.4) reel.cur = reel.target;
 
-    const frac = reel.max > 0 ? reel.cur / reel.max : 0;
-    tex.repeat.set(1, span);
-    tex.offset.set(0, (1 - span) * (1 - frac));
-
     const scrollable = reel.max > 0;
     if (bar.current) bar.current.visible = scrollable;
     if (tip.current) tip.current.visible = scrollable && !reel.touched;
+
+    // Most frames at this stop are frames where the list is sitting
+    // still. Writing the same numbers into the texture on every one
+    // of them re-uploads a matrix to say nothing changed.
+    const frac = scrollable ? reel.cur / reel.max : 0;
+    if (frac === put.current) return;
+    put.current = frac;
+
+    tex.repeat.set(1, span);
+    tex.offset.set(0, (1 - span) * (1 - frac));
+
     if (thumb.current && scrollable) {
       const run = DESK_PAGE.h * 0.96;
       const len = Math.max(run * span, 0.06);
@@ -341,6 +357,28 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
       position={[DESK.x - 0.055, DESK.y, DESK.z]}
       rotation={[0, -Math.PI / 2, 0]}
     >
+      {/* Bias lighting: a strip of colour on the wall behind the
+          panel, which is the one thing on this desk that is there
+          because somebody put it there rather than because the room
+          needed it. Additive and behind everything, so it only ever
+          shows as a halo around the edges of the monitor. */}
+      <mesh ref={glow} position={[0, -0.04, -0.36]}>
+        {/* Sized so the falloff lands outside the bezel. The mask is
+            brightest at its middle, and its middle is behind the
+            panel - cut the plane close and the only part that shows
+            is the part that has already faded to nothing. */}
+        <planeGeometry args={[DESK_SCREEN.w + 0.95, DESK_SCREEN.h + 0.95]} />
+        <meshBasicMaterial
+          map={bias}
+          alphaMap={biasMask}
+          transparent
+          opacity={1}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+
       {/* The chrome does not scroll and is not clickable; it is the
           window the page is in. */}
       <mesh
@@ -402,6 +440,8 @@ export function Interior({
   onHover,
   chrome,
   hint,
+  bias,
+  biasMask,
   onOpen,
   live,
 }) {
@@ -506,6 +546,8 @@ export function Interior({
         screen={screen}
         chrome={chrome}
         hint={hint}
+        bias={bias}
+        biasMask={biasMask}
         onOpen={onOpen}
         live={live}
       />
