@@ -6,6 +6,8 @@ import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
   paintBoard,
+  paintBiasLight,
+  paintBiasMask,
   paintBrowserChrome,
   paintDragHint,
   paintProjectDetail,
@@ -24,6 +26,7 @@ import { useStills } from "../lib/stills";
 import { rewind, seek } from "../lib/reel";
 import {
   holdScroll,
+  scrollHeld,
   isJumping,
   trackJump,
   useScrollLock,
@@ -66,7 +69,9 @@ export default function TownStage({ refs }) {
   const was = useRef(0);
   const held = useRef(-1);
   // Where the scroll is held, and until when. See the clamp in read().
-  const pin = useRef({ until: 0, y: 0 });
+  // Where the arrival pause is holding the page. How long it holds
+  // for is `scrollLock`'s business now, not a second counted here.
+  const pin = useRef({ y: 0 });
   // The scroll position at the previous frame, to tell a link that
   // has finished moving the page from one that is still in flight.
   const prevY = useRef(-1);
@@ -126,6 +131,8 @@ export default function TownStage({ refs }) {
   const grid = useMemo(() => (off ? null : paintProjectsGrid(projects)), [off]);
   const hint = useMemo(() => (off ? null : paintDragHint()), [off]);
   const chrome = useMemo(() => (off ? null : paintBrowserChrome()), [off]);
+  const bias = useMemo(() => (off ? null : paintBiasLight()), [off]);
+  const biasMask = useMemo(() => (off ? null : paintBiasMask()), [off]);
   const detail = useMemo(() => {
     if (off || !opened) return null;
     const p = projects.find((x) => x.id === opened);
@@ -147,6 +154,8 @@ export default function TownStage({ refs }) {
   useEffect(() => () => grid?.tex?.dispose(), [grid]);
   useEffect(() => () => hint?.dispose(), [hint]);
   useEffect(() => () => chrome?.dispose(), [chrome]);
+  useEffect(() => () => bias?.dispose(), [bias]);
+  useEffect(() => () => biasMask?.dispose(), [biasMask]);
   useEffect(() => () => detail?.tex?.dispose(), [detail]);
 
   useEffect(() => {
@@ -178,7 +187,7 @@ export default function TownStage({ refs }) {
       // to rest.
       trackJump(y !== prevY.current);
       prevY.current = y;
-      if (performance.now() < pin.current.until && y > pin.current.y) {
+      if (scrollHeld() && y > pin.current.y) {
         y = pin.current.y;
         window.scrollTo({ top: y, behavior: "instant" });
       }
@@ -257,12 +266,12 @@ export default function TownStage({ refs }) {
         // to meter every pass.
         // Never while one is still running: a pin that can replace
         // itself is a pin that never ends.
-        if (n !== held.current && performance.now() >= pin.current.until) {
+        if (n !== held.current && !scrollHeld()) {
           held.current = n;
           // Pinned where you arrived, not at the top of the section:
           // the pause is there to stop you overshooting, not to tidy
           // up the position you chose.
-          pin.current = { until: performance.now() + 1000, y };
+          pin.current = { y };
           holdScroll(1000);
           // Arriving at the desk always starts at the top of the
           // list, however far down it was left last time.
@@ -320,7 +329,7 @@ export default function TownStage({ refs }) {
           Math.floor(was.current + 1e-6) + 1,
         );
         let cap = at[next];
-        if (performance.now() < pin.current.until) {
+        if (scrollHeld()) {
           cap = Math.min(cap, pin.current.y);
         }
         if (window.scrollY > cap) {
@@ -367,6 +376,8 @@ export default function TownStage({ refs }) {
             onHover={setHovered}
             chrome={chrome}
             hint={hint}
+            bias={bias}
+            biasMask={biasMask}
             onOpen={open}
             board={board}
             boardFace={boardFace}

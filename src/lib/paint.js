@@ -418,31 +418,57 @@ export function paintBrowserChrome() {
   g.fillRect(0, TAB_H, W, H - TAB_H);
   const my = TAB_H + (H - TAB_H) / 2;
 
-  g.strokeStyle = "#8b949e";
-  g.lineWidth = 3.5;
+  g.lineWidth = 3;
   g.lineJoin = "round";
-  const arrow = (ax, dir) => {
+  g.lineCap = "round";
+
+  /** A shaft with a head on it, the way a browser draws back and forward. */
+  const navArrow = (ax, dir, ink) => {
+    const L = 10;
+    const tip = ax + dir * L;
+    const tail = ax - dir * L;
+    g.strokeStyle = ink;
     g.beginPath();
-    g.moveTo(ax + dir * 8, my - 9);
-    g.lineTo(ax - dir * 8, my);
-    g.lineTo(ax + dir * 8, my + 9);
+    g.moveTo(tail, my);
+    g.lineTo(tip, my);
+    g.moveTo(tip - dir * 8, my - 8);
+    g.lineTo(tip, my);
+    g.lineTo(tip - dir * 8, my + 8);
     g.stroke();
   };
-  arrow(44, 1);
-  g.strokeStyle = "#484f58";
-  arrow(96, -1);
-  g.strokeStyle = "#8b949e";
+  // Back is live, forward is greyed, because there is nowhere
+  // forward to go - which is what a browser shows too.
+  navArrow(46, -1, "#c9d1d9");
+  navArrow(100, 1, "#484f58");
+
+  // Reload: most of a circle with a solid head on the end of it. An
+  // arc with two stray strokes stuck on the side was reading as a
+  // letter rather than as a button.
+  const rx0 = 152;
+  const rr = 11;
+  const END = Math.PI * 1.44;
+  g.strokeStyle = "#c9d1d9";
   g.beginPath();
-  g.arc(148, my, 11, 0.7, Math.PI * 1.85);
+  g.arc(rx0, my, rr, -Math.PI * 0.44, END);
   g.stroke();
+  const ex = rx0 + Math.cos(END) * rr;
+  const ey = my + Math.sin(END) * rr;
+  // The direction the arc is travelling at its end, and the normal
+  // out from the centre, which together place the head.
+  const tx = -Math.sin(END);
+  const ty = Math.cos(END);
+  const nx2 = Math.cos(END);
+  const ny2 = Math.sin(END);
+  g.fillStyle = "#c9d1d9";
   g.beginPath();
-  g.moveTo(140, my - 13);
-  g.lineTo(140, my - 3);
-  g.lineTo(150, my - 3);
-  g.stroke();
+  g.moveTo(ex + tx * 8, ey + ty * 8);
+  g.lineTo(ex - nx2 * 6.5 - tx * 2, ey - ny2 * 6.5 - ty * 2);
+  g.lineTo(ex + nx2 * 6.5 - tx * 2, ey + ny2 * 6.5 - ty * 2);
+  g.closePath();
+  g.fill();
 
   // The address bar.
-  const ax = 190;
+  const ax = 196;
   const aw = W - ax - 70;
   g.fillStyle = "#161b22";
   g.strokeStyle = "#30363d";
@@ -468,6 +494,75 @@ export function paintBrowserChrome() {
   g.fillStyle = "#c9d1d9";
   g.fillText("github.com/abhinavgonthina", ax + 60 + pre, my + 1);
 
+  return finish(c);
+}
+
+/**
+ * The strip of light behind the monitor, and the shape of its spill.
+ *
+ * Two textures rather than one, because they have to move
+ * differently: the colour scrolls and the falloff does not. Scroll a
+ * single texture with the softness baked into it and the soft edge
+ * travels with the hue, so the halo slides sideways off the wall.
+ * The colour goes in `map` on repeat, the falloff in `alphaMap`
+ * clamped, and the material multiplies them.
+ *
+ * Both are tiny and neither is ever repainted. The animation is one
+ * float added to a texture offset per frame.
+ */
+export function paintBiasLight() {
+  const W = 512;
+  const H = 8;
+  const [c, g] = canvas(W, H);
+  // A full turn of hue across the width, so the two ends meet and
+  // the scroll has no seam in it.
+  const grad = g.createLinearGradient(0, 0, W, 0);
+  for (let i = 0; i <= 12; i++) {
+    grad.addColorStop(i / 12, `hsl(${(i / 12) * 360}, 90%, 55%)`);
+  }
+  g.fillStyle = grad;
+  g.fillRect(0, 0, W, H);
+  const tex = finish(c);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+/** How far the spill reaches: bright behind the panel, gone by the edge. */
+export function paintBiasMask() {
+  const W = 256;
+  const H = 160;
+  const [c, g] = canvas(W, H);
+  g.fillStyle = "#000000";
+  g.fillRect(0, 0, W, H);
+  // The falloff has to reach black before the edge of the canvas.
+  // Stop short and the texture ends while it is still bright, and
+  // the spill reads as a lit rectangle hanging on the wall with
+  // four corners on it rather than as light.
+  const grad = g.createRadialGradient(
+    W / 2,
+    H / 2,
+    Math.min(W, H) * 0.1,
+    W / 2,
+    H / 2,
+    Math.min(W, H) * 0.5,
+  );
+  // Weighted outwards. The middle of this mask is behind the panel
+  // and never seen, so a gradient that spends half its range
+  // getting dim before it clears the bezel arrives at the visible
+  // part with nothing left.
+  grad.addColorStop(0, "#ffffff");
+  grad.addColorStop(0.7, "#d0d0d0");
+  grad.addColorStop(1, "#000000");
+  g.save();
+  // Stretched across, because the thing casting it is twice as wide
+  // as it is tall.
+  g.translate(W / 2, H / 2);
+  g.scale(1.5, 1);
+  g.translate(-W / 2, -H / 2);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, W, H);
+  g.restore();
   return finish(c);
 }
 
@@ -562,17 +657,17 @@ export function paintProjectDetail(p, shot) {
 
   // Back bar.
   g.fillStyle = "#161b22";
-  g.fillRect(0, 0, W, 46);
+  g.fillRect(0, 0, W, 52);
   g.strokeStyle = "#30363d";
   g.lineWidth = 2;
   g.beginPath();
-  g.moveTo(0, 46);
-  g.lineTo(W, 46);
+  g.moveTo(0, 52);
+  g.lineTo(W, 52);
   g.stroke();
   g.fillStyle = "#4493f8";
-  g.font = `500 17px ${SANS}`;
-  g.fillText("←  Back to pinned", PAD, 30);
-  hits.push({ id: "__back", x0: 0, y0: 0, x1: 300, y1: 46 });
+  g.font = `600 22px ${SANS}`;
+  g.fillText("←  Back to pinned", PAD, 32);
+  hits.push({ id: "__back", x0: 0, y0: 0, x1: 360, y1: 52 });
 
   // The breadcrumb: owner in regular, repository in bold, the way
   // GitHub weights the half of the path that matters.
@@ -718,19 +813,32 @@ export function paintProjectDetail(p, shot) {
     hits.push({ id, href, x0: bx, y0: by, x1: bx + wide, y1: by + 56 });
   };
 
-  let bx = PAD;
+  // Centred under the column rather than hard against its left
+  // edge. Two buttons of different widths lined up on the left read
+  // as the start of a row that never arrived.
+  const LIVE_W = 224;
+  const REPO_W = 238;
+  const GAP = 18;
+  const span =
+    (p.live ? LIVE_W : 0) +
+    (p.github ? REPO_W : 0) +
+    (p.live && p.github ? GAP : 0);
+  let bx = PAD + (LW - span) / 2;
   if (p.live) {
-    button("Live site", bx, 224, true, "__live", p.live);
-    bx += 242;
+    button("Live site", bx, LIVE_W, true, "__live", p.live);
+    bx += LIVE_W + GAP;
   }
-  if (p.github) button("GitHub repo", bx, 238, false, "__github", p.github);
+  if (p.github) button("GitHub repo", bx, REPO_W, false, "__github", p.github);
 
   // The preview, down the right and nearly the full height of what
   // is left under the tabs.
   const px = RX;
   const pw = W - px - PAD;
-  const py = TOP - 28;
-  const ph = H - py - 36;
+  // Clear of the rule under the tabs rather than hung off it, and
+  // the same gap underneath, so the panel sits in the space rather
+  // than at the top of it.
+  const py = tabY + 44;
+  const ph = H - py - 40;
   g.fillStyle = "#010409";
   g.strokeStyle = "#30363d";
   g.lineWidth = 2;
@@ -740,16 +848,16 @@ export function paintProjectDetail(p, shot) {
 
   if (shot) {
     // Cover, not stretch: these are screenshots of real pages and
-    // squashing one is worse than cropping it. Anchored to the top,
-    // because a screenshot of a page has its heading at the top and
-    // that is the half worth keeping.
+    // squashing one is worse than cropping it. Centred in the frame,
+    // because anchoring to the top left the picture jammed against
+    // the border with all the spare room below it.
     const s = Math.max(pw / shot.width, ph / shot.height);
     const sw = shot.width * s;
     const sh = shot.height * s;
     g.save();
     roundRect(g, px, py, pw, ph, 10);
     g.clip();
-    g.drawImage(shot, px + (pw - sw) / 2, py, sw, sh);
+    g.drawImage(shot, px + (pw - sw) / 2, py + (ph - sh) / 2, sw, sh);
     g.restore();
   } else {
     g.fillStyle = "#30363d";

@@ -314,7 +314,7 @@ const R = { w: HOUSE.w - T * 2, d: HOUSE.d - T * 2, h: HOUSE.h - T };
 
 /** Where the two things on the walls sit, in house-local coordinates. */
 export const RACKS = { x: -R.w / 2 + 0.42, y: 1.2 };
-export const DESK = { x: R.w / 2 - 0.4, y: 1.56, z: -0.1 };
+export const DESK = { x: R.w / 2 - 0.4, y: 1.68, z: -0.1 };
 /**
  * An ultrawide, and deliberately not the shape of the skills board.
  *
@@ -402,14 +402,28 @@ export function interior() {
   for (const z of [DESK.z - 1.55, DESK.z + 1.55]) {
     base.push(box(0.07, 0.78, 0.8, [DESK.x, 0.39, z]));
   }
-  // A wide flat foot and a plate for a neck, not a pole. An ultrawide
-  // on a 3.5cm pole looks like it is about to go over.
-  base.push(box(0.26, 0.04, 0.72, [DESK.x, 0.835, DESK.z]));
-  base.push(box(0.05, 0.22, 0.26, [DESK.x, 0.95, DESK.z]));
+  // A monitor stand, and deliberately not a television's.
+  //
+  // A big panel sitting low on a wide shallow foot is a TV, and that
+  // is what this had become once the screen grew. What says monitor
+  // is the gap: a base no wider than the panel is tall, a neck you
+  // can see daylight either side of, and the screen lifted off the
+  // desk rather than resting on it.
+  base.push(box(0.36, 0.035, 0.44, [DESK.x, 0.833, DESK.z]));
+  base.push(box(0.07, 0.3, 0.17, [DESK.x, 0.98, DESK.z]));
   base.push(
     box(0.06, DESK_SCREEN.h + 0.1, DESK_SCREEN.w + 0.1, [
       DESK.x - 0.02,
       DESK.y,
+      DESK.z,
+    ]),
+  );
+  // The chin. Every monitor has one and no television does any more;
+  // it is most of what the eye uses to tell them apart.
+  base.push(
+    box(0.07, 0.085, DESK_SCREEN.w + 0.1, [
+      DESK.x - 0.03,
+      DESK.y - DESK_SCREEN.h / 2 - 0.05,
       DESK.z,
     ]),
   );
@@ -488,6 +502,16 @@ export function interior() {
 
   // A bezel around the monitor, so the screen has an edge to glow
   // against rather than ending on the dark of the wall behind it.
+  // A power light at the near end of the chin, off to one side the
+  // way a real one is rather than dead centre.
+  lit.push(
+    dot(0.012, [
+      DESK.x - 0.066,
+      DESK.y - DESK_SCREEN.h / 2 - 0.05,
+      DESK.z + DESK_SCREEN.w / 2 - 0.14,
+    ]),
+  );
+
   for (const dy of [DESK_SCREEN.h / 2 + 0.02, -DESK_SCREEN.h / 2 - 0.02]) {
     lit.push(
       box(0.02, 0.016, DESK_SCREEN.w + 0.06, [
