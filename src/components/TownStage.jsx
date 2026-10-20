@@ -6,8 +6,6 @@ import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
   paintBoard,
-  paintBiasLight,
-  paintBiasMask,
   paintBrowserChrome,
   paintDragHint,
   paintProjectDetail,
@@ -131,8 +129,6 @@ export default function TownStage({ refs }) {
   const grid = useMemo(() => (off ? null : paintProjectsGrid(projects)), [off]);
   const hint = useMemo(() => (off ? null : paintDragHint()), [off]);
   const chrome = useMemo(() => (off ? null : paintBrowserChrome()), [off]);
-  const bias = useMemo(() => (off ? null : paintBiasLight()), [off]);
-  const biasMask = useMemo(() => (off ? null : paintBiasMask()), [off]);
   const detail = useMemo(() => {
     if (off || !opened) return null;
     const p = projects.find((x) => x.id === opened);
@@ -154,8 +150,6 @@ export default function TownStage({ refs }) {
   useEffect(() => () => grid?.tex?.dispose(), [grid]);
   useEffect(() => () => hint?.dispose(), [hint]);
   useEffect(() => () => chrome?.dispose(), [chrome]);
-  useEffect(() => () => bias?.dispose(), [bias]);
-  useEffect(() => () => biasMask?.dispose(), [biasMask]);
   useEffect(() => () => detail?.tex?.dispose(), [detail]);
 
   useEffect(() => {
@@ -376,8 +370,6 @@ export default function TownStage({ refs }) {
             onHover={setHovered}
             chrome={chrome}
             hint={hint}
-            bias={bias}
-            biasMask={biasMask}
             onOpen={open}
             board={board}
             boardFace={boardFace}

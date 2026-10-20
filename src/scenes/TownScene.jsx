@@ -1899,8 +1899,6 @@ function Town({
   onHover,
   chrome,
   hint,
-  bias,
-  biasMask,
   onOpen,
   board,
   boardFace,
@@ -1956,8 +1954,6 @@ function Town({
         onHover={onHover}
         chrome={chrome}
         hint={hint}
-        bias={bias}
-        biasMask={biasMask}
         onOpen={onOpen}
         live={inside}
       />
@@ -1983,8 +1979,6 @@ export default function TownScene({
   onHover,
   chrome,
   hint,
-  bias,
-  biasMask,
   onOpen,
   board,
   boardFace,
@@ -2068,8 +2062,6 @@ export default function TownScene({
         onHover={onHover}
         chrome={chrome}
         hint={hint}
-        bias={bias}
-        biasMask={biasMask}
         onOpen={onOpen}
         board={board}
         boardFace={boardFace}

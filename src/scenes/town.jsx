@@ -211,7 +211,7 @@ export function House({ mats, visible, open }) {
  * down from the top, which is the one place this is easy to get
  * backwards.
  */
-function Monitor({ screen, chrome, hint, bias, biasMask, onOpen, live }) {
+function Monitor({ screen, chrome, hint, onOpen, live }) {
   const { tex, hits } = screen ?? {};
   const tall = screen?.height ?? SCREEN_VIEW.h;
   const span = Math.min(1, SCREEN_VIEW.h / tall);
@@ -221,7 +221,6 @@ function Monitor({ screen, chrome, hint, bias, biasMask, onOpen, live }) {
   const thumb = useRef();
   const bar = useRef();
   const tip = useRef();
-  const glow = useRef();
   const drag = useRef(null);
   // The scroll fraction already written to the texture, so a frame
   // in which nothing moved does not write it again.
@@ -243,9 +242,6 @@ function Monitor({ screen, chrome, hint, bias, biasMask, onOpen, live }) {
   // floats and a texture field; doing the same thing through state
   // was a render of the whole room per pointer move.
   useFrame((_, dt) => {
-    // The lights behind the panel, cycling slowly. One float a
-    // frame; the texture itself is never touched again.
-    if (bias) bias.offset.x -= dt * 0.045;
     if (!tex) return;
 
     const k = 1 - Math.pow(0.0015, Math.min(dt, 0.1));
@@ -357,28 +353,6 @@ function Monitor({ screen, chrome, hint, bias, biasMask, onOpen, live }) {
       position={[DESK.x - 0.055, DESK.y, DESK.z]}
       rotation={[0, -Math.PI / 2, 0]}
     >
-      {/* Bias lighting: a strip of colour on the wall behind the
-          panel, which is the one thing on this desk that is there
-          because somebody put it there rather than because the room
-          needed it. Additive and behind everything, so it only ever
-          shows as a halo around the edges of the monitor. */}
-      <mesh ref={glow} position={[0, -0.04, -0.36]}>
-        {/* Sized so the falloff lands outside the bezel. The mask is
-            brightest at its middle, and its middle is behind the
-            panel - cut the plane close and the only part that shows
-            is the part that has already faded to nothing. */}
-        <planeGeometry args={[DESK_SCREEN.w + 0.95, DESK_SCREEN.h + 0.95]} />
-        <meshBasicMaterial
-          map={bias}
-          alphaMap={biasMask}
-          transparent
-          opacity={1}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
-      </mesh>
-
       {/* The chrome does not scroll and is not clickable; it is the
           window the page is in. */}
       <mesh
@@ -440,8 +414,6 @@ export function Interior({
   onHover,
   chrome,
   hint,
-  bias,
-  biasMask,
   onOpen,
   live,
 }) {
@@ -479,9 +451,15 @@ export function Interior({
         </mesh>
       )}
 
-      {/* The two lights in the room. The lamp is what makes the desk
-          a place to work; the rim behind the racks lifts the skills
-          board off the wall it is hanging on. */}
+      {/* The three lights in the room. The lamp is what makes the
+          desk a place to work; the rim behind the racks lifts the
+          skills board off the wall it is hanging on; and the fill
+          to the right of the desk is there because without it that
+          whole side of the monitor ran into the dark and the thing
+          had no shape to it - you could see the picture but not
+          what the picture was in. Cool and weak, so it reads as
+          spill from somewhere else in the room rather than as a
+          second lamp nobody can see. */}
       <pointLight
         position={[DESK.x - 0.24, 1.18, DESK.z - 1.5]}
         color={ACCENT.amber}
@@ -494,6 +472,13 @@ export function Interior({
         color={ACCENT.cyan}
         intensity={visible ? 3.4 : 0}
         distance={5}
+        decay={2}
+      />
+      <pointLight
+        position={[DESK.x - 0.85, 1.72, DESK.z + 2.0]}
+        color="#9fb4d8"
+        intensity={visible ? 3.8 : 0}
+        distance={5.4}
         decay={2}
       />
 
@@ -546,8 +531,6 @@ export function Interior({
         screen={screen}
         chrome={chrome}
         hint={hint}
-        bias={bias}
-        biasMask={biasMask}
         onOpen={onOpen}
         live={live}
       />
