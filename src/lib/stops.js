@@ -110,27 +110,32 @@ export const STOPS = [
   },
   {
     // Turned to the right wall and the desk.
+    //
+    // There used to be a second, identical stop after this one, so
+    // that a viewport of scrolling could walk the list without
+    // moving the camera. The monitor takes its own wheel now, so
+    // that stop was a viewport of page you scrolled through for no
+    // visible reason.
     id: "projects",
     title: "Projects",
     frame: {
-      at: toWorld(TOWN.house, [DESK.x - 0.06, DESK.y, DESK.z]),
+      // Aimed a hand above the middle of the monitor, which is what
+      // puts the monitor itself low enough in the shot to clear the
+      // section plate in the top left corner.
+      //
+      // Raising `eye` does not do this. The camera looks at `at`
+      // whatever height it is standing at, so lifting the eye just
+      // tilts the view back down and the panel stays exactly where
+      // it was, now keystoned. Moving the aim is the thing that
+      // moves the subject in the frame.
+      at: toWorld(TOWN.house, [DESK.x - 0.06, DESK.y + 0.1, DESK.z]),
       yaw: TOWN.house.yaw - Math.PI / 2,
-      dist: 2.3,
+      // Close enough that the screen is most of the shot, the way you
+      // actually sit at an ultrawide.
+      dist: 2.4,
       centred: true,
-      eye: EYE_IN,
-    },
-  },
-  {
-    // Held: the camera does not move across the second half of the
-    // Projects section, the screen changes instead.
-    id: "projects-hold",
-    title: "Projects",
-    frame: {
-      at: toWorld(TOWN.house, [DESK.x - 0.06, DESK.y, DESK.z]),
-      yaw: TOWN.house.yaw - Math.PI / 2,
-      dist: 2.3,
-      centred: true,
-      eye: EYE_IN,
+      // Level with the middle of the panel.
+      eye: DESK.y,
     },
   },
   {

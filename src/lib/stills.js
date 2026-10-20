@@ -8,9 +8,11 @@ import { projects } from "../data/projects";
  * shape: the detail view draws its preview into a 2D context, and
  * that wants an image it can `drawImage`.
  *
- * Videos are skipped. Four of these projects have an mp4 rather
- * than a still and a canvas cannot take a frame from one without
- * playing it; the detail view says so rather than leaving a hole.
+ * The ones with an mp4 rather than a still fall back to their
+ * poster. A canvas cannot take a frame from a video without playing
+ * it, but every one of those projects already ships the poster the
+ * player shows before you press anything, and a real frame of the
+ * app beats a box saying there is no picture.
  *
  * Nothing is fetched while the plain read is up.
  */
@@ -21,10 +23,11 @@ export function useStills(off) {
     if (off) return;
     let live = true;
     for (const p of projects) {
-      if (!p.image || /\.(mp4|webm|mov)$/i.test(p.image)) continue;
+      const src = p.image ?? p.poster;
+      if (!src || /\.(mp4|webm|mov)$/i.test(src)) continue;
       const img = new Image();
       img.decoding = "async";
-      img.src = p.image;
+      img.src = src;
       img
         .decode()
         .then(() => {

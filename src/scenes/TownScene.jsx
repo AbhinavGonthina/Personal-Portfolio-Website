@@ -1897,7 +1897,8 @@ function Town({
   skills,
   preview,
   onHover,
-  reel,
+  chrome,
+  hint,
   onOpen,
   board,
   boardFace,
@@ -1917,7 +1918,7 @@ function Town({
   // and put it back while you were still in the doorway on the way
   // out. This one turns over within a few hundredths of the stop at
   // either end, by which point the walls are all you can see anyway.
-  const walled = useNear(STOP.skills - 0.05, STOP["projects-hold"] + 0.08);
+  const walled = useNear(STOP.skills - 0.05, STOP.projects + 0.08);
   // Clicking them is still gated on being there - you should not be
   // able to open a link on a mailbox from across the town - but they
   // are part of the garden, and a garden that assembles itself as you
@@ -1951,7 +1952,8 @@ function Town({
         skills={skills}
         preview={preview}
         onHover={onHover}
-        reel={reel}
+        chrome={chrome}
+        hint={hint}
         onOpen={onOpen}
         live={inside}
       />
@@ -1975,7 +1977,8 @@ export default function TownScene({
   skills,
   preview,
   onHover,
-  reel,
+  chrome,
+  hint,
   onOpen,
   board,
   boardFace,
@@ -2057,7 +2060,8 @@ export default function TownScene({
         skills={skills}
         preview={preview}
         onHover={onHover}
-        reel={reel}
+        chrome={chrome}
+        hint={hint}
         onOpen={onOpen}
         board={board}
         boardFace={boardFace}

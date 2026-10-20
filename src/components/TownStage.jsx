@@ -6,6 +6,8 @@ import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
   paintBoard,
+  paintBrowserChrome,
+  paintDragHint,
   paintProjectDetail,
   paintProjectsGrid,
   paintBoardFace,
@@ -19,6 +21,7 @@ import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
 import { skillDetail, skillGroups } from "../data/skills";
 import { useStills } from "../lib/stills";
+import { rewind, seek } from "../lib/reel";
 import {
   holdScroll,
   isJumping,
@@ -28,14 +31,6 @@ import {
 import { cn } from "../lib/cn";
 
 const TownScene = lazy(() => import("../scenes/TownScene"));
-
-/**
- * How far into the held Projects section the list has finished
- * travelling. The rest of the section is the bottom of the list
- * holding still, so the last row can be read before the camera
- * leaves.
- */
-const REEL_DONE = 0.86;
 
 /**
  * The one canvas, fixed behind the page.
@@ -62,7 +57,6 @@ export default function TownStage({ refs }) {
   const [ready, setReady] = useState(false);
   const [live, setLive] = useState(false);
   const [grab, setGrab] = useState(false);
-  const [reel, setReel] = useState(0);
   const [still] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -130,18 +124,29 @@ export default function TownStage({ refs }) {
   const [opened, setOpened] = useState(null);
   const stills = useStills(off);
   const grid = useMemo(() => (off ? null : paintProjectsGrid(projects)), [off]);
+  const hint = useMemo(() => (off ? null : paintDragHint()), [off]);
+  const chrome = useMemo(() => (off ? null : paintBrowserChrome()), [off]);
   const detail = useMemo(() => {
     if (off || !opened) return null;
     const p = projects.find((x) => x.id === opened);
     return p ? paintProjectDetail(p, stills[p.id]) : null;
   }, [off, opened, stills]);
   const screen = detail ?? grid;
+
+  // Opening or closing a repository puts the new page at its top.
+  const open = (id) => {
+    rewind();
+    setOpened(id);
+  };
+
   useEffect(() => () => marks.forEach((m) => m.dispose()), [marks]);
   useEffect(() => () => board?.dispose(), [board]);
   useEffect(() => () => boardFace?.dispose(), [boardFace]);
   useEffect(() => () => skills?.tex?.dispose(), [skills]);
   useEffect(() => () => preview?.dispose(), [preview]);
   useEffect(() => () => grid?.tex?.dispose(), [grid]);
+  useEffect(() => () => hint?.dispose(), [hint]);
+  useEffect(() => () => chrome?.dispose(), [chrome]);
   useEffect(() => () => detail?.tex?.dispose(), [detail]);
 
   useEffect(() => {
@@ -259,35 +264,24 @@ export default function TownStage({ refs }) {
           // up the position you chose.
           pin.current = { until: performance.now() + 1000, y };
           holdScroll(1000);
+          // Arriving at the desk always starts at the top of the
+          // list, however far down it was left last time.
+          if (n === STOP.projects) seek("top");
         }
       }
+
       was.current = j;
 
-      // The camera holds still across the Projects section; the screen
-      // is what moves. One scroll of that section walks the whole list.
-      //
-      // The list finishes before the section does. Run it to the very
-      // end of the hold and the last row arrives on the same frame the
-      // camera starts walking out of the room, so the one card you
-      // scrolled all that way for is the one card you never get to
-      // read. Ending the travel at REEL_DONE leaves the bottom of the
-      // list sitting still for the last stretch of the section.
-      const t = Math.min(
-        1,
-        Math.max(
-          0,
-          (j - STOP.projects) /
-            ((STOP["projects-hold"] - STOP.projects) * REEL_DONE),
-        ),
-      );
-      setReel(t);
-
-      // Walking away closes whatever card was open. Without this you
-      // come back to the desk on the detail page you left on, with no
-      // sign that there is a grid behind it - the way back is a button
-      // you have to already know is there.
-      if (j < STOP.projects - 0.3 || j > STOP["projects-hold"] + 0.3) {
-        setOpened((o) => (o === null ? o : null));
+      // Walking away closes whatever card was open and puts the list
+      // back at the top. Without this you come back to the desk on
+      // the detail page you left on, with no sign that there is a
+      // grid behind it - the way back is a button you have to
+      // already know is there.
+      if (j < STOP.projects - 0.4 || j > STOP.projects + 0.4) {
+        setOpened((o) => {
+          if (o !== null) rewind();
+          return o === null ? o : null;
+        });
       }
 
       const last = els[els.length - 1];
@@ -371,8 +365,9 @@ export default function TownStage({ refs }) {
             skills={skills}
             preview={preview}
             onHover={setHovered}
-            reel={reel}
-            onOpen={setOpened}
+            chrome={chrome}
+            hint={hint}
+            onOpen={open}
             board={board}
             boardFace={boardFace}
             marks={marks}

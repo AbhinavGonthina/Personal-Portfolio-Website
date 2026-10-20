@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   BOARD,
   BOARD_PHOTO,
   BOARD_TEXT,
   DESK,
+  DESK_PAGE,
   DESK_SCREEN,
   HOUSE,
   MAIL_BODY,
@@ -29,6 +30,7 @@ import { profile, socials } from "../data/profile";
 import { ACCENT } from "../lib/townMaterials";
 import { makeTextTexture } from "../lib/canvasText";
 import { SCREEN_VIEW, SKILL_PANE } from "../lib/paint";
+import { reel } from "../lib/reel";
 import { ExtrudedText } from "./street";
 
 /**
@@ -62,8 +64,6 @@ function useBuilt(build) {
   );
   return made;
 }
-
-const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
 const yawOf = (b) => [0, b.yaw, 0];
 const posOf = (b) => [b.x, 0, b.z];
@@ -202,8 +202,8 @@ export function House({ mats, visible, open }) {
  *
  * The grid is taller than the screen, so the plane shows a window
  * onto it and scrolling moves the window rather than repainting
- * anything. `reel` is where the page has got to through the
- * Projects section, 0 at the top of the list and 1 at the bottom.
+ * anything. The scroll lives in `lib/reel` and is read in a frame
+ * callback, so a wheel tick never renders React.
  *
  * Clicks arrive as a UV, which has to be put back into canvas
  * pixels - including the scroll - before the hit boxes mean
@@ -211,22 +211,114 @@ export function House({ mats, visible, open }) {
  * down from the top, which is the one place this is easy to get
  * backwards.
  */
-function Monitor({ screen, reel, onOpen, live }) {
+function Monitor({ screen, chrome, hint, onOpen, live }) {
   const { tex, hits } = screen ?? {};
   const tall = screen?.height ?? SCREEN_VIEW.h;
-  const span = Math.max(0.0001, SCREEN_VIEW.h / tall);
+  const span = Math.min(1, SCREEN_VIEW.h / tall);
+  const camera = useThree((s) => s.camera);
+  const viewH = useThree((s) => s.size.height);
+  const grp = useRef();
+  const thumb = useRef();
+  const bar = useRef();
+  const tip = useRef();
+  const drag = useRef(null);
+  const slid = useRef(false);
 
   useEffect(() => {
+    reel.max = Math.max(0, tall - SCREEN_VIEW.h);
+    reel.cur = Math.min(reel.cur, reel.max);
+    reel.target = Math.min(reel.target, reel.max);
+    return () => {
+      reel.max = 0;
+    };
+  }, [tall]);
+
+  // Everything about the scroll happens here rather than in React.
+  // Easing `cur` towards `target` and writing the offset is two
+  // floats and a texture field; doing the same thing through state
+  // was a render of the whole room per pointer move.
+  useFrame((_, dt) => {
     if (!tex) return;
-    tex.repeat.set(1, Math.min(1, span));
-    tex.offset.set(0, Math.max(0, 1 - span) * (1 - clamp01(reel ?? 0)));
-    tex.needsUpdate = true;
-  }, [tex, span, reel]);
+    const k = 1 - Math.pow(0.0015, Math.min(dt, 0.1));
+    reel.cur += (reel.target - reel.cur) * k;
+    if (Math.abs(reel.target - reel.cur) < 0.4) reel.cur = reel.target;
+
+    const frac = reel.max > 0 ? reel.cur / reel.max : 0;
+    tex.repeat.set(1, span);
+    tex.offset.set(0, (1 - span) * (1 - frac));
+
+    const scrollable = reel.max > 0;
+    if (bar.current) bar.current.visible = scrollable;
+    if (tip.current) tip.current.visible = scrollable && !reel.touched;
+    if (thumb.current && scrollable) {
+      const run = DESK_PAGE.h * 0.96;
+      const len = Math.max(run * span, 0.06);
+      thumb.current.scale.y = len;
+      thumb.current.position.y = run / 2 - len / 2 - frac * (run - len);
+    }
+  });
+
+  /**
+   * How many canvas pixels one screen pixel of drag is worth.
+   *
+   * Measured rather than guessed: the screen's own top and bottom
+   * are projected through the camera, so the list keeps up with the
+   * cursor exactly at any window size instead of at the one the
+   * number was tuned on.
+   */
+  const gearing = () => {
+    const m = grp.current.matrixWorld;
+    const a = new THREE.Vector3(0, DESK_PAGE.h / 2, 0)
+      .applyMatrix4(m)
+      .project(camera);
+    const b = new THREE.Vector3(0, -DESK_PAGE.h / 2, 0)
+      .applyMatrix4(m)
+      .project(camera);
+    const px = (Math.abs(a.y - b.y) * viewH) / 2;
+    return px > 1 ? SCREEN_VIEW.h / px : 1;
+  };
+
+  const down = (e) => {
+    if (!live || reel.max <= 0) return;
+    e.stopPropagation();
+    e.target.setPointerCapture?.(e.pointerId);
+    drag.current = { y: e.clientY, gear: gearing(), moved: 0 };
+    slid.current = false;
+    reel.touched = true;
+    document.body.style.cursor = "grabbing";
+  };
+
+  const move = (e) => {
+    const d = drag.current;
+    if (!d) return;
+    e.stopPropagation();
+    const dy = e.clientY - d.y;
+    d.y = e.clientY;
+    d.moved += Math.abs(dy);
+    // Pull the list with the cursor: dragging up walks down the
+    // list, the way a finger moves a page on a phone.
+    const next = Math.min(reel.max, Math.max(0, reel.cur - dy * d.gear));
+    reel.cur = next;
+    reel.target = next;
+  };
+
+  const up = (e) => {
+    if (!drag.current) return;
+    e.target.releasePointerCapture?.(e.pointerId);
+    // A drag that moved is not a click. Without this, letting go
+    // after pulling the list down opens whatever card happened to
+    // be under the cursor.
+    slid.current = drag.current.moved > 5;
+    drag.current = null;
+    document.body.style.cursor = live ? "grab" : "";
+  };
 
   const pick = (e) => {
-    if (!live || !e.uv || !hits) return;
+    if (!live || slid.current || !e.uv || !hits) return;
     e.stopPropagation();
-    const v = Math.max(0, 1 - span) * (1 - clamp01(reel ?? 0)) + e.uv.y * span;
+    const v =
+      (1 - span) * (1 - (reel.max > 0 ? reel.cur / reel.max : 0)) +
+      e.uv.y * span;
     const cx = e.uv.x * SCREEN_VIEW.w;
     const cy = (1 - v) * tall;
     const hit = hits.find(
@@ -239,21 +331,65 @@ function Monitor({ screen, reel, onOpen, live }) {
     } else onOpen(hit.id);
   };
 
+  const run = DESK_PAGE.h * 0.96;
+  // The page hangs below the chrome strip.
+  const drop = -(DESK_SCREEN.h - DESK_PAGE.h) / 2;
+
   return (
-    <mesh
+    <group
+      ref={grp}
       position={[DESK.x - 0.055, DESK.y, DESK.z]}
       rotation={[0, -Math.PI / 2, 0]}
-      onClick={pick}
-      onPointerOver={() => {
-        if (live) document.body.style.cursor = "pointer";
-      }}
-      onPointerOut={() => {
-        document.body.style.cursor = "";
-      }}
     >
-      <planeGeometry args={[DESK_SCREEN.w, DESK_SCREEN.h]} />
-      <meshBasicMaterial map={tex} toneMapped={false} />
-    </mesh>
+      {/* The chrome does not scroll and is not clickable; it is the
+          window the page is in. */}
+      <mesh
+        position={[0, DESK_SCREEN.h / 2 - (DESK_SCREEN.h - DESK_PAGE.h) / 2, 0]}
+      >
+        <planeGeometry args={[DESK_SCREEN.w, DESK_SCREEN.h - DESK_PAGE.h]} />
+        <meshBasicMaterial map={chrome} toneMapped={false} />
+      </mesh>
+
+      <group position={[0, drop, 0]}>
+        <mesh
+          onClick={pick}
+          onPointerDown={down}
+          onPointerMove={move}
+          onPointerUp={up}
+          onPointerCancel={up}
+          onPointerOver={() => {
+            if (live)
+              document.body.style.cursor = reel.max > 0 ? "grab" : "pointer";
+          }}
+          onPointerOut={() => {
+            if (!drag.current) document.body.style.cursor = "";
+          }}
+        >
+          <planeGeometry args={[DESK_PAGE.w, DESK_PAGE.h]} />
+          <meshBasicMaterial map={tex} toneMapped={false} />
+        </mesh>
+
+        {/* Where in the list you are. Geometry rather than paint:
+            drawn into the canvas, moving it would repaint a
+            megapixel a frame. */}
+        <group ref={bar} position={[DESK_PAGE.w / 2 - 0.028, 0, 0.004]}>
+          <mesh>
+            <planeGeometry args={[0.018, run]} />
+            <meshBasicMaterial color="#161b22" toneMapped={false} />
+          </mesh>
+          <mesh ref={thumb} position={[0, 0, 0.001]}>
+            <planeGeometry args={[0.014, 1]} />
+            <meshBasicMaterial color="#4b5563" toneMapped={false} />
+          </mesh>
+        </group>
+
+        {/* Words on the glass, over the middle of the page. */}
+        <mesh ref={tip} position={[0, 0, 0.006]}>
+          <planeGeometry args={[1.18, 0.322]} />
+          <meshBasicMaterial map={hint} transparent toneMapped={false} />
+        </mesh>
+      </group>
+    </group>
   );
 }
 
@@ -264,7 +400,8 @@ export function Interior({
   skills,
   preview,
   onHover,
-  reel,
+  chrome,
+  hint,
   onOpen,
   live,
 }) {
@@ -306,7 +443,7 @@ export function Interior({
           a place to work; the rim behind the racks lifts the skills
           board off the wall it is hanging on. */}
       <pointLight
-        position={[DESK.x - 0.24, 1.18, DESK.z - 1]}
+        position={[DESK.x - 0.24, 1.18, DESK.z - 1.5]}
         color={ACCENT.amber}
         intensity={visible ? 5 : 0}
         distance={4.5}
@@ -365,7 +502,13 @@ export function Interior({
         <meshBasicMaterial map={preview} toneMapped={false} />
       </mesh>
 
-      <Monitor screen={screen} reel={reel} onOpen={onOpen} live={live} />
+      <Monitor
+        screen={screen}
+        chrome={chrome}
+        hint={hint}
+        onOpen={onOpen}
+        live={live}
+      />
     </group>
   );
 }
