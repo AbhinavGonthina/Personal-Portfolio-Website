@@ -7,6 +7,7 @@ import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
 import PickHint from "../components/PickHint";
 import { Heading } from "../components/Stop";
+import Timeline from "../components/Timeline";
 
 /**
  * Two presentations of the same state.
@@ -79,6 +80,21 @@ function Steps({ role, onStep, onBack }) {
   );
 }
 
+/**
+ * The date range as short as it can be said.
+ *
+ * "Jun 2026 - Aug 2026" wraps onto two lines in the timeline's
+ * rail; within one year the year only needs saying once.
+ */
+const span = (r) => {
+  const year = (d) => d.split(" ").pop();
+  if (r.end === "Present") return `${r.start} – Present`;
+  if (year(r.start) === year(r.end)) {
+    return `${r.start.split(" ")[0]} – ${r.end}`;
+  }
+  return `${r.start} – ${r.end}`;
+};
+
 /** A mono label over a block, the way the hoarding sets its facts. */
 const Label = ({ children }) => (
   <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.22em] text-fg-subtle">
@@ -100,7 +116,7 @@ const Label = ({ children }) => (
  * nothing written yet shows its blurb and stops - an empty heading
  * over nothing reads as broken rather than as unfinished.
  */
-function Detail({ role, onBack, onStep, inScene }) {
+function Detail({ role, onBack, onStep, inScene, hideDates }) {
   const hasStats = role.stats?.length > 0;
   const hasTech = role.tech.length > 0;
 
@@ -111,7 +127,11 @@ function Detail({ role, onBack, onStep, inScene }) {
       <h3 className="text-2xl font-semibold tracking-tight">{role.company}</h3>
       <p className="text-fg-muted">{role.role}</p>
       <p className="mt-1 font-mono text-xs text-fg-subtle">
-        {role.start} &ndash; {role.end} &middot; {role.location}
+        {/* On the timeline the rail carries the dates, so repeating
+            them here would print them twice a hand apart. */}
+        {hideDates
+          ? role.location
+          : `${role.start} – ${role.end} · ${role.location}`}
       </p>
 
       {/* What the place is. Set against the accent rule rather than
@@ -272,66 +292,40 @@ export default function Experience({ ref }) {
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={1}>Experience</Heading>
 
-          <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
-            {experience.length} roles across healthcare, travel, education and
-            motorsport. Open one for what the work actually was.
-          </p>
-
-          {/* All eight on the screen at once, two across.
-              Laid out full - the blurb, what I did, the stack and
-              the numbers for every role - the section ran to five
-              screens and you had to scroll past six jobs to find
-              out there was a seventh. The card carries what you
-              scan by; the rest is one click under it and costs
-              nothing until it is asked for. */}
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {arcOrder.map((r) => (
-              <details
-                key={r.id}
-                className="group relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 open:bg-ink-900/70"
-              >
-                <span
-                  aria-hidden
-                  className="absolute inset-y-0 left-0 w-[3px]"
-                  style={{ background: r.accent }}
-                />
-                <summary className="flex cursor-pointer list-none items-center gap-4 p-4 pl-6 [&::-webkit-details-marker]:hidden">
-                  <img
-                    src={r.logo}
-                    alt=""
-                    loading="lazy"
-                    width={96}
-                    height={96}
-                    className="size-10 shrink-0 rounded-lg object-contain p-1"
-                    style={{ background: r.brand }}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-baseline gap-2">
-                      <span className="truncate font-semibold tracking-tight">
-                        {r.company}
-                      </span>
-                      <span className="ml-auto shrink-0 font-mono text-[10px] text-fg-subtle">
-                        {r.start.split(" ").pop()}
-                      </span>
-                    </span>
-                    <span className="mt-0.5 block truncate text-xs text-fg-muted">
-                      {r.role}
-                    </span>
-                  </span>
+          {/* A timeline rather than eight cards that open.
+              The grid fitted a screen, but reading a role meant
+              clicking it and watching the other seven shift to make
+              room. Down a rail nothing moves: every role is already
+              open, the dates stay with you as you read, and the
+              beam marks how far through you are. */}
+          <Timeline
+            data={experience.map((r) => ({
+              title: span(r),
+              content: (
+                <article className="relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 p-6">
                   <span
                     aria-hidden
-                    className="shrink-0 text-fg-subtle transition-transform duration-200 group-open:rotate-90"
-                  >
-                    &rsaquo;
-                  </span>
-                </summary>
-
-                <div className="border-t border-ink-800 px-6 pb-6 pt-5">
-                  <Detail role={r} inScene={false} />
-                </div>
-              </details>
-            ))}
-          </div>
+                    className="absolute inset-y-0 left-0 w-[3px]"
+                    style={{ background: r.accent }}
+                  />
+                  <div className="flex items-start gap-5">
+                    <img
+                      src={r.logo}
+                      alt=""
+                      loading="lazy"
+                      width={96}
+                      height={96}
+                      className="hidden size-12 shrink-0 rounded-lg object-contain p-1.5 sm:block"
+                      style={{ background: r.brand }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <Detail role={r} inScene={false} hideDates />
+                    </div>
+                  </div>
+                </article>
+              ),
+            }))}
+          />
         </div>
       </section>
     );
