@@ -58,7 +58,7 @@ export const projects = [
       "Stripe Connect",
       "Material UI",
     ],
-    image: "/logos/rainfall.webp",
+    image: "/projects/rainfall.webp",
     imageFit: "contain",
     live: "https://rainfall-learning.com/",
   },
