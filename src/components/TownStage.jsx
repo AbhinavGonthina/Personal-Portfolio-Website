@@ -12,14 +12,13 @@ import {
   paintProjectsGrid,
   paintBoardFace,
   paintMark,
-  paintSkillPreview,
   paintSkills,
 } from "../lib/paint";
 import { BOARD_LAMPS as LAMPS_AT } from "../lib/townGeometry";
 import { projects } from "../data/projects";
 import { profile, socials } from "../data/profile";
 import { education } from "../data/about";
-import { skillDetail, skillGroups } from "../data/skills";
+import { skillGroups } from "../data/skills";
 import { useStills } from "../lib/stills";
 import { rewind, seek } from "../lib/reel";
 import {
@@ -113,11 +112,6 @@ export default function TownStage({ refs }) {
   // not frame work: it happens when the answer changes, which is a
   // few times a second at the very most, and never while nothing is
   // moving.
-  const [hovered, setHovered] = useState(null);
-  const preview = useMemo(
-    () => (off ? null : paintSkillPreview(hovered, skillDetail[hovered?.item])),
-    [off, hovered],
-  );
   // Which repository is open, and the stills the detail view draws.
   //
   // The grid is painted once onto a canvas taller than the monitor
@@ -146,7 +140,6 @@ export default function TownStage({ refs }) {
   useEffect(() => () => board?.dispose(), [board]);
   useEffect(() => () => boardFace?.dispose(), [boardFace]);
   useEffect(() => () => skills?.tex?.dispose(), [skills]);
-  useEffect(() => () => preview?.dispose(), [preview]);
   useEffect(() => () => grid?.tex?.dispose(), [grid]);
   useEffect(() => () => hint?.dispose(), [hint]);
   useEffect(() => () => chrome?.dispose(), [chrome]);
@@ -366,8 +359,6 @@ export default function TownStage({ refs }) {
             narrow={false}
             screen={screen}
             skills={skills}
-            preview={preview}
-            onHover={setHovered}
             chrome={chrome}
             hint={hint}
             onOpen={open}

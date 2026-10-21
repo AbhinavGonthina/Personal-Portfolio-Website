@@ -30,7 +30,9 @@ import {
 import { profile, socials } from "../data/profile";
 import { ACCENT } from "../lib/townMaterials";
 import { makeTextTexture } from "../lib/canvasText";
-import { SCREEN_VIEW, SKILL_PANE } from "../lib/paint";
+import { makeSkillScreen, SCREEN_VIEW, SKILL_PANE } from "../lib/paint";
+import { skillHover } from "../lib/skillHover";
+import { skillDetail } from "../data/skills";
 import { reel } from "../lib/reel";
 import { ExtrudedText } from "./street";
 
@@ -261,6 +263,52 @@ const HOVER_SHADER = {
     }
   `,
 };
+
+/**
+ * The screen set into the skills board.
+ *
+ * Its own plane because it repaints when the pointer moves and the
+ * board behind it does not - one is an 820 by 1000 upload, the other
+ * is 1600 by 805.
+ *
+ * It owns its canvas and watches the pointer itself rather than
+ * being handed a texture from above. Handed one, every hover was a
+ * render of the whole room to deliver a new picture of one panel.
+ */
+function SkillScreen({ live }) {
+  const screen = useMemo(makeSkillScreen, []);
+  const on = useRef(undefined);
+
+  useEffect(() => () => screen.tex.dispose(), [screen]);
+
+  useFrame(() => {
+    const want = live ? skillHover.hit : null;
+    if (want === on.current) return;
+    on.current = want;
+    screen.draw(want, skillDetail[want?.item]);
+  });
+
+  return (
+    <mesh
+      position={[
+        WALL_PANEL.x +
+          WALL_PANEL.w * ((SKILL_PANE.x0 + SKILL_PANE.x1) / 2 - 0.5),
+        WALL_PANEL.y -
+          WALL_PANEL.h * ((SKILL_PANE.y0 + SKILL_PANE.y1) / 2 - 0.5),
+        -HOUSE.d / 2 + 0.205,
+      ]}
+      raycast={NO_HIT}
+    >
+      <planeGeometry
+        args={[
+          WALL_PANEL.w * (SKILL_PANE.x1 - SKILL_PANE.x0),
+          WALL_PANEL.h * (SKILL_PANE.y1 - SKILL_PANE.y0),
+        ]}
+      />
+      <meshBasicMaterial map={screen.tex} toneMapped={false} />
+    </mesh>
+  );
+}
 
 function Monitor({ screen, chrome, hint, onOpen, live }) {
   const { tex, hits } = screen ?? {};
@@ -547,8 +595,6 @@ export function Interior({
   visible,
   screen,
   skills,
-  preview,
-  onHover,
   chrome,
   hint,
   onOpen,
@@ -642,34 +688,17 @@ export function Interior({
           const found = skills?.hits?.find(
             (h) => u >= h.x0 && u <= h.x1 && v >= h.y0 && v <= h.y1,
           );
-          onHover(found ?? null);
+          skillHover.hit = found ?? null;
         }}
-        onPointerOut={() => live && onHover(null)}
+        onPointerOut={() => {
+          skillHover.hit = null;
+        }}
       >
         <planeGeometry args={[WALL_PANEL.w, WALL_PANEL.h]} />
         <meshBasicMaterial map={skills?.tex} toneMapped={false} />
       </mesh>
 
-      {/* The screen inside it. Its own plane because it repaints on
-          every change of pointer and the board behind it does not -
-          one is a 540 by 1000 upload, the other is 1600 by 805. */}
-      <mesh
-        position={[
-          WALL_PANEL.x +
-            WALL_PANEL.w * ((SKILL_PANE.x0 + SKILL_PANE.x1) / 2 - 0.5),
-          WALL_PANEL.y -
-            WALL_PANEL.h * ((SKILL_PANE.y0 + SKILL_PANE.y1) / 2 - 0.5),
-          -HOUSE.d / 2 + 0.205,
-        ]}
-      >
-        <planeGeometry
-          args={[
-            WALL_PANEL.w * (SKILL_PANE.x1 - SKILL_PANE.x0),
-            WALL_PANEL.h * (SKILL_PANE.y1 - SKILL_PANE.y0),
-          ]}
-        />
-        <meshBasicMaterial map={preview} toneMapped={false} />
-      </mesh>
+      <SkillScreen live={live} />
 
       <Monitor
         screen={screen}

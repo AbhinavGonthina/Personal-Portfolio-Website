@@ -1366,13 +1366,15 @@ export function paintSkills(groups) {
  * aspect of 0.82. At 540 it was stretched half as wide again across
  * and every logo on it with it.
  */
-export function paintSkillPreview(hit, detail) {
-  const W = 820;
-  const H = 1000;
-  const [c, g] = canvas(W, H);
+function drawSkillPreview(g, W, H, hit, detail) {
   const mid = W / 2;
   const pad = 56;
 
+  // Drawn over the top of the last one, so anything a previous pass
+  // left set on the context has to be put back. The fill covers the
+  // canvas, but letter spacing and alpha do not reset themselves.
+  g.globalAlpha = 1;
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
   g.fillStyle = "#05070e";
   g.fillRect(0, 0, W, H);
   g.textAlign = "center";
@@ -1409,7 +1411,7 @@ export function paintSkillPreview(hit, detail) {
       g.fillText(line, mid, y);
       y += 42;
     }
-    return finish(c);
+    return;
   }
 
   // A pool of light under the mark. The brief asked for a glowing
@@ -1491,8 +1493,39 @@ export function paintSkillPreview(hit, detail) {
       y += 42;
     }
   }
+}
 
-  return finish(c);
+/**
+ * The preview screen: one canvas, one texture, repainted in place.
+ *
+ * It used to build a fresh canvas and a fresh `CanvasTexture` on
+ * every hover and throw the last one away. That is an 820 by 1000
+ * GPU allocation, a full upload and a mipmap chain per tag crossed,
+ * plus the matching free - and with the board swaying under the
+ * pointer, the tag under the cursor changes whenever the camera
+ * moves and not only when the hand does. The allocation was costing
+ * more than the drawing.
+ *
+ * So the canvas and the texture are made once and the picture is
+ * drawn over the top of itself. Mipmaps are off because the panel is
+ * seen close to head-on at a near-constant size, and rebuilding the
+ * chain was the most expensive part of every update.
+ */
+export function makeSkillScreen() {
+  const W = 820;
+  const H = 1000;
+  const [c, g] = canvas(W, H);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  return {
+    tex,
+    draw(hit, detail) {
+      drawSkillPreview(g, W, H, hit, detail);
+      tex.needsUpdate = true;
+    },
+  };
 }
 
 /* ------------------------------------------------------------------ */
