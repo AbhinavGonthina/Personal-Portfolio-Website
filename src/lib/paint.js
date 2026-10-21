@@ -585,6 +585,10 @@ export function paintProjectDetail(p, shot) {
   const W = SCREEN_VIEW.w;
   const H = SCREEN_VIEW.h;
   const PAD = 30;
+  /** The gap under the language bar, and under the topics. */
+  const ROW_GAP = 30;
+  const BAR_H = 12;
+  const PILL_H = 34;
   const [c, g] = canvas(W, H);
   const hits = [];
 
@@ -728,9 +732,14 @@ export function paintProjectDetail(p, shot) {
     tech.forEach((t, i) => {
       g.fillStyle = LANG_DOT[t] ?? ["#8b949e", "#6e7681", "#484f58"][i % 3];
       const sx = PAD + i * seg;
-      g.fillRect(sx, y, Math.ceil(seg) + (i === tech.length - 1 ? 0 : 1), 12);
+      g.fillRect(
+        sx,
+        y,
+        Math.ceil(seg) + (i === tech.length - 1 ? 0 : 1),
+        BAR_H,
+      );
     });
-    y += 42;
+    y += BAR_H + ROW_GAP;
 
     let px = PAD;
     for (const t of tech) {
@@ -738,20 +747,33 @@ export function paintProjectDetail(p, shot) {
       const tw = g.measureText(t).width + 26;
       if (px + tw > PAD + LW) {
         px = PAD;
-        y += 44;
+        y += PILL_H + 10;
       }
       px +=
-        pill(g, px, y, t, `400 17px ${MONO}`, "#6e94c9", "#21304a", 13, 34) +
-        10;
+        pill(
+          g,
+          px,
+          y,
+          t,
+          `400 17px ${MONO}`,
+          "#6e94c9",
+          "#21304a",
+          13,
+          PILL_H,
+        ) + 10;
     }
-    y += 28;
+    // `y` is the top of the last row of pills, so the bottom of the
+    // block is one pill further down. Both gaps are measured the
+    // same way off the same constant, which is the only way they
+    // stay equal when any of these heights change.
+    y += PILL_H;
   }
 
   // The links sit under the content rather than on the floor of the
   // screen. Pinned to the bottom they read as a toolbar belonging to
   // the window instead of to the repository, and on a short
   // description there was a hand's width of nothing above them.
-  const by = Math.min(y + 24, H - 132);
+  const by = Math.min(y + ROW_GAP, H - 132);
   const button = (label, bx, wide, primary, id, href) => {
     g.fillStyle = primary ? "#238636" : "#21262d";
     g.strokeStyle = primary ? "#2ea043" : "#30363d";

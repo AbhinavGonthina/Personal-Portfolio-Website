@@ -226,6 +226,9 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
   // The scroll fraction already written to the texture, so a frame
   // in which nothing moved does not write it again.
   const put = useRef(-1);
+  // What the pointer is over, as one of the painter's hit boxes.
+  const hov = useRef(null);
+  const mark = useRef();
   const slid = useRef(false);
 
   useEffect(() => {
@@ -252,6 +255,31 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
     const scrollable = reel.max > 0;
     if (bar.current) bar.current.visible = scrollable;
     if (tip.current) tip.current.visible = scrollable && !reel.touched;
+
+    // The hover highlight. A quad moved over whatever box the
+    // pointer is in, rather than a repaint of the card with a
+    // lighter background - the grid canvas is close to two
+    // megapixels and redrawing it every time the cursor crosses a
+    // card would cost more than the rest of the room put together.
+    //
+    // Clipped to the window, so a card half scrolled off the top
+    // does not light up the browser chrome above it.
+    const h = hov.current;
+    if (mark.current) {
+      const top = h ? Math.max(h.y0, reel.cur) : 0;
+      const bot = h ? Math.min(h.y1, reel.cur + SCREEN_VIEW.h) : 0;
+      if (!h || bot - top < 2) {
+        mark.current.visible = false;
+      } else {
+        const sx = DESK_PAGE.w / SCREEN_VIEW.w;
+        const sy = DESK_PAGE.h / SCREEN_VIEW.h;
+        mark.current.visible = true;
+        mark.current.scale.set((h.x1 - h.x0) * sx, (bot - top) * sy, 1);
+        mark.current.position.x = -DESK_PAGE.w / 2 + ((h.x0 + h.x1) / 2) * sx;
+        mark.current.position.y =
+          DESK_PAGE.h / 2 - ((top + bot) / 2 - reel.cur) * sy;
+      }
+    }
 
     // Most frames at this stop are frames where the list is sitting
     // still. Writing the same numbers into the texture on every one
@@ -302,6 +330,7 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
   };
 
   const move = (e) => {
+    if (live) hov.current = boxAt(e);
     const d = drag.current;
     if (!d) return;
     e.stopPropagation();
@@ -326,17 +355,24 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
     document.body.style.cursor = live ? "grab" : "";
   };
 
-  const pick = (e) => {
-    if (!live || slid.current || !e.uv || !hits) return;
-    e.stopPropagation();
+  /** Which of the painter's boxes a pointer event lands in. */
+  const boxAt = (e) => {
+    if (!e.uv || !hits) return null;
     const v =
       (1 - span) * (1 - (reel.max > 0 ? reel.cur / reel.max : 0)) +
       e.uv.y * span;
     const cx = e.uv.x * SCREEN_VIEW.w;
     const cy = (1 - v) * tall;
-    const hit = hits.find(
-      (h) => cx >= h.x0 && cx <= h.x1 && cy >= h.y0 && cy <= h.y1,
+    return (
+      hits.find((h) => cx >= h.x0 && cx <= h.x1 && cy >= h.y0 && cy <= h.y1) ??
+      null
     );
+  };
+
+  const pick = (e) => {
+    if (!live || slid.current) return;
+    e.stopPropagation();
+    const hit = boxAt(e);
     if (!hit) return;
     if (hit.id === "__back") onOpen(null);
     else if (hit.id === "__live" || hit.id === "__github") {
@@ -395,6 +431,18 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
             <meshBasicMaterial color="#4b5563" toneMapped={false} />
           </mesh>
         </group>
+
+        <mesh ref={mark} position={[0, 0, 0.003]} visible={false}>
+          <planeGeometry args={[1, 1]} />
+          <meshBasicMaterial
+            color="#8fb6ff"
+            transparent
+            opacity={0.1}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
 
         {/* Words on the glass, over the middle of the page. */}
         <mesh ref={tip} position={[0, 0, 0.006]}>
