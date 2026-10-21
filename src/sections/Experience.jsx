@@ -267,61 +267,71 @@ export default function Experience({ ref }) {
       <section
         ref={ref}
         id="experience"
-        className="pointer-events-auto scroll-mt-20 py-20 sm:py-24"
+        className="pointer-events-auto flex min-h-[100svh] scroll-mt-16 flex-col justify-center py-20"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={1}>Experience</Heading>
 
-          <p className="-mt-4 mb-12 max-w-2xl text-lg leading-relaxed text-fg-muted">
+          <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
             {experience.length} roles across healthcare, travel, education and
-            motorsport &mdash; what each place is, what I did there, and what it
-            was built out of.
+            motorsport. Open one for what the work actually was.
           </p>
 
-          {EXPERIENCE_GROUPS.map((group) => (
-            <div key={group.id} className="mb-14 last:mb-0">
-              <h3 className="mb-6 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.24em] text-fg-subtle">
-                {group.label}
-                <span className="h-px flex-1 bg-ink-700" />
-              </h3>
+          {/* All eight on the screen at once, two across.
+              Laid out full - the blurb, what I did, the stack and
+              the numbers for every role - the section ran to five
+              screens and you had to scroll past six jobs to find
+              out there was a seventh. The card carries what you
+              scan by; the rest is one click under it and costs
+              nothing until it is asked for. */}
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {arcOrder.map((r) => (
+              <details
+                key={r.id}
+                className="group relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 open:bg-ink-900/70"
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 w-[3px]"
+                  style={{ background: r.accent }}
+                />
+                <summary className="flex cursor-pointer list-none items-center gap-4 p-4 pl-6 [&::-webkit-details-marker]:hidden">
+                  <img
+                    src={r.logo}
+                    alt=""
+                    loading="lazy"
+                    width={96}
+                    height={96}
+                    className="size-10 shrink-0 rounded-lg object-contain p-1"
+                    style={{ background: r.brand }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline gap-2">
+                      <span className="truncate font-semibold tracking-tight">
+                        {r.company}
+                      </span>
+                      <span className="ml-auto shrink-0 font-mono text-[10px] text-fg-subtle">
+                        {r.start.split(" ").pop()}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-fg-muted">
+                      {r.role}
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden
+                    className="shrink-0 text-fg-subtle transition-transform duration-200 group-open:rotate-90"
+                  >
+                    &rsaquo;
+                  </span>
+                </summary>
 
-              <div className="space-y-5">
-                {experience
-                  .filter((r) => r.category === group.id)
-                  .map((r) => (
-                    <article
-                      key={r.id}
-                      className="relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 p-6 transition-colors hover:border-ink-600 sm:p-7"
-                    >
-                      {/* The role's own colour, as a rail down the
-                          edge. Every role already carries one for the
-                          towers it stands as in the 3D read; this is
-                          the same colour doing the same job, telling
-                          six cards apart at a glance. */}
-                      <span
-                        aria-hidden
-                        className="absolute inset-y-0 left-0 w-[3px]"
-                        style={{ background: r.accent }}
-                      />
-                      <div className="flex items-start gap-5">
-                        <img
-                          src={r.logo}
-                          alt=""
-                          loading="lazy"
-                          width={96}
-                          height={96}
-                          className="hidden size-12 shrink-0 rounded-lg object-contain p-1.5 sm:block"
-                          style={{ background: r.brand }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <Detail role={r} inScene={false} />
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-              </div>
-            </div>
-          ))}
+                <div className="border-t border-ink-800 px-6 pb-6 pt-5">
+                  <Detail role={r} inScene={false} />
+                </div>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
     );

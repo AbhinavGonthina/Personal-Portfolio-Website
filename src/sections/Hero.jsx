@@ -124,11 +124,16 @@ export default function Hero({ ref }) {
         className="pointer-events-auto relative w-full scroll-mt-20"
       >
         {/* A single soft wash behind the first screen, so the page does
-            not open on flat black. It is one gradient on one element
-            and it is the only decoration above the fold. */}
+            not open on flat black.
+
+            It starts above this section, not at the top of it. The
+            bar is sticky, so it takes the first four rem of the page
+            and the section begins underneath - and a gradient that
+            begins where the section begins gets cut off square along
+            that line, which drew the outline of the bar in light. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(60%_80%_at_18%_0%,rgba(111,227,245,0.10),transparent_70%)]"
+          className="pointer-events-none absolute inset-x-0 -top-20 h-[620px] bg-[radial-gradient(58%_78%_at_18%_12%,rgba(111,227,245,0.11),transparent_70%)]"
         />
 
         <div className="relative mx-auto w-full max-w-6xl px-6 pb-20 pt-24 sm:pt-28">
