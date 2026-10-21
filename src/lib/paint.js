@@ -455,11 +455,16 @@ export function paintBrowserChrome() {
   // horizontal, so it points cleanly along the way the ring turns.
   // Ending at ten o'clock put the arrow out on the shoulder of the
   // circle, aiming off into nothing.
+  // The head sits at the end of the arc and then reaches a further
+  // thirty-odd degrees past it along the tangent, so the tail has
+  // to start well clear of where the head finishes or the two touch
+  // and the gap disappears. Head at twelve, tail starting at five
+  // past, which leaves daylight between them.
   const END = Math.PI * 1.5;
   g.lineWidth = 2.6;
   g.strokeStyle = "#c9d1d9";
   g.beginPath();
-  g.arc(rx0, my, rr, -Math.PI * 0.3, END);
+  g.arc(rx0, my, rr, -Math.PI * 0.14, END);
   g.stroke();
 
   const ex = rx0 + Math.cos(END) * rr;
@@ -531,9 +536,13 @@ export function paintDragHint() {
   // canvas, not so the words happen to land near it. The plane this
   // goes on is centred on the page, so anything off-centre in here
   // is off-centre on the screen.
-  const ARROW = 104;
-  const TITLE = 206;
-  const UNDER = 272;
+  //
+  // Set above the geometric middle on purpose. The weight of this
+  // block is the big line, and the big line is the lower of the
+  // three, so a block centred by its bounding box reads low.
+  const ARROW = 92;
+  const TITLE = 194;
+  const UNDER = 258;
 
   g.save();
   g.shadowColor = "rgba(0,0,0,0.95)";
