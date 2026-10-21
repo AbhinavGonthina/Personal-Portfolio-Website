@@ -1,4 +1,5 @@
 import useEmblaCarousel from "embla-carousel-react";
+import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { projects } from "../data/projects";
@@ -129,11 +130,18 @@ export default function Projects({ ref }) {
   // nothing running when the rail is still. Rolling this by hand
   // means reimplementing momentum and edge cases that are already
   // somebody's job.
-  const [railRef, embla] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    skipSnaps: false,
-  });
+  const [railRef, embla] = useEmblaCarousel(
+    { align: "start", containScroll: "trimSnaps", skipSnaps: false },
+    // Sideways on a trackpad moves the rail.
+    //
+    // The plugin takes the dominant axis of the gesture, so a
+    // vertical flick still scrolls the page and only a horizontal
+    // one touches the carousel. That distinction is the whole
+    // reason to take the plugin rather than listen for wheel
+    // events here: a rail that answers to any wheel at all is a
+    // rail you get caught in on the way down the page.
+    [WheelGesturesPlugin()],
+  );
 
   if (!plain) {
     return (
