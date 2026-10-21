@@ -83,17 +83,17 @@ export const STOPS = [
     // the path, face the door and go through it.
     id: "skills",
     title: "Skills",
-    // Still, unlike every other stop.
+    // This one looks around like the rest of the town does.
     //
-    // The board here is pointed at rather than looked at: each tag
-    // is a target a few millimetres across on screen, and the usual
-    // look-around swings the whole wall by a fifth of a radian as
-    // the cursor crosses it. The tag you aimed at has moved by the
-    // time you arrive, and then moves again as the damping settles.
-    // A surface you are meant to point at cannot drift under the
-    // pointer.
-    sway: 0,
-    rise: 0,
+    // It was held still for a while, on the grounds that the board
+    // is pointed at rather than looked at and a surface you aim at
+    // should not drift under the pointer. True as far as it goes,
+    // but it cost the room every bit of life it had: both walls
+    // inside the house went dead at once and the whole indoor
+    // stretch stopped responding to the mouse at all. Pointing at a
+    // tag here is a hover that costs nothing to retry, which is not
+    // the same as the desk, where you are dragging a list and
+    // clicking cards.
     frame: {
       at: toWorld(TOWN.house, [WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]),
       yaw: TOWN.house.yaw,
@@ -118,12 +118,17 @@ export const STOPS = [
     // visible reason.
     id: "projects",
     title: "Projects",
-    // Still, for the same reason the skills board is still: this is
-    // a surface you point at. Every card is a click target and the
-    // list is dragged by hand, and the look-around swings the whole
-    // panel by a fifth of a radian as the cursor crosses it - so
-    // what you aimed at has moved by the time you get there, and a
-    // drag fights the camera the entire way.
+    // The one stop in the town that does not look around, and the
+    // only one that has earned it.
+    //
+    // The look-around swings the panel by a fifth of a radian as
+    // the cursor crosses it. Everywhere else that is parallax; here
+    // it is a fight. The list is dragged by hand, so the camera
+    // moves along the same axis as the drag and pulls against it
+    // the whole way, and every card is a click target that has
+    // moved by the time you reach it. Skills is pointed at too, but
+    // a hover there costs nothing to retry - this one you are
+    // holding on to.
     sway: 0,
     rise: 0,
     frame: {
