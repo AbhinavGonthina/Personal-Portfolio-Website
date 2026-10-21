@@ -26,8 +26,18 @@ import { education } from "../data/about";
  * the education, so the education moved up here and the section went.
  */
 
+/**
+ * One height for everything in the action row.
+ *
+ * Padding alone does not give you that. The outlined button carries
+ * a border and the filled one did not, so the same `py` came out two
+ * pixels taller on one than the other, and the icon links were four
+ * shorter again. A fixed height and a transparent border on the
+ * ones that do not want a visible one makes all of them the same
+ * box, whatever is inside it.
+ */
 const BTN =
-  "rounded-full px-5 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  "inline-flex h-10 items-center rounded-full border border-transparent px-5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 const scrollTo = (id) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -62,7 +72,7 @@ function Actions() {
         href={RESUME_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className={`${BTN} border border-ink-600 text-fg hover:border-fg-subtle hover:bg-ink-800`}
+        className={`${BTN} border-ink-600 text-fg hover:border-fg-subtle hover:bg-ink-800`}
       >
         Résumé
       </a>
@@ -73,7 +83,7 @@ function Actions() {
           logos are recognised faster than either word is read, and
           two more pieces of tracked mono capitals beside two buttons
           made the row look like four buttons of unequal weight. */}
-      <span aria-hidden className="mx-1 h-5 w-px bg-ink-700" />
+      <span aria-hidden className="mx-1 h-6 w-px bg-ink-700" />
       {socials
         .filter((s) => MARKS[s.icon])
         .map((s) => (
@@ -84,7 +94,7 @@ function Actions() {
             rel="noopener noreferrer"
             aria-label={s.name}
             title={s.name}
-            className="flex size-9 items-center justify-center rounded-full border border-transparent text-fg-subtle transition-colors hover:border-ink-600 hover:bg-ink-800 hover:text-fg [&>svg]:size-5"
+            className="inline-flex size-10 items-center justify-center rounded-full border border-transparent text-fg-subtle transition-colors hover:border-ink-600 hover:bg-ink-800 hover:text-fg [&>svg]:size-5"
             dangerouslySetInnerHTML={{ __html: MARKS[s.icon] }}
           />
         ))}
