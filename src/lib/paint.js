@@ -343,7 +343,7 @@ export function paintProjectsGrid(list) {
         ) + 7;
     }
 
-    hits.push({ id: p.id, x0: x, y0: y, x1: x + w, y1: y + CARD_H });
+    hits.push({ id: p.id, r: 10, x0: x, y0: y, x1: x + w, y1: y + CARD_H });
   };
 
   let slot = 0;
@@ -621,10 +621,12 @@ export function paintProjectDetail(p, shot) {
   g.fillText(backLabel, PAD + 24, 38);
   hits.push({
     id: "__back",
-    x0: PAD - 10,
-    y0: 4,
-    x1: PAD + backW + 10,
-    y1: 60,
+    // A pill, so the highlight has to be one too.
+    r: 21,
+    x0: PAD,
+    y0: 11,
+    x1: PAD + backW,
+    y1: 53,
   });
 
   // The breadcrumb: owner in regular, repository in bold, the way
@@ -786,7 +788,7 @@ export function paintProjectDetail(p, shot) {
     g.textAlign = "center";
     g.fillText(label, bx + wide / 2, by + 36);
     g.textAlign = "left";
-    hits.push({ id, href, x0: bx, y0: by, x1: bx + wide, y1: by + 56 });
+    hits.push({ id, href, r: 10, x0: bx, y0: by, x1: bx + wide, y1: by + 56 });
   };
 
   // Centred under the column rather than hard against its left

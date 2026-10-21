@@ -212,6 +212,53 @@ export function House({ mats, visible, open }) {
  * down from the top, which is the one place this is easy to get
  * backwards.
  */
+/**
+ * The hover highlight: a rounded outline with a faint wash inside
+ * it, drawn by a signed distance field rather than by a texture.
+ *
+ * A texture would have to be either stretched - which pulls the
+ * corner radius out of round, and the things being highlighted here
+ * run from a square card to a pill - or repainted per shape, which
+ * is a canvas and an upload every time the cursor moves one card
+ * across. The field costs neither: the quad is told its own size
+ * and corner radius in canvas pixels and works the shape out per
+ * fragment.
+ */
+const HOVER_SHADER = {
+  uniforms: {
+    uSize: { value: new THREE.Vector2(100, 100) },
+    uRadius: { value: 10 },
+    uColor: { value: new THREE.Color("#9ec1ff") },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform vec2 uSize;
+    uniform float uRadius;
+    uniform vec3 uColor;
+    varying vec2 vUv;
+
+    float roundBox(vec2 p, vec2 b, float r) {
+      vec2 q = abs(p) - b + r;
+      return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+    }
+
+    void main() {
+      vec2 p = (vUv - 0.5) * uSize;
+      float d = roundBox(p, uSize * 0.5 - 1.5, uRadius);
+      float aa = 2.5;
+      float inside = 1.0 - smoothstep(-aa, aa, d);
+      float edge = 1.0 - smoothstep(0.0, 3.0, abs(d + 2.0));
+      gl_FragColor = vec4(uColor, inside * 0.055 + edge * 0.34);
+    }
+  `,
+};
+
 function Monitor({ screen, chrome, hint, onOpen, live }) {
   const { tex, hits } = screen ?? {};
   const tall = screen?.height ?? SCREEN_VIEW.h;
@@ -233,6 +280,11 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
 
   useEffect(() => {
     put.current = -1;
+    // Whatever was under the cursor belonged to the page that has
+    // just been replaced. Without this, clicking a card carries its
+    // highlight over onto the page it opens and leaves it sitting
+    // there until the pointer moves.
+    hov.current = null;
     reel.max = Math.max(0, tall - SCREEN_VIEW.h);
     reel.cur = Math.min(reel.cur, reel.max);
     reel.target = Math.min(reel.target, reel.max);
@@ -278,6 +330,10 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
         mark.current.position.x = -DESK_PAGE.w / 2 + ((h.x0 + h.x1) / 2) * sx;
         mark.current.position.y =
           DESK_PAGE.h / 2 - ((top + bot) / 2 - reel.cur) * sy;
+        // In canvas pixels, which is what the radius is in too.
+        const u = mark.current.material.uniforms;
+        u.uSize.value.set(h.x1 - h.x0, bot - top);
+        u.uRadius.value = h.r ?? 10;
       }
     }
 
@@ -374,6 +430,7 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
     e.stopPropagation();
     const hit = boxAt(e);
     if (!hit) return;
+    hov.current = null;
     if (hit.id === "__back") onOpen(null);
     else if (hit.id === "__live" || hit.id === "__github") {
       window.open(hit.href, "_blank", "noopener,noreferrer");
@@ -434,13 +491,11 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
 
         <mesh ref={mark} position={[0, 0, 0.003]} visible={false}>
           <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial
-            color="#8fb6ff"
+          <shaderMaterial
+            args={[HOVER_SHADER]}
             transparent
-            opacity={0.1}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
-            toneMapped={false}
           />
         </mesh>
 
