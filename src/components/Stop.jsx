@@ -55,11 +55,16 @@ export default function Stop({
       <section
         ref={refEl}
         id={id}
-        // A screen each, with the content standing in the middle of
-        // it. The page was a long scroll of blocks separated by a
-        // lot of nothing; this gives every section the same frame
-        // and takes the gaps out from between them.
-        className="pointer-events-auto flex min-h-[100svh] scroll-mt-16 flex-col justify-center py-20"
+        // Half the page rhythm, top and bottom.
+        //
+        // The gap a reader sees between two sections is the bottom
+        // of one plus the top of the next, so half each is what
+        // makes that gap come out at the whole number - and the
+        // same number as the space between the bar and the first
+        // line on the page. Nothing here is a screen tall: a
+        // section that reserves a viewport whether or not it needs
+        // one puts a field of black above its own heading.
+        className="pointer-events-auto scroll-mt-16 py-24"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={n}>{title}</Heading>
