@@ -6,6 +6,7 @@ import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
 import PickHint from "../components/PickHint";
+import { Heading } from "../components/Stop";
 
 /**
  * Two presentations of the same state.
@@ -262,28 +263,65 @@ export default function Experience({ ref }) {
 
   // --- phones, and anyone who asked for the plain read -------------------
   if (narrow || plain) {
-    const shown = current ?? experience[0];
     return (
       <section
         ref={ref}
         id="experience"
-        className="pointer-events-auto scroll-mt-16 py-20"
+        className="pointer-events-auto scroll-mt-20 py-20 sm:py-24"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
-          <div className="mb-8">
-            <h2 className="text-3xl font-semibold tracking-tight">
-              Experience
-            </h2>
-            <div className="mt-3 h-px w-16 bg-fg" />
-          </div>
-          <RoleNav
-            selected={shown.id}
-            onSelect={setFocused}
-            className="mb-8 flex flex-col gap-6"
-          />
-          <div className="rounded-lg border border-ink-700 bg-ink-900 p-6">
-            <Detail role={shown} inScene={false} />
-          </div>
+          <Heading n={1}>Experience</Heading>
+
+          <p className="-mt-4 mb-12 max-w-2xl text-lg leading-relaxed text-fg-muted">
+            {experience.length} roles across healthcare, travel, education and
+            motorsport &mdash; what each place is, what I did there, and what it
+            was built out of.
+          </p>
+
+          {EXPERIENCE_GROUPS.map((group) => (
+            <div key={group.id} className="mb-14 last:mb-0">
+              <h3 className="mb-6 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.24em] text-fg-subtle">
+                {group.label}
+                <span className="h-px flex-1 bg-ink-700" />
+              </h3>
+
+              <div className="space-y-5">
+                {experience
+                  .filter((r) => r.category === group.id)
+                  .map((r) => (
+                    <article
+                      key={r.id}
+                      className="relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 p-6 transition-colors hover:border-ink-600 sm:p-7"
+                    >
+                      {/* The role's own colour, as a rail down the
+                          edge. Every role already carries one for the
+                          towers it stands as in the 3D read; this is
+                          the same colour doing the same job, telling
+                          six cards apart at a glance. */}
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-0 left-0 w-[3px]"
+                        style={{ background: r.accent }}
+                      />
+                      <div className="flex items-start gap-5">
+                        <img
+                          src={r.logo}
+                          alt=""
+                          loading="lazy"
+                          width={96}
+                          height={96}
+                          className="hidden size-12 shrink-0 rounded-lg object-contain p-1.5 sm:block"
+                          style={{ background: r.brand }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <Detail role={r} inScene={false} />
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     );

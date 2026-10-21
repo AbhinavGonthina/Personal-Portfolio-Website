@@ -33,11 +33,18 @@
   --color-fg-muted: #a1a1aa;
   --color-fg-subtle: #71717a;
 
-  /* No brand accent on purpose. The site is white on black; colour arrives
+  /* Almost no brand accent. The site is white on black; colour arrives
      per-section where it earns its place rather than from one designated
      secondary that has to work everywhere. `--color-ring` exists only so
-     focus outlines are not invisible, and is deliberately neutral. */
+     focus outlines are not invisible, and is deliberately neutral.
+
+     The one exception is `--color-accent`, which is the cyan the scene is
+     lit with and the colour the section plate already uses in the 3D
+     read. The plain read borrows it for the same job - saying where you
+     are - so the two reads look like one site rather than two. It is used
+     in thin strokes and small type only, never as a fill. */
   --color-ring: #8a8f98;
+  --color-accent: #6fe3f5;
 
   /* Geist Sans and Geist Mono are a matched pair, drawn for exactly this
      kind of dark technical UI. System fonts stay behind them as a fallback

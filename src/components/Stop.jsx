@@ -9,11 +9,33 @@ import { cn } from "../lib/cn";
  * hit "simpler read". There is no panel floating beside the scene;
  * Experience is the one exception, and it builds its own.
  */
-export function Heading({ children }) {
+
+/**
+ * The heading every section in the plain read wears.
+ *
+ * Numbered, because the plain read is a walk through the same five
+ * places in the same order and the number is the cheapest way to say
+ * so. It is the same plate the 3D read puts in the top left corner -
+ * mono index, two slashes, the name - so switching between the two
+ * does not feel like arriving at a different site.
+ */
+export function Heading({ n, children }) {
   return (
-    <div className="mb-8">
-      <h2 className="text-3xl font-semibold tracking-tight">{children}</h2>
-      <div className="mt-3 h-px w-16 bg-fg" />
+    <div className="mb-10">
+      <div className="flex items-baseline gap-3">
+        {n ? (
+          <span className="font-mono text-sm tracking-[0.12em] text-accent/70">
+            {String(n).padStart(2, "0")}
+            <span className="mx-1.5 text-fg-subtle">//</span>
+          </span>
+        ) : null}
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          {children}
+        </h2>
+      </div>
+      {/* Picks up the accent at its left end and gives out, rather than
+          stopping dead at a fixed width. */}
+      <div className="mt-4 h-px w-40 bg-gradient-to-r from-accent/80 via-white/25 to-transparent" />
     </div>
   );
 }
@@ -21,6 +43,7 @@ export function Heading({ children }) {
 export default function Stop({
   id,
   title,
+  n,
   plain,
   children,
   refEl,
@@ -32,10 +55,10 @@ export default function Stop({
       <section
         ref={refEl}
         id={id}
-        className="pointer-events-auto scroll-mt-16 py-20"
+        className="pointer-events-auto scroll-mt-20 py-20 sm:py-24"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
-          <Heading>{title}</Heading>
+          <Heading n={n}>{title}</Heading>
           {children}
         </div>
       </section>
