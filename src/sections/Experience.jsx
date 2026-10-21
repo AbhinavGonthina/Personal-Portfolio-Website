@@ -297,35 +297,54 @@ export default function Experience({ ref }) {
               clicking it and watching the other seven shift to make
               room. Down a rail nothing moves: every role is already
               open, the dates stay with you as you read, and the
-              beam marks how far through you are. */}
-          <Timeline
-            data={experience.map((r) => ({
-              title: span(r),
-              content: (
-                <article className="relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 p-6">
-                  <span
-                    aria-hidden
-                    className="absolute inset-y-0 left-0 w-[3px]"
-                    style={{ background: r.accent }}
-                  />
-                  <div className="flex items-start gap-5">
-                    <img
-                      src={r.logo}
-                      alt=""
-                      loading="lazy"
-                      width={96}
-                      height={96}
-                      className="hidden size-12 shrink-0 rounded-lg object-contain p-1.5 sm:block"
-                      style={{ background: r.brand }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <Detail role={r} inScene={false} hideDates />
-                    </div>
-                  </div>
-                </article>
-              ),
-            }))}
-          />
+              beam marks how far through you are.
+
+              One rail per group rather than one long one. The three
+              are different kinds of thing - a co-op, a startup and
+              a university society are not rungs on the same ladder
+              - and a single unbroken line implies they are. */}
+          {EXPERIENCE_GROUPS.map((group) => {
+            const roles = experience.filter((r) => r.category === group.id);
+            if (!roles.length) return null;
+            return (
+              <section key={group.id} className="mb-16 last:mb-0">
+                <h3 className="mb-8 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.24em] text-fg-subtle">
+                  {group.label}
+                  <span className="h-px flex-1 bg-ink-700" />
+                  <span className="text-fg-subtle/60">{roles.length}</span>
+                </h3>
+
+                <Timeline
+                  data={roles.map((r) => ({
+                    title: span(r),
+                    content: (
+                      <article className="relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 p-6">
+                        <span
+                          aria-hidden
+                          className="absolute inset-y-0 left-0 w-[3px]"
+                          style={{ background: r.accent }}
+                        />
+                        <div className="flex items-start gap-5">
+                          <img
+                            src={r.logo}
+                            alt=""
+                            loading="lazy"
+                            width={96}
+                            height={96}
+                            className="hidden size-12 shrink-0 rounded-lg object-contain p-1.5 sm:block"
+                            style={{ background: r.brand }}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <Detail role={r} inScene={false} hideDates />
+                          </div>
+                        </div>
+                      </article>
+                    ),
+                  }))}
+                />
+              </section>
+            );
+          })}
         </div>
       </section>
     );
