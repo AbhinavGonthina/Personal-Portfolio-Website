@@ -152,50 +152,46 @@ export default function Hero({ ref }) {
               <div className="mt-9">
                 <Actions />
               </div>
-            </div>
 
-            {/* The photo and what it stands on, as one column. The
-                education used to run across the foot of the section
-                as a four-cell strip; under the picture it reads as
-                the caption to it, and the two halves of the shot
-                come out roughly the same height. */}
-            <div className="order-first mx-auto w-full max-w-[340px] md:order-none md:ml-auto md:mr-0">
-              <TiltCard>
-                {/* The picture fills its frame. It used to sit inside
-                    a padded box with a second rounded ring drawn in
-                    the gap, which left a hairline of background
-                    showing all the way round it. */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-ink-950 [transform:translateZ(0px)]">
-                  <img
-                    src={profile.photo}
-                    alt={`Portrait of ${profile.name}`}
-                    width={896}
-                    height={896}
-                    className="block w-full [transform:translateZ(18px)]"
-                  />
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10"
-                  />
-                </div>
-              </TiltCard>
-
-              <dl className="mt-5 rounded-xl border border-ink-700 bg-ink-900/40 px-4">
+              {/* Under the copy, as one wrapping row.
+                  It was a five-row table under the photo, which made
+                  that column half as tall again as this one - and a
+                  column centred against a taller column puts the
+                  photo wherever the table leaves room for it rather
+                  than level with the text. Over here it costs two
+                  lines and the photo is the only thing in the other
+                  column, so centring it means what it says. */}
+              <dl className="mt-10 flex flex-wrap items-baseline gap-x-7 gap-y-3 border-t border-ink-800 pt-7">
                 {EDUCATION.map(([k, v]) => (
-                  <div
-                    key={k}
-                    className="flex items-baseline justify-between gap-4 border-b border-ink-800 py-2.5 last:border-0"
-                  >
-                    <dt className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-fg-subtle">
+                  <div key={k} className="flex items-baseline gap-2.5">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-fg-subtle">
                       {k}
                     </dt>
-                    <dd className="text-right text-xs leading-snug text-fg-muted">
-                      {v}
-                    </dd>
+                    <dd className="text-xs text-fg-muted">{v}</dd>
                   </div>
                 ))}
               </dl>
             </div>
+
+            <TiltCard className="order-first mx-auto w-full max-w-[340px] md:order-none md:ml-auto md:mr-0">
+              {/* The picture fills its frame. It used to sit inside
+                    a padded box with a second rounded ring drawn in
+                    the gap, which left a hairline of background
+                    showing all the way round it. */}
+              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-ink-950 [transform:translateZ(0px)]">
+                <img
+                  src={profile.photo}
+                  alt={`Portrait of ${profile.name}`}
+                  width={896}
+                  height={896}
+                  className="block w-full [transform:translateZ(18px)]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10"
+                />
+              </div>
+            </TiltCard>
           </div>
         </div>
       </section>
