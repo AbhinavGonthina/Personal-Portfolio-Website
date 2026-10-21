@@ -1,18 +1,11 @@
+import useEmblaCarousel from "embla-carousel-react";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { projects } from "../data/projects";
 
-/** GitHub's dot colour per language, the same key the monitor uses. */
-const LANG_DOT = {
-  "Next.js": "#3178c6",
-  React: "#61dafb",
-  "React Native": "#61dafb",
-  TypeScript: "#3178c6",
-  JavaScript: "#f1e05a",
-  Java: "#b07219",
-  Python: "#3572a5",
-  Racket: "#3c5caa",
-};
+/** One click of an arrow, and the width the cards are cut to. */
+const STEP =
+  "flex size-9 items-center justify-center rounded-full border border-ink-700 text-fg-muted transition-colors hover:border-ink-600 hover:bg-ink-800 hover:text-fg disabled:opacity-30 disabled:hover:border-ink-700 disabled:hover:bg-transparent disabled:hover:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
  * The monitor on the desk. The list is scrolled on the monitor itself
@@ -33,7 +26,7 @@ const LANG_DOT = {
 const LINK =
   "font-mono text-[11px] uppercase tracking-[0.18em] transition-colors";
 
-function Shot({ p, tall }) {
+function Shot({ p }) {
   const src = p.image ?? p.poster;
   if (!src) return null;
   // Two of these have a wordmark where the others have a screenshot.
@@ -42,105 +35,88 @@ function Shot({ p, tall }) {
   // frame instead, with room around it.
   const logo = src.includes("/logos/");
   return (
-    <div
-      className={`relative overflow-hidden rounded-lg border border-ink-700 bg-ink-900 ${
-        tall ? "aspect-[16/9]" : "aspect-[16/10]"
-      }`}
-    >
+    <div className="relative aspect-[16/10] shrink-0 overflow-hidden border-b border-ink-800 bg-ink-900">
       <img
         src={src}
         alt=""
         loading="lazy"
-        className={`size-full transition-transform duration-500 group-hover:scale-[1.03] ${
-          logo ? "object-contain p-10" : "object-cover object-top"
+        className={`size-full transition-transform duration-500 group-hover:scale-[1.04] ${
+          logo ? "object-contain p-8" : "object-cover object-top"
         }`}
       />
-      {/* The screenshots are of light interfaces and this page is not
-          one. A wash off the bottom edge stops each card ending in a
-          hard white band. */}
       {!logo && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/60 via-transparent to-transparent"
         />
       )}
     </div>
   );
 }
 
-function Links({ p }) {
-  if (!p.live && !p.github) return null;
-  return (
-    <div className="mt-5 flex flex-wrap items-center gap-4">
-      {p.live && (
-        <a
-          href={p.live}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${LINK} text-accent hover:text-fg`}
-        >
-          Live site &rarr;
-        </a>
-      )}
-      {p.github && (
-        <a
-          href={p.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`${LINK} text-fg-subtle hover:text-fg`}
-        >
-          Source
-        </a>
-      )}
-    </div>
-  );
-}
-
-function Tech({ items }) {
-  if (!items?.length) return null;
-  return (
-    <ul className="mt-5 flex flex-wrap gap-1.5">
-      {items.map((t) => (
-        <li
-          key={t}
-          className="rounded border border-ink-700 px-2 py-0.5 font-mono text-[11px] text-fg-subtle"
-        >
-          {t}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function Card({ p, lead }) {
   return (
     <article
-      className={`group flex flex-col rounded-xl border border-ink-700 bg-ink-900/40 p-5 transition-colors hover:border-ink-600 ${
-        lead ? "md:col-span-2 md:flex-row md:items-center md:gap-8 md:p-7" : ""
+      // A slide, so every card is cut to the same size: the rail
+      // only reads as a gallery if the cards line up, and a card
+      // sized to its own blurb puts the links at a different height
+      // on every one of them.
+      className={`group flex h-[460px] w-[332px] shrink-0 flex-col overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 ${
+        lead ? "shimmer" : ""
       }`}
     >
-      <div className={lead ? "md:w-1/2" : ""}>
-        <Shot p={p} tall={lead} />
-      </div>
+      <Shot p={p} />
 
-      <div className={lead ? "mt-6 md:mt-0 md:w-1/2" : "mt-5"}>
-        <div className="flex items-baseline justify-between gap-4">
-          <h3
-            className={`font-semibold tracking-tight ${lead ? "text-2xl" : "text-lg"}`}
-          >
-            {p.title}
-          </h3>
-          <span className="shrink-0 font-mono text-[11px] text-fg-subtle">
-            {p.period}
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="truncate font-semibold tracking-tight">{p.title}</h3>
+          <span className="shrink-0 font-mono text-[10px] text-fg-subtle">
+            {lead ? "Featured" : p.period}
           </span>
         </div>
 
-        <p className="mt-3 text-sm leading-relaxed text-fg-muted">
-          {lead ? (p.description ?? p.blurb) : p.blurb}
+        <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-fg-muted">
+          {p.blurb}
         </p>
 
-        <Tech items={p.tech} />
-        <Links p={p} />
+        {p.tech?.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {p.tech.slice(0, 4).map((t) => (
+              <li
+                key={t}
+                className="rounded border border-ink-700 px-1.5 py-0.5 font-mono text-[10px] text-fg-subtle"
+              >
+                {t}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* At the foot of the card rather than after the copy, so
+            the links sit on one line across the whole rail instead
+            of stepping up and down with each blurb. */}
+        <div className="mt-auto flex items-center gap-4 pt-4">
+          {p.live && (
+            <a
+              href={p.live}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${LINK} text-accent hover:text-fg`}
+            >
+              Live site &rarr;
+            </a>
+          )}
+          {p.github && (
+            <a
+              href={p.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${LINK} text-fg-subtle hover:text-fg`}
+            >
+              Source
+            </a>
+          )}
+        </div>
       </div>
     </article>
   );
@@ -148,6 +124,16 @@ function Card({ p, lead }) {
 
 export default function Projects({ ref }) {
   const plain = usePlain();
+  // Embla is the engine shadcn's Carousel is built on: drag, wheel,
+  // snapping, bounds and keyboard, in about five kilobytes, and
+  // nothing running when the rail is still. Rolling this by hand
+  // means reimplementing momentum and edge cases that are already
+  // somebody's job.
+  const [railRef, embla] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    skipSnaps: false,
+  });
 
   if (!plain) {
     return (
@@ -178,79 +164,50 @@ export default function Projects({ ref }) {
     );
   }
 
-  const [lead, ...rest] = projects;
-
   return (
     <Stop id="projects" title="Projects" n={3} plain refEl={ref}>
-      {/* One is the headline and ten are a list.
-          Eleven cards with a screenshot each ran to four screens,
-          and a reader who has to scroll that far to find out how
-          many there are has stopped counting by the third. The one
-          worth stopping on keeps its picture; the rest become rows
-          you can take in at a glance and open if you want. */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
-        <article className="shimmer group relative flex flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-900/50 p-5">
-          <Shot p={lead} tall />
-          <div className="mt-5 flex flex-1 flex-col">
-            <div className="flex items-baseline justify-between gap-4">
-              <h3 className="text-2xl font-semibold tracking-tight">
-                {lead.title}
-              </h3>
-              <span className="shrink-0 font-mono text-[11px] text-accent/80">
-                Featured
-              </span>
-            </div>
-            <p className="mt-3 text-sm leading-relaxed text-fg-muted">
-              {lead.blurb}
-            </p>
-            <Tech items={lead.tech} />
-            <Links p={lead} />
-          </div>
-        </article>
+      <div className="-mt-6 mb-8 flex items-end justify-between gap-6">
+        <p className="max-w-xl text-fg-muted">
+          {projects.length} of them, newest first. Drag the rail, or use the
+          arrows.
+        </p>
+        {/* Arrows as well as the drag: a rail that only answers to a
+            sideways gesture is a rail most people on a mouse never
+            find the end of. */}
+        <div className="flex shrink-0 gap-2">
+          <button
+            onClick={() => embla?.scrollPrev()}
+            aria-label="Previous projects"
+            className={STEP}
+          >
+            <span aria-hidden>&larr;</span>
+          </button>
+          <button
+            onClick={() => embla?.scrollNext()}
+            aria-label="More projects"
+            className={STEP}
+          >
+            <span aria-hidden>&rarr;</span>
+          </button>
+        </div>
+      </div>
 
-        <ul className="divide-y divide-ink-800 border-y border-ink-800">
-          {rest.map((p) => {
-            const href = p.live ?? p.github;
-            const Row = href ? "a" : "div";
-            return (
-              <li key={p.id}>
-                <Row
-                  {...(href
-                    ? { href, target: "_blank", rel: "noopener noreferrer" }
-                    : {})}
-                  className="group flex items-baseline gap-4 py-3 transition-colors hover:bg-ink-900/40"
-                >
-                  <span
-                    aria-hidden
-                    className="mt-1.5 size-2 shrink-0 rounded-full"
-                    style={{ background: LANG_DOT[p.tech?.[0]] ?? "#6e7681" }}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-baseline gap-3">
-                      <span className="font-medium tracking-tight transition-colors group-hover:text-accent">
-                        {p.title}
-                      </span>
-                      <span className="ml-auto shrink-0 font-mono text-[10px] text-fg-subtle">
-                        {p.tech?.[0]}
-                      </span>
-                    </span>
-                    <span className="mt-0.5 block truncate text-xs text-fg-muted">
-                      {p.blurb}
-                    </span>
-                  </span>
-                  {href && (
-                    <span
-                      aria-hidden
-                      className="shrink-0 text-fg-subtle transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
-                    >
-                      &rarr;
-                    </span>
-                  )}
-                </Row>
-              </li>
-            );
-          })}
-        </ul>
+      <div className="relative">
+        <div ref={railRef} className="overflow-hidden">
+          <div className="flex gap-5">
+            {projects.map((p, i) => (
+              <Card key={p.id} p={p} lead={i === 0} />
+            ))}
+          </div>
+        </div>
+
+        {/* The rail runs under the right edge rather than stopping
+            at it, which is the one thing on screen saying there is
+            more of it. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-ink-950 to-transparent"
+        />
       </div>
     </Stop>
   );
