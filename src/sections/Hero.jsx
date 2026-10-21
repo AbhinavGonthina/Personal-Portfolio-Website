@@ -124,11 +124,7 @@ export default function Hero({ ref }) {
       <section
         ref={ref}
         id="about"
-        // The screen minus the bar, with the content centred in what
-        // is left - so the gap above it and the gap below it are the
-        // same without either being a number anybody has to keep in
-        // step. Every section below uses that gap as its padding.
-        className="pointer-events-auto relative flex min-h-[calc(100svh-4rem)] w-full scroll-mt-16 flex-col justify-center py-48"
+        className="pointer-events-auto relative w-full scroll-mt-20"
       >
         {/* A single soft wash behind the first screen, so the page does
             not open on flat black.
@@ -143,7 +139,7 @@ export default function Hero({ ref }) {
           className="pointer-events-none absolute inset-x-0 -top-20 h-[620px] bg-[radial-gradient(58%_78%_at_18%_12%,rgba(111,227,245,0.11),transparent_70%)]"
         />
 
-        <div className="relative mx-auto w-full max-w-6xl px-6">
+        <div className="relative mx-auto w-full max-w-6xl px-6 pb-20 pt-24 sm:pt-28">
           <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-[1fr_340px] md:gap-16">
             <div>
               <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-accent/80">
