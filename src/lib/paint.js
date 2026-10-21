@@ -1441,9 +1441,9 @@ function drawSkillPreview(g, W, H, hit, detail) {
   // A pool of light under the mark. The brief asked for a glowing
   // icon and a glow is light on the surface behind a thing, not an
   // outline around it.
-  const BOX = 250;
+  const BOX = 220;
   const bx = mid - BOX / 2;
-  const by = 96;
+  const by = 84;
   const halo = g.createRadialGradient(
     mid,
     by + BOX / 2,
@@ -1468,7 +1468,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
     g.fillText(label, mid, by + BOX / 2 + 38);
   }
 
-  let y = by + BOX + 72;
+  let y = by + BOX + 64;
 
   g.fillStyle = ACCENT.blue;
   g.font = "500 24px " + MONO;
@@ -1476,12 +1476,12 @@ function drawSkillPreview(g, W, H, hit, detail) {
   g.fillText(hit.group.toUpperCase(), mid, y);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-  y += 64;
+  y += 60;
   g.fillStyle = "#ffffff";
-  g.font = "600 54px " + SANS;
+  g.font = "600 52px " + SANS;
   for (const line of wrap(g, hit.item, W - pad * 2)) {
     g.fillText(line, mid, y);
-    y += 60;
+    y += 56;
   }
 
   // A short rule rather than a full-width one: it is closing the
@@ -1489,57 +1489,42 @@ function drawSkillPreview(g, W, H, hit, detail) {
   y += 12;
   g.fillStyle = "#2b3350";
   g.fillRect(mid - 90, y, 180, 2);
-  y += 48;
+  y += 46;
 
-  if (detail?.proof) {
-    g.fillStyle = "#6f7694";
-    g.font = "500 22px " + MONO;
-    if ("letterSpacing" in g) g.letterSpacing = "5px";
-    g.fillText("USED IN", mid, y);
-    if ("letterSpacing" in g) g.letterSpacing = "0px";
-
-    y += 44;
-    g.fillStyle = "#c6cde4";
-    g.font = "400 27px " + SANS;
-
-    // One place it was used reads as a sentence; several read as a
-    // list, and a list set centred is a list nobody can scan - the
-    // left edge of every line lands somewhere different. So one
-    // stays centred under the name and several go to bullets down
-    // the left.
-    const proof = [].concat(detail.proof);
-    if (proof.length === 1) {
-      for (const line of wrap(g, proof[0], W - pad * 2)) {
-        g.fillText(line, mid, y);
-        y += 36;
-      }
-    } else {
-      g.textAlign = "left";
-      const tx = pad + 26;
-      for (const item of proof) {
-        const lines = wrap(g, item, W - pad - tx);
-        g.fillStyle = ACCENT.blue;
-        g.fillText("•", pad + 4, y);
-        g.fillStyle = "#c6cde4";
-        for (const line of lines) {
-          g.fillText(line, tx, y);
-          y += 36;
-        }
-        y += 10;
-      }
-      g.textAlign = "center";
-    }
-  } else {
-    g.fillStyle = "#4d5570";
-    g.font = "400 29px " + SANS;
-    for (const line of wrap(
-      g,
-      "On the list, with no one project worth pointing at.",
-      W - pad * 2,
-    )) {
+  // What the thing is for, in his hands. Every skill has one, and
+  // it answers the question the tag raises before any list of
+  // places does.
+  if (detail?.use) {
+    g.fillStyle = "#d7dcea";
+    g.font = "400 30px " + SANS;
+    for (const line of wrap(g, detail.use, W - pad * 2)) {
       g.fillText(line, mid, y);
-      y += 42;
+      y += 40;
     }
+    y += 10;
+  }
+
+  // Then where, as bullets down the left. Centred, a list is one
+  // nobody can scan: the left edge of every line lands somewhere
+  // different.
+  const proof = detail?.proof ? [].concat(detail.proof) : [];
+  if (proof.length) {
+    y += 18;
+    g.textAlign = "left";
+    g.font = "400 28px " + SANS;
+    const tx = pad + 28;
+    for (const item of proof) {
+      const lines = wrap(g, item, W - pad - tx);
+      g.fillStyle = ACCENT.blue;
+      g.fillText("•", pad + 4, y);
+      g.fillStyle = "#aab3c9";
+      for (const line of lines) {
+        g.fillText(line, tx, y);
+        y += 38;
+      }
+      y += 12;
+    }
+    g.textAlign = "center";
   }
 }
 
