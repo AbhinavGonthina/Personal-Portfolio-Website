@@ -131,7 +131,17 @@ export default function Projects({ ref }) {
   // means reimplementing momentum and edge cases that are already
   // somebody's job.
   const [railRef, embla] = useEmblaCarousel(
-    { align: "start", containScroll: "trimSnaps", skipSnaps: false },
+    {
+      align: "start",
+      containScroll: "trimSnaps",
+      // Free scrolling: the rail goes as far as you push it and
+      // coasts to a stop. Snapping meant one gesture moved one
+      // card however hard you pushed, so spinning the wheel ten
+      // times crawled along a card at a time instead of travelling.
+      // The arrows still step card to card, which is what they are
+      // for.
+      dragFree: true,
+    },
     // Sideways on a trackpad moves the rail.
     //
     // The plugin takes the dominant axis of the gesture, so a
