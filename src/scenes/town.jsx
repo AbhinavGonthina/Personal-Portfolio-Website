@@ -224,6 +224,9 @@ export function House({ mats, visible, open }) {
  * and corner radius in canvas pixels and works the shape out per
  * fragment.
  */
+/** For overlays that must not intercept the pointer. */
+const NO_HIT = () => null;
+
 const HOVER_SHADER = {
   uniforms: {
     uSize: { value: new THREE.Vector2(100, 100) },
@@ -325,15 +328,22 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
       } else {
         const sx = DESK_PAGE.w / SCREEN_VIEW.w;
         const sy = DESK_PAGE.h / SCREEN_VIEW.h;
+        // A few pixels proud of the thing it marks. Sized to the hit
+        // box exactly, the ring lands inside the border the button
+        // already has and reads as a second outline drawn within the
+        // first rather than as the button lighting up.
+        const OUT = 4;
+        const w = h.x1 - h.x0 + OUT * 2;
+        const hh = bot - top + OUT * 2;
         mark.current.visible = true;
-        mark.current.scale.set((h.x1 - h.x0) * sx, (bot - top) * sy, 1);
+        mark.current.scale.set(w * sx, hh * sy, 1);
         mark.current.position.x = -DESK_PAGE.w / 2 + ((h.x0 + h.x1) / 2) * sx;
         mark.current.position.y =
           DESK_PAGE.h / 2 - ((top + bot) / 2 - reel.cur) * sy;
         // In canvas pixels, which is what the radius is in too.
         const u = mark.current.material.uniforms;
-        u.uSize.value.set(h.x1 - h.x0, bot - top);
-        u.uRadius.value = h.r ?? 10;
+        u.uSize.value.set(w, hh);
+        u.uRadius.value = (h.r ?? 10) + OUT;
       }
     }
 
@@ -479,17 +489,22 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
             drawn into the canvas, moving it would repaint a
             megapixel a frame. */}
         <group ref={bar} position={[DESK_PAGE.w / 2 - 0.028, 0, 0.004]}>
-          <mesh>
+          <mesh raycast={NO_HIT}>
             <planeGeometry args={[0.018, run]} />
             <meshBasicMaterial color="#161b22" toneMapped={false} />
           </mesh>
-          <mesh ref={thumb} position={[0, 0, 0.001]}>
+          <mesh ref={thumb} position={[0, 0, 0.001]} raycast={NO_HIT}>
             <planeGeometry args={[0.014, 1]} />
             <meshBasicMaterial color="#4b5563" toneMapped={false} />
           </mesh>
         </group>
 
-        <mesh ref={mark} position={[0, 0, 0.003]} visible={false}>
+        <mesh
+          ref={mark}
+          position={[0, 0, 0.003]}
+          visible={false}
+          raycast={NO_HIT}
+        >
           <planeGeometry args={[1, 1]} />
           <shaderMaterial
             args={[HOVER_SHADER]}
@@ -499,10 +514,28 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
           />
         </mesh>
 
-        {/* Words on the glass, over the middle of the page. */}
-        <mesh ref={tip} position={[0, 0, 0.006]}>
+        {/* Words on the glass, a little above the middle of the
+            page.
+
+            `depthWrite` off and no raycast, both for the same
+            reason: this is a sheet of mostly-nothing and it was
+            behaving like a pane of glass. Writing depth, it punched
+            a rectangle out of the hover highlight passing behind
+            it; taking the raycast, it swallowed the pointer for
+            every card it covered. */}
+        <mesh
+          ref={tip}
+          position={[0, 0.085, 0.006]}
+          raycast={NO_HIT}
+          renderOrder={3}
+        >
           <planeGeometry args={[1.42, 0.402]} />
-          <meshBasicMaterial map={hint} transparent toneMapped={false} />
+          <meshBasicMaterial
+            map={hint}
+            transparent
+            depthWrite={false}
+            toneMapped={false}
+          />
         </mesh>
       </group>
     </group>
