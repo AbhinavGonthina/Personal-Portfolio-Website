@@ -65,7 +65,19 @@ export default function Stop({
         // that height, and the leftover above the heading is added
         // to the gap above it - which is where the extra distance
         // between sections was coming from.
-        className="pointer-events-auto scroll-mt-16 pb-24 pt-4"
+        // The scroll lands in the middle of the gap, not at the end
+        // of it.
+        //
+        // Parking the section so its heading sits the full 112
+        // below the bar means the whole gap is on this side of the
+        // fold, and the line above it - the last thing in the
+        // previous section - is sitting right against the bar. Half
+        // the gap above the fold and half below puts the same air
+        // over the heading as the section has under its last line.
+        //
+        // 104 = the bar's 64, plus half of the 112, less the 16 the
+        // section already carries on top.
+        className="pointer-events-auto scroll-mt-26 pb-24 pt-4"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={n}>{title}</Heading>

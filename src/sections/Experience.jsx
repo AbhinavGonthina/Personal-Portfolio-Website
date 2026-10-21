@@ -267,7 +267,7 @@ export default function Experience({ ref }) {
       <section
         ref={ref}
         id="experience"
-        className="pointer-events-auto scroll-mt-16 pb-24 pt-4"
+        className="pointer-events-auto scroll-mt-26 pb-24 pt-4"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={1}>Experience</Heading>
