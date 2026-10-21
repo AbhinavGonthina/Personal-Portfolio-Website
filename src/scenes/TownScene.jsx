@@ -1895,8 +1895,6 @@ function Town({
   town,
   screen,
   skills,
-  preview,
-  onHover,
   chrome,
   hint,
   onOpen,
@@ -1950,8 +1948,6 @@ function Town({
         visible={inside}
         screen={screen}
         skills={skills}
-        preview={preview}
-        onHover={onHover}
         chrome={chrome}
         hint={hint}
         onOpen={onOpen}
@@ -1975,8 +1971,6 @@ export default function TownScene({
   narrow,
   screen,
   skills,
-  preview,
-  onHover,
   chrome,
   hint,
   onOpen,
@@ -2058,8 +2052,6 @@ export default function TownScene({
         town={town}
         screen={screen}
         skills={skills}
-        preview={preview}
-        onHover={onHover}
         chrome={chrome}
         hint={hint}
         onOpen={onOpen}
