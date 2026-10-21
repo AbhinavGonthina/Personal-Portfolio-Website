@@ -7,6 +7,7 @@ import {
   BOARD_TEXT,
   DESK,
   DESK_PAGE,
+  FLOOR_LAMP,
   DESK_SCREEN,
   HOUSE,
   MAIL_BODY,
@@ -453,13 +454,16 @@ export function Interior({
 
       {/* The three lights in the room. The lamp is what makes the
           desk a place to work; the rim behind the racks lifts the
-          skills board off the wall it is hanging on; and the fill
-          to the right of the desk is there because without it that
-          whole side of the monitor ran into the dark and the thing
-          had no shape to it - you could see the picture but not
-          what the picture was in. Cool and weak, so it reads as
-          spill from somewhere else in the room rather than as a
-          second lamp nobody can see. */}
+          skills board off the wall it is hanging on; and the floor
+          lamp to the right of the desk is there because without it
+          that whole side of the monitor ran into the dark and the
+          thing had no shape to it - you could see the picture but
+          not what the picture was in.
+          
+          Its light hangs off the lamp's own position rather than a
+          point picked to look right, because the first version was
+          a light with nothing making it: a wall lit in a dark room
+          and no lamp anywhere to have lit it. */}
       <pointLight
         position={[DESK.x - 0.24, 1.18, DESK.z - 1.5]}
         color={ACCENT.amber}
@@ -475,10 +479,14 @@ export function Interior({
         decay={2}
       />
       <pointLight
-        position={[DESK.x - 0.85, 1.72, DESK.z + 2.0]}
-        color="#9fb4d8"
-        intensity={visible ? 3.8 : 0}
-        distance={5.4}
+        position={[FLOOR_LAMP.x, FLOOR_LAMP.y, FLOOR_LAMP.z]}
+        // Warm, because the diffuser is. The interior's lit buffer
+        // is one warm material with no per-piece colour on it, so a
+        // cool light here was a warm lamp throwing blue on the wall
+        // behind itself.
+        color="#ffd3a1"
+        intensity={visible ? 4.2 : 0}
+        distance={5.6}
         decay={2}
       />
 
