@@ -88,7 +88,7 @@ export default function App() {
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
       <main
-        className={`pointer-events-none relative z-10 pb-24${switching ? " sw-pane" : ""}`}
+        className={`pointer-events-none relative z-10${switching ? " sw-pane" : ""}`}
       >
         <Hero ref={hero} />
         <About ref={about} />
