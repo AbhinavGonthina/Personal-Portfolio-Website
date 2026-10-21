@@ -858,11 +858,15 @@ export function paintProjectDetail(p, shot) {
   g.stroke();
 
   if (shot) {
-    // Cover, not stretch: these are screenshots of real pages and
-    // squashing one is worse than cropping it. Centred in the frame,
-    // because anchoring to the top left the picture jammed against
-    // the border with all the spare room below it.
-    const s = Math.max(pw / shot.width, ph / shot.height);
+    // Scaled by height, not to cover, and never stretched.
+    //
+    // Covering crops whatever will not fit underneath, which on a
+    // phone screenshot is most of the screenshot - a status bar
+    // and the top of a header. By height the whole screen is in
+    // the frame: a tall one sits as a narrow panel in the middle
+    // of it, a wide one runs off the sides and loses only its
+    // edges.
+    const s = ph / shot.height;
     const sw = shot.width * s;
     const sh = shot.height * s;
     g.save();

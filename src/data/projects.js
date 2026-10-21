@@ -81,7 +81,7 @@ export const projects = [
       "Stripe",
       "Plaid",
     ],
-    image: "/projects/quak-1.webp",
+    image: "/projects/quak-app.webp",
     gallery: [
       "/projects/quak-1.webp",
       "/projects/quak-2.webp",
