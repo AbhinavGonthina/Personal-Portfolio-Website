@@ -173,15 +173,17 @@ export default function Projects({ ref }) {
   }
 
   return (
-    <Stop id="projects" title="Projects" n={3} plain refEl={ref}>
-      <div className="-mt-6 mb-8 flex items-end justify-between gap-6">
-        <p className="max-w-xl text-fg-muted">
-          {projects.length} of them, newest first. Drag the rail, or use the
-          arrows.
-        </p>
-        {/* Arrows as well as the drag: a rail that only answers to a
-            sideways gesture is a rail most people on a mouse never
-            find the end of. */}
+    <Stop
+      id="projects"
+      title="Projects"
+      n={3}
+      plain
+      refEl={ref}
+      // Arrows as well as the drag: a rail that only answers to a
+      // sideways gesture is one most people on a mouse never find
+      // the end of. On the heading's line they cost no height and
+      // sit clear of the cards.
+      aside={
         <div className="flex shrink-0 gap-2">
           <button
             onClick={() => embla?.scrollPrev()}
@@ -198,8 +200,8 @@ export default function Projects({ ref }) {
             <span aria-hidden>&rarr;</span>
           </button>
         </div>
-      </div>
-
+      }
+    >
       <div className="relative">
         <div ref={railRef} className="overflow-hidden">
           <div className="flex gap-5">
