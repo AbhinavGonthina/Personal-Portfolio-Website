@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import githubMark from "bootstrap-icons/icons/github.svg?raw";
 import linkedinMark from "bootstrap-icons/icons/linkedin.svg?raw";
+import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { profile, RESUME_URL, socials } from "../data/profile";
@@ -60,7 +61,11 @@ const EDUCATION = [
 ];
 
 /** Bootstrap's marks, which are already a dependency for the mailboxes. */
-const MARKS = { github: githubMark, linkedin: linkedinMark };
+const MARKS = {
+  github: githubMark,
+  linkedin: linkedinMark,
+  email: envelopeMark,
+};
 
 function Actions() {
   return (
@@ -93,8 +98,12 @@ function Actions() {
           <a
             key={s.name}
             href={s.href}
-            target="_blank"
-            rel="noopener noreferrer"
+            // A mailto has nowhere to open: given a new tab it
+            // leaves a blank one behind after the mail client
+            // takes over.
+            {...(s.icon === "email"
+              ? {}
+              : { target: "_blank", rel: "noopener noreferrer" })}
             aria-label={s.name}
             title={s.name}
             className="inline-flex size-10 items-center justify-center rounded-full border border-transparent text-fg-subtle transition-colors hover:border-ink-600 hover:bg-ink-800 hover:text-fg [&>svg]:size-5"

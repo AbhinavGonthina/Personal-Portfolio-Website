@@ -19,7 +19,10 @@ export const profile = {
   // The ask, and only the ask. It used to lead with the project he
   // happens to be building, which buried the one line on the page
   // that is asking the reader for something.
-  currently: "Looking for full-time software engineering roles.",
+  // No full stop: it is set as a line on its own in both reads, and
+  // a sentence that ends a line does not need one to say so.
+  currently:
+    "I'm looking for full-time software engineer roles or internships after April 2027",
   // The same ask in the fewest words that still carry it, for the
   // hoarding, where there is no room for a sentence.
   seeking: "Post-grad SWE roles",
