@@ -19,19 +19,26 @@ import { cn } from "../lib/cn";
  * mono index, two slashes, the name - so switching between the two
  * does not feel like arriving at a different site.
  */
-export function Heading({ n, children }) {
+export function Heading({ n, aside, children }) {
   return (
     <div className="mb-10">
-      <div className="flex items-baseline gap-3">
-        {n ? (
-          <span className="font-mono text-sm tracking-[0.12em] text-accent/70">
-            {String(n).padStart(2, "0")}
-            <span className="mx-1.5 text-fg-subtle">//</span>
-          </span>
-        ) : null}
-        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          {children}
-        </h2>
+      {/* `aside` rides on the heading's own line. A control that
+          belongs to the section - the gallery's arrows - costs no
+          height there, where a row of its own would push the
+          section past the screen it is meant to fit. */}
+      <div className="flex items-end justify-between gap-6">
+        <div className="flex items-baseline gap-3">
+          {n ? (
+            <span className="font-mono text-sm tracking-[0.12em] text-accent/70">
+              {String(n).padStart(2, "0")}
+              <span className="mx-1.5 text-fg-subtle">//</span>
+            </span>
+          ) : null}
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            {children}
+          </h2>
+        </div>
+        {aside}
       </div>
       {/* Picks up the accent at its left end and gives out, rather than
           stopping dead at a fixed width. */}
@@ -44,6 +51,7 @@ export default function Stop({
   id,
   title,
   n,
+  aside,
   plain,
   children,
   refEl,
@@ -80,7 +88,9 @@ export default function Stop({
         className="pointer-events-auto scroll-mt-26 pb-24 pt-4"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
-          <Heading n={n}>{title}</Heading>
+          <Heading n={n} aside={aside}>
+            {title}
+          </Heading>
           {children}
         </div>
       </section>
