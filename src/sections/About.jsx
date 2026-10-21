@@ -6,22 +6,25 @@ import { education } from "../data/about";
 /**
  * The hoarding at the edge of town. All of this is painted on the
  * board itself in the scene, so what is here is the readable copy.
+ *
+ * In the plain read this section does not appear at all. Everything
+ * it had - the photo, the role line, the tagline, the "currently"
+ * line - was already on the screen one scroll above it, and a page
+ * that introduces somebody twice reads as a page nobody edited. The
+ * one thing it had that the top did not was the education, and that
+ * has moved up into the hero, which also took this section's `about`
+ * id so the navigation still has somewhere to go.
+ *
+ * The component stays, because the 3D read still needs this stop: it
+ * is the camera's anchor for the hoarding and the screen-reader copy
+ * of what is painted on it.
  */
 export default function About({ ref }) {
   const plain = usePlain();
+  if (plain) return null;
 
   return (
-    <Stop id="about" title="Who I am" plain={plain} refEl={ref}>
-      {plain && (
-        <img
-          src={profile.photo}
-          alt={`Portrait of ${profile.name}`}
-          width={896}
-          height={896}
-          className="mb-8 w-full max-w-[280px] rounded-lg border border-ink-700"
-        />
-      )}
-
+    <Stop id="about" title="Who I am" n={1} plain={false} refEl={ref}>
       <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
         {profile.role} &middot; {profile.location}
       </p>
