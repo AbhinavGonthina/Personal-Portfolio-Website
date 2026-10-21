@@ -441,29 +441,42 @@ export function paintBrowserChrome() {
   navArrow(46, -1, "#c9d1d9");
   navArrow(100, 1, "#484f58");
 
-  // Reload: most of a circle with a solid head on the end of it. An
-  // arc with two stray strokes stuck on the side was reading as a
-  // letter rather than as a button.
-  const rx0 = 152;
-  const rr = 11;
-  const END = Math.PI * 1.44;
+  // Reload.
+  //
+  // The head has to be in proportion to the ring and sat on the end
+  // of it. Oversized, it stops reading as the point of an arrow and
+  // starts reading as a separate blob stuck to a circle - which is
+  // what the last two versions of this did. A head about two stroke
+  // widths long, its base square across the end of the arc, and a
+  // gap just wide enough to have obviously been left.
+  const rx0 = 154;
+  const rr = 10;
+  // The head finishes at twelve o'clock, where the tangent is dead
+  // horizontal, so it points cleanly along the way the ring turns.
+  // Ending at ten o'clock put the arrow out on the shoulder of the
+  // circle, aiming off into nothing.
+  const END = Math.PI * 1.5;
+  g.lineWidth = 2.6;
   g.strokeStyle = "#c9d1d9";
   g.beginPath();
-  g.arc(rx0, my, rr, -Math.PI * 0.44, END);
+  g.arc(rx0, my, rr, -Math.PI * 0.3, END);
   g.stroke();
+
   const ex = rx0 + Math.cos(END) * rr;
   const ey = my + Math.sin(END) * rr;
-  // The direction the arc is travelling at its end, and the normal
-  // out from the centre, which together place the head.
+  // Travelling direction at the end of the arc, and the radius out
+  // through that point: the head is one along and two across.
   const tx = -Math.sin(END);
   const ty = Math.cos(END);
   const nx2 = Math.cos(END);
   const ny2 = Math.sin(END);
+  const LEN = 6.5;
+  const HALF = 4.1;
   g.fillStyle = "#c9d1d9";
   g.beginPath();
-  g.moveTo(ex + tx * 8, ey + ty * 8);
-  g.lineTo(ex - nx2 * 6.5 - tx * 2, ey - ny2 * 6.5 - ty * 2);
-  g.lineTo(ex + nx2 * 6.5 - tx * 2, ey + ny2 * 6.5 - ty * 2);
+  g.moveTo(ex + tx * LEN, ey + ty * LEN);
+  g.lineTo(ex - nx2 * HALF, ey - ny2 * HALF);
+  g.lineTo(ex + nx2 * HALF, ey + ny2 * HALF);
   g.closePath();
   g.fill();
 
@@ -507,16 +520,21 @@ export function paintBrowserChrome() {
  * white text over a list of white text is unreadable without one.
  */
 export function paintDragHint() {
-  const W = 1100;
-  const H = 300;
+  const W = 1200;
+  const H = 340;
   const [c, g] = canvas(W, H);
   g.textBaseline = "middle";
   g.textAlign = "center";
 
   const mx = W / 2;
+  // Laid out so the middle of the block sits on the middle of the
+  // canvas, not so the words happen to land near it. The plane this
+  // goes on is centred on the page, so anything off-centre in here
+  // is off-centre on the screen.
+  const ARROW = 104;
+  const TITLE = 206;
+  const UNDER = 272;
 
-  // The up-and-down arrow, over the words rather than beside them,
-  // so the whole thing is one centred column.
   g.save();
   g.shadowColor = "rgba(0,0,0,0.95)";
   g.shadowBlur = 26;
@@ -524,56 +542,45 @@ export function paintDragHint() {
   g.lineWidth = 7;
   g.lineCap = "round";
   g.lineJoin = "round";
-  const ay = 92;
   g.beginPath();
-  g.moveTo(mx, ay - 42);
-  g.lineTo(mx, ay + 42);
-  g.moveTo(mx - 18, ay - 24);
-  g.lineTo(mx, ay - 44);
-  g.lineTo(mx + 18, ay - 24);
-  g.moveTo(mx - 18, ay + 24);
-  g.lineTo(mx, ay + 44);
-  g.lineTo(mx + 18, ay + 24);
+  g.moveTo(mx, ARROW - 42);
+  g.lineTo(mx, ARROW + 42);
+  g.moveTo(mx - 18, ARROW - 24);
+  g.lineTo(mx, ARROW - 44);
+  g.lineTo(mx + 18, ARROW - 24);
+  g.moveTo(mx - 18, ARROW + 24);
+  g.lineTo(mx, ARROW + 44);
+  g.lineTo(mx + 18, ARROW + 24);
   g.stroke();
   g.restore();
 
+  // Mono, upper case, widely tracked - the voice the rest of the
+  // site tells you things in. It was set in the body sans, which
+  // made it read as part of the page behind it rather than as the
+  // screen talking over the top.
   g.save();
   g.shadowColor = "rgba(0,0,0,0.95)";
   g.shadowBlur = 30;
   g.fillStyle = "#ffffff";
-  g.font = `700 76px ${SANS}`;
-  if ("letterSpacing" in g) g.letterSpacing = "-1px";
-  g.fillText("Drag to scroll", mx, 196);
+  g.font = `600 62px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = "10px";
+  g.fillText("DRAG TO SCROLL", mx, TITLE);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
   g.restore();
 
   g.save();
   g.shadowColor = "rgba(0,0,0,0.9)";
   g.shadowBlur = 20;
-  g.fillStyle = "#8b949e";
-  g.font = `400 30px ${MONO}`;
-  g.fillText("click a repository to open it", mx, 254);
+  g.fillStyle = "#9aa4b2";
+  g.font = `400 25px ${MONO}`;
+  if ("letterSpacing" in g) g.letterSpacing = "6px";
+  g.fillText("CLICK A REPOSITORY TO OPEN IT", mx, UNDER);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
   g.restore();
 
   return finish(c);
 }
 
-/**
- * One repository, opened - and dressed as the page it is pretending
- * to be rather than as a slide about it.
- *
- * GitHub's repository page is recognisable from across a room: the
- * owner/name breadcrumb, the Watch/Fork/Star row, and the tab strip
- * with an orange rule under the active one. Those three things are
- * most of what makes this read as a browser rather than as a panel,
- * so they are drawn even though none of them does anything.
- *
- * Exactly the height of the screen, unlike the grid: there is no
- * scrolling in here, so everything has to fit, and the description
- * is clamped rather than allowed to push the links off the bottom.
- *
- * `shot` is an already-decoded image or null.
- */
 export function paintProjectDetail(p, shot) {
   const W = SCREEN_VIEW.w;
   const H = SCREEN_VIEW.h;
@@ -588,34 +595,50 @@ export function paintProjectDetail(p, shot) {
 
   // Back bar.
   g.fillStyle = "#161b22";
-  g.fillRect(0, 0, W, 52);
+  g.fillRect(0, 0, W, 64);
   g.strokeStyle = "#30363d";
   g.lineWidth = 2;
   g.beginPath();
-  g.moveTo(0, 52);
-  g.lineTo(W, 52);
+  g.moveTo(0, 64);
+  g.lineTo(W, 64);
   g.stroke();
-  g.fillStyle = "#4493f8";
-  g.font = `600 22px ${SANS}`;
-  g.fillText("←  Back to pinned", PAD, 32);
-  hits.push({ id: "__back", x0: 0, y0: 0, x1: 360, y1: 52 });
+  // A button, not a line of blue text. It is the only way out of
+  // this view and it was a word in a bar that reads as a title.
+  g.font = `600 21px ${SANS}`;
+  const backLabel = "←  Back to pinned";
+  const backW = g.measureText(backLabel).width + 48;
+  g.fillStyle = "#21262d";
+  g.strokeStyle = "#4493f8";
+  g.lineWidth = 2;
+  roundRect(g, PAD, 11, backW, 42, 21);
+  g.fill();
+  g.stroke();
+  g.fillStyle = "#79c0ff";
+  g.fillText(backLabel, PAD + 24, 38);
+  hits.push({
+    id: "__back",
+    x0: PAD - 10,
+    y0: 4,
+    x1: PAD + backW + 10,
+    y1: 60,
+  });
 
   // The breadcrumb: owner in regular, repository in bold, the way
   // GitHub weights the half of the path that matters.
-  repoGlyph(g, PAD, 66, 26, "#8b949e");
+  repoGlyph(g, PAD, 78, 26, "#8b949e");
   g.fillStyle = "#4493f8";
   g.font = `400 27px ${SANS}`;
   const owner = "abhinavgonthina / ";
-  g.fillText(owner, PAD + 40, 90);
+  g.fillText(owner, PAD + 40, 102);
   const ownerW = g.measureText(owner).width;
   g.font = `700 27px ${SANS}`;
   const name = p.title.replace(/\s+/g, "-");
-  g.fillText(name, PAD + 40 + ownerW, 90);
+  g.fillText(name, PAD + 40 + ownerW, 102);
   const nameW = g.measureText(name).width;
   pill(
     g,
     PAD + 54 + ownerW + nameW,
-    69,
+    81,
     "Public",
     `400 15px ${SANS}`,
     "#8b949e",
@@ -633,11 +656,11 @@ export function paintProjectDetail(p, shot) {
     g.fillStyle = "#21262d";
     g.strokeStyle = "#30363d";
     g.lineWidth = 1.5;
-    roundRect(g, rx, 68, w, 30, 6);
+    roundRect(g, rx, 80, w, 30, 6);
     g.fill();
     g.stroke();
     g.fillStyle = "#c9d1d9";
-    g.fillText(label, rx + 16, 88);
+    g.fillText(label, rx + 16, 100);
     rx -= 10;
   }
 
@@ -652,7 +675,7 @@ export function paintProjectDetail(p, shot) {
     "Insights",
   ];
   let tx = PAD;
-  const tabY = 142;
+  const tabY = 152;
   TABS.forEach((t, i) => {
     g.font = `${i === 0 ? 600 : 400} 17px ${SANS}`;
     const w = g.measureText(t).width;
@@ -747,19 +770,19 @@ export function paintProjectDetail(p, shot) {
   // Centred under the column rather than hard against its left
   // edge. Two buttons of different widths lined up on the left read
   // as the start of a row that never arrived.
-  const LIVE_W = 224;
-  const REPO_W = 238;
-  const GAP = 18;
-  const span =
-    (p.live ? LIVE_W : 0) +
-    (p.github ? REPO_W : 0) +
-    (p.live && p.github ? GAP : 0);
-  let bx = PAD + (LW - span) / 2;
+  // Sized off the column rather than off two numbers that happened
+  // to look right: two links split it, one takes the middle half.
+  // Fixed widths left a short label swimming in its own button and
+  // a gap down the side of the column that belonged to nothing.
+  const GAP = 20;
+  const both = Boolean(p.live && p.github);
+  const wide = both ? (LW - GAP) / 2 : LW * 0.52;
+  let bx = both ? PAD : PAD + (LW - wide) / 2;
   if (p.live) {
-    button("Live site", bx, LIVE_W, true, "__live", p.live);
-    bx += LIVE_W + GAP;
+    button("Live site", bx, wide, true, "__live", p.live);
+    bx += wide + GAP;
   }
-  if (p.github) button("GitHub repo", bx, REPO_W, false, "__github", p.github);
+  if (p.github) button("GitHub repo", bx, wide, false, "__github", p.github);
 
   // The preview, down the right and nearly the full height of what
   // is left under the tabs.

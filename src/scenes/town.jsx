@@ -398,7 +398,7 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
 
         {/* Words on the glass, over the middle of the page. */}
         <mesh ref={tip} position={[0, 0, 0.006]}>
-          <planeGeometry args={[1.18, 0.322]} />
+          <planeGeometry args={[1.42, 0.402]} />
           <meshBasicMaterial map={hint} transparent toneMapped={false} />
         </mesh>
       </group>
