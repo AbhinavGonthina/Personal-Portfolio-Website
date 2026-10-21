@@ -267,7 +267,7 @@ export default function Experience({ ref }) {
       <section
         ref={ref}
         id="experience"
-        className="pointer-events-auto flex min-h-[100svh] scroll-mt-16 flex-col justify-center py-20"
+        className="pointer-events-auto scroll-mt-16 py-48"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={1}>Experience</Heading>
