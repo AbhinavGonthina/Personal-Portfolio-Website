@@ -55,7 +55,11 @@ export default function Stop({
       <section
         ref={refEl}
         id={id}
-        className="pointer-events-auto scroll-mt-20 py-20 sm:py-24"
+        // A screen each, with the content standing in the middle of
+        // it. The page was a long scroll of blocks separated by a
+        // lot of nothing; this gives every section the same frame
+        // and takes the gaps out from between them.
+        className="pointer-events-auto flex min-h-[100svh] scroll-mt-16 flex-col justify-center py-20"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={n}>{title}</Heading>

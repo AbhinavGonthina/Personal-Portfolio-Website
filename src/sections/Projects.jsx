@@ -2,6 +2,18 @@ import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { projects } from "../data/projects";
 
+/** GitHub's dot colour per language, the same key the monitor uses. */
+const LANG_DOT = {
+  "Next.js": "#3178c6",
+  React: "#61dafb",
+  "React Native": "#61dafb",
+  TypeScript: "#3178c6",
+  JavaScript: "#f1e05a",
+  Java: "#b07219",
+  Python: "#3572a5",
+  Racket: "#3c5caa",
+};
+
 /**
  * The monitor on the desk. The list is scrolled on the monitor itself
  * rather than by the page, so this is one ordinary section - it used
@@ -166,12 +178,79 @@ export default function Projects({ ref }) {
     );
   }
 
+  const [lead, ...rest] = projects;
+
   return (
     <Stop id="projects" title="Projects" n={3} plain refEl={ref}>
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        {projects.map((p, i) => (
-          <Card key={p.id} p={p} lead={i === 0} />
-        ))}
+      {/* One is the headline and ten are a list.
+          Eleven cards with a screenshot each ran to four screens,
+          and a reader who has to scroll that far to find out how
+          many there are has stopped counting by the third. The one
+          worth stopping on keeps its picture; the rest become rows
+          you can take in at a glance and open if you want. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
+        <article className="shimmer group relative flex flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-900/50 p-5">
+          <Shot p={lead} tall />
+          <div className="mt-5 flex flex-1 flex-col">
+            <div className="flex items-baseline justify-between gap-4">
+              <h3 className="text-2xl font-semibold tracking-tight">
+                {lead.title}
+              </h3>
+              <span className="shrink-0 font-mono text-[11px] text-accent/80">
+                Featured
+              </span>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-fg-muted">
+              {lead.blurb}
+            </p>
+            <Tech items={lead.tech} />
+            <Links p={lead} />
+          </div>
+        </article>
+
+        <ul className="divide-y divide-ink-800 border-y border-ink-800">
+          {rest.map((p) => {
+            const href = p.live ?? p.github;
+            const Row = href ? "a" : "div";
+            return (
+              <li key={p.id}>
+                <Row
+                  {...(href
+                    ? { href, target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                  className="group flex items-baseline gap-4 py-3 transition-colors hover:bg-ink-900/40"
+                >
+                  <span
+                    aria-hidden
+                    className="mt-1.5 size-2 shrink-0 rounded-full"
+                    style={{ background: LANG_DOT[p.tech?.[0]] ?? "#6e7681" }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline gap-3">
+                      <span className="font-medium tracking-tight transition-colors group-hover:text-accent">
+                        {p.title}
+                      </span>
+                      <span className="ml-auto shrink-0 font-mono text-[10px] text-fg-subtle">
+                        {p.tech?.[0]}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-fg-muted">
+                      {p.blurb}
+                    </span>
+                  </span>
+                  {href && (
+                    <span
+                      aria-hidden
+                      className="shrink-0 text-fg-subtle transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
+                    >
+                      &rarr;
+                    </span>
+                  )}
+                </Row>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </Stop>
   );

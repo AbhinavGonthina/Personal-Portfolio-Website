@@ -40,12 +40,19 @@ export default function Connect({ ref }) {
 
   return (
     <Stop id="connect" title="Contact" n={4} plain refEl={ref}>
-      <p className="-mt-4 mb-10 max-w-2xl text-lg leading-relaxed text-fg-muted">
-        {profile.currently} The fastest way to reach me is email; everything
-        else is below.
+      <p className="-mt-6 max-w-2xl text-2xl leading-snug tracking-tight sm:text-3xl">
+        {profile.currently}
+        <span className="block text-fg-muted">
+          Email is the fastest way to reach me.
+        </span>
       </p>
 
-      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Rows, not four big boxes. As cards they were the largest
+          objects on the page and said the least - a label, a
+          handle, and a lot of air. A row gives the handle the size
+          it deserves and still fits four of them without the
+          section needing a screen of its own to hold them. */}
+      <ul className="mt-12 divide-y divide-ink-800 border-y border-ink-800">
         {socials.map((s) => (
           <li key={s.name}>
             <a
@@ -53,19 +60,19 @@ export default function Connect({ ref }) {
               {...(s.icon === "email"
                 ? {}
                 : { target: "_blank", rel: "noopener noreferrer" })}
-              className="group flex h-full flex-col justify-between rounded-xl border border-ink-700 bg-ink-900/40 p-5 transition-colors hover:border-accent/40 hover:bg-ink-900"
+              className="group flex items-center gap-6 py-5 transition-colors hover:bg-ink-900/40"
             >
-              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-fg-subtle">
+              <span className="w-24 shrink-0 font-mono text-[10px] uppercase tracking-[0.22em] text-fg-subtle">
                 {s.name}
               </span>
-              <span className="mt-4 flex items-baseline justify-between gap-3">
-                <span className="break-all text-base text-fg">{s.value}</span>
-                <span
-                  aria-hidden
-                  className="shrink-0 text-fg-subtle transition-transform duration-200 group-hover:translate-x-1 group-hover:text-accent"
-                >
-                  &rarr;
-                </span>
+              <span className="min-w-0 flex-1 truncate text-lg tracking-tight transition-colors group-hover:text-accent sm:text-xl">
+                {s.value}
+              </span>
+              <span
+                aria-hidden
+                className="shrink-0 text-fg-subtle transition-transform duration-200 group-hover:translate-x-1 group-hover:text-accent"
+              >
+                &rarr;
               </span>
             </a>
           </li>

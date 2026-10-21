@@ -179,3 +179,47 @@ header.sw-pane,
 .sw-chrome {
   opacity: var(--sw-chrome, 1);
 }
+
+/**
+ * A light that travels once around the edge of the featured card.
+ *
+ * One element, one animated custom property, and the paint is a
+ * conic gradient on a border - no box-shadow spread and no second
+ * stacking layer, which is what makes the fashionable version of
+ * this expensive. `@property` is what lets an angle be animated at
+ * all; without it the browser cannot interpolate one and the
+ * gradient jumps.
+ */
+@property --sheen {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.shimmer {
+  border-color: transparent;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-image:
+    linear-gradient(var(--color-ink-950), var(--color-ink-950)),
+    conic-gradient(
+      from var(--sheen),
+      transparent 0deg,
+      rgba(111, 227, 245, 0.55) 40deg,
+      transparent 120deg,
+      transparent 360deg
+    );
+  animation: sheen 6s linear infinite;
+}
+
+@keyframes sheen {
+  to {
+    --sheen: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+  }
+}
