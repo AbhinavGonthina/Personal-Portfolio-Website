@@ -118,6 +118,14 @@ export const STOPS = [
     // visible reason.
     id: "projects",
     title: "Projects",
+    // Still, for the same reason the skills board is still: this is
+    // a surface you point at. Every card is a click target and the
+    // list is dragged by hand, and the look-around swings the whole
+    // panel by a fifth of a radian as the cursor crosses it - so
+    // what you aimed at has moved by the time you get there, and a
+    // drag fights the camera the entire way.
+    sway: 0,
+    rise: 0,
     frame: {
       // Aimed a hand above the middle of the monitor, which is what
       // puts the monitor itself low enough in the shot to clear the
