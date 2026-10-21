@@ -14,46 +14,25 @@ import { useEffect } from "react";
  * is there to stop you overshooting a section you have only just
  * arrived at, not to trap you in it.
  *
- * The pause outlasts its own clock on purpose. A hard flick on a
- * trackpad keeps delivering wheel events for a second or more after
- * the fingers have left it, so a pause that ends on a timer ends
- * into the middle of that tail: the page sits still for its second
- * and then slides on by itself, carried by a gesture the reader
- * made before they knew there was anything here to stop for. So the
- * hold stays up until the input it was holding back has actually
- * died away, and going on takes a new scroll rather than the
- * remains of the old one.
+ * It is a second and not a moment longer. An earlier version kept
+ * the hold up until forward input had stopped arriving, to swallow
+ * the tail of a trackpad flick - and it worked, but it also meant
+ * that anyone who simply kept scrolling kept being refused, which
+ * is a far worse thing to do to a reader than let them travel a
+ * little further than they meant to. What happens during the second
+ * is thrown away rather than queued; what happens after it is
+ * theirs.
  */
 
 const FORWARD_KEYS = new Set(["ArrowDown", "PageDown", "End", " ", "Spacebar"]);
 const BACK_KEYS = new Set(["ArrowUp", "PageUp", "Home"]);
 
-/**
- * How long forward input has to stop for before the gesture counts
- * as over. Momentum ticks arrive about a frame apart, so anything
- * past a few frames of quiet is a hand that has stopped asking.
- */
-const GESTURE_GAP = 170;
-
-/**
- * The longest the hold will outstay its clock waiting for quiet.
- * Someone scrolling steadily and deliberately never stops for
- * GESTURE_GAP at all, and they are not to be trapped.
- */
-const MAX_WAIT = 2000;
-
 let holdUntil = 0;
 let holding = false;
 let touchFrom = 0;
-let lastPush = 0;
 
-/** Whether the pause is still standing, clock and tail together. */
-const stillHeld = () => {
-  const now = performance.now();
-  if (now <= holdUntil) return true;
-  if (now > holdUntil + MAX_WAIT) return false;
-  return now - lastPush < GESTURE_GAP;
-};
+/** Whether the pause is still standing. */
+const stillHeld = () => performance.now() <= holdUntil;
 
 /** Whether forward scroll input is being swallowed right now. */
 export const scrollHeld = () => holding && stillHeld();
@@ -72,15 +51,11 @@ const swallow = (e) => {
     // A finger moving up the screen scrolls the page down.
     forward = touchFrom - (e.touches[0]?.clientY ?? 0) > 0;
   }
-  // Only forward input keeps the gesture alive. Scrolling back up is
-  // never held, and must not be what stops the hold from lifting.
+  // Backward is never held: the pause is there to stop you
+  // overshooting what you have just arrived at, not to trap you in
+  // it.
   if (!forward) return;
-
-  // Read before writing: once `lastPush` is now, the gap is zero and
-  // every tail event looks like the start of something new.
-  const held = stillHeld();
-  lastPush = performance.now();
-  if (held) e.preventDefault();
+  if (stillHeld()) e.preventDefault();
 };
 
 const EVENTS = ["wheel", "touchstart", "touchmove", "keydown"];

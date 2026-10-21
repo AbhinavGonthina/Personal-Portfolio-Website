@@ -335,6 +335,9 @@ export const DESK_SCREEN = { w: 2.52, h: 1.35 };
  * the glass.
  */
 export const DESK_PAGE = { w: 2.52, h: 1.09 };
+
+/** Where the floor lamp stands, and so where its light comes from. */
+export const FLOOR_LAMP = { x: R.w / 2 - 0.18, y: 1.64, z: 1.72 };
 /**
  * The skills board hangs on the back wall rather than over the racks.
  * Above them it had to be small enough to clear the rack tops, which
@@ -466,6 +469,37 @@ export function interior() {
   base.push(box(0.44, 0.5, 0.4, [0.52, 0.35, -hd + 0.42]));
   base.push(cyl(0.075, 0.095, 0.2, 10, [0.52, 0.7, -hd + 0.42]));
   lit.push(cyl(0.1, 0.075, 0.15, 10, [0.52, 0.86, -hd + 0.42]));
+
+  /**
+   * The floor lamp to the right of the desk.
+   *
+   * There was light coming from over here before there was anything
+   * making it, which the eye catches immediately: a wall is lit, the
+   * room is otherwise night, and you look for the lamp and there is
+   * no lamp.
+   *
+   * A glowing column rather than a shade with a bulb under it. An
+   * uplighter was the first try and it read as switched off from
+   * this camera - the only lit part of it is the mouth, the mouth
+   * points at the ceiling, and the camera is below it, so all you
+   * see is a black cone in front of a lit wall. A diffuser is lit
+   * on every side there is to look at.
+   *
+   * Four cylinders, all merged into buffers the room already draws,
+   * so the whole lamp costs no draw call of its own.
+   */
+  base.push(cyl(0.17, 0.2, 0.035, 10, [FLOOR_LAMP.x, 0.018, FLOOR_LAMP.z]));
+  base.push(cyl(0.028, 0.028, 1.42, 8, [FLOOR_LAMP.x, 0.73, FLOOR_LAMP.z]));
+  lit.push(
+    cyl(0.105, 0.105, 0.46, 12, [FLOOR_LAMP.x, FLOOR_LAMP.y, FLOOR_LAMP.z]),
+  );
+  base.push(
+    cyl(0.112, 0.112, 0.03, 12, [
+      FLOOR_LAMP.x,
+      FLOOR_LAMP.y + 0.245,
+      FLOOR_LAMP.z,
+    ]),
+  );
 
   base.push(cyl(0.15, 0.19, 0.28, 10, [hw - 0.5, 0.25, hd - 0.6]));
   for (let i = 0; i < 6; i++) {
