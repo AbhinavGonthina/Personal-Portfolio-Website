@@ -22,6 +22,7 @@
     "bootstrap-icons": "^1.13.2",
     "clsx": "^2.1.1",
     "devicon": "^2.17.0",
+    "embla-carousel-react": "^8.6.0",
     "motion": "^12.23.22",
     "postprocessing": "^6.39.5",
     "react": "^19.1.1",
