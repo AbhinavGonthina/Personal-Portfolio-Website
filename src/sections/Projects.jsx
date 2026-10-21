@@ -36,13 +36,25 @@ function Shot({ p }) {
   // frame instead, with room around it.
   const logo = src.includes("/logos/");
   return (
-    <div className="relative aspect-[16/10] shrink-0 overflow-hidden border-b border-ink-800 bg-ink-900">
+    <div className="relative flex aspect-[16/10] shrink-0 items-center justify-center overflow-hidden border-b border-ink-800 bg-ink-900">
+      {/* Scaled by height, not width.
+          Filling the width crops whatever does not fit underneath,
+          which on a phone screenshot is most of the screenshot -
+          you got the status bar and the top of a header. By height
+          the whole screen is there; a tall one sits as a narrow
+          panel, a wide one runs off the sides, and both show the
+          part worth seeing. */}
       <img
         src={src}
         alt=""
         loading="lazy"
-        className={`size-full transition-transform duration-500 group-hover:scale-[1.04] ${
-          logo ? "object-contain p-8" : "object-cover object-top"
+        className={`transition-transform duration-500 group-hover:scale-[1.04] ${
+          // A wordmark is fitted whole inside the frame. Scaled by
+          // height like a screenshot it overflows the sides and
+          // loses the end of its own name.
+          logo
+            ? "size-full object-contain p-8"
+            : "h-full w-auto max-w-none object-cover"
         }`}
       />
       {!logo && (
