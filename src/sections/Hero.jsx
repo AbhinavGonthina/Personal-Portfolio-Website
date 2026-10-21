@@ -142,7 +142,7 @@ export default function Hero({ ref }) {
         {/* The same gap above the content as below it. It was 112
             over and 80 under, which is close enough to look like a
             mistake rather than a choice. */}
-        <div className="relative mx-auto w-full max-w-6xl px-6 py-28">
+        <div className="relative mx-auto w-full max-w-6xl px-6 pb-24 pt-28">
           <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-[1fr_340px] md:gap-16">
             <div>
               <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-accent/80">

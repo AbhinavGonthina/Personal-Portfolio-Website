@@ -55,11 +55,17 @@ export default function Stop({
       <section
         ref={refEl}
         id={id}
-        // A screen each, with the content standing in the middle of
-        // it. The page was a long scroll of blocks separated by a
-        // lot of nothing; this gives every section the same frame
-        // and takes the gaps out from between them.
-        className="pointer-events-auto flex min-h-[100svh] scroll-mt-16 flex-col justify-center py-20"
+        // The gap you see between two sections is this section's
+        // bottom plus the next one's top, so almost all of it lives
+        // at the bottom and the top keeps only enough to stop the
+        // heading touching the bar when a nav link lands on it.
+        //
+        // Nothing reserves a screen. A section held to a viewport
+        // whether or not it needs one centres its content in all
+        // that height, and the leftover above the heading is added
+        // to the gap above it - which is where the extra distance
+        // between sections was coming from.
+        className="pointer-events-auto scroll-mt-16 pb-24 pt-4"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={n}>{title}</Heading>
