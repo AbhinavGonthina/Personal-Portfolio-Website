@@ -544,6 +544,30 @@ export function paintDragHint() {
   const TITLE = 194;
   const UNDER = 258;
 
+  // A soft darkening under the words, gone before the edges of the
+  // canvas.
+  //
+  // Not a plate: a plate over the middle of a web page reads as
+  // part of the page. But the small line is grey mono at the size
+  // and weight of the card text beneath it, so without something
+  // the two interleave into a thing neither of them can be read
+  // through. A drop shadow is enough to hold a heavy white line
+  // over anything; it is not enough for a light grey one. This has
+  // no edge to see, so it still reads as the screen dimming rather
+  // than as a box on the list.
+  const haze = g.createRadialGradient(mx, 176, 0, mx, 176, 170);
+  haze.addColorStop(0, "rgba(1,3,8,0.97)");
+  haze.addColorStop(0.45, "rgba(1,3,8,0.9)");
+  haze.addColorStop(0.75, "rgba(1,3,8,0.55)");
+  haze.addColorStop(1, "rgba(1,3,8,0)");
+  g.save();
+  g.translate(mx, 176);
+  g.scale(2.9, 1);
+  g.translate(-mx, -176);
+  g.fillStyle = haze;
+  g.fillRect(-W, 0, W * 3, H);
+  g.restore();
+
   g.save();
   g.shadowColor = "rgba(0,0,0,0.95)";
   g.shadowBlur = 26;
@@ -580,7 +604,7 @@ export function paintDragHint() {
   g.save();
   g.shadowColor = "rgba(0,0,0,0.9)";
   g.shadowBlur = 20;
-  g.fillStyle = "#9aa4b2";
+  g.fillStyle = "#b9c3d2";
   g.font = `400 25px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = "6px";
   g.fillText("CLICK A REPOSITORY TO OPEN IT", mx, UNDER);
