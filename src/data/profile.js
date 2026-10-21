@@ -4,16 +4,22 @@ export const profile = {
   name: "Abhinav Gonthina",
   role: "Software Engineer",
   location: "Boston, MA",
+  // Two sentences doing two jobs: the first says what he is, the
+  // second says where he has most recently been. They are set as
+  // separate sentences rather than one because a reader skimming
+  // takes the second one on its own.
   tagline:
-    "CS student at Northeastern building backend systems and the interfaces on top of them. Most recently at athenahealth, where I worked on AWS infrastructure, data pipelines, and observability.",
+    "CS student at Northeastern with experience across the full stack. My most recent experience was interning at athenahealth, where I worked on AWS infrastructure, data pipelines, and observability.",
   // One line on the landing page saying what is happening right now.
   // Short enough to read at a glance; update it when it stops being true.
   //
   // This used to say "Summer 2027 internships", which cannot be true
   // alongside a graduation date of April 2027 - the summer after it is
   // the first summer there is no degree left to go back to.
-  currently:
-    "Building OnTrack, and looking for full-time software engineering roles.",
+  // The ask, and only the ask. It used to lead with the project he
+  // happens to be building, which buried the one line on the page
+  // that is asking the reader for something.
+  currently: "Looking for full-time software engineering roles.",
   // The same ask in the fewest words that still carry it, for the
   // hoarding, where there is no room for a sentence.
   seeking: "Post-grad SWE roles",
