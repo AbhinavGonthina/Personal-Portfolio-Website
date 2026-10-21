@@ -50,16 +50,22 @@ export default function Timeline({ data }) {
         {data.map((item, index) => (
           <div
             key={index}
-            className="flex justify-start pt-10 md:gap-10 md:pt-16"
+            // The first entry needs no lead-in: whatever introduced
+            // the rail is already directly above it, and upstream's
+            // top padding put a hand's width of nothing between the
+            // two.
+            className={`flex justify-start md:gap-10 ${
+              index === 0 ? "pt-0" : "pt-10 md:pt-14"
+            }`}
           >
             {/* The date rides down the screen with you until the next
                 one pushes it off, which is what ties a long entry to
                 the year it belongs to. */}
-            <div className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start md:w-full md:max-w-[220px] md:flex-row md:items-center">
+            <div className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start md:w-full md:max-w-[260px] md:flex-row md:items-center">
               <div className="absolute left-0 flex size-10 items-center justify-center rounded-full bg-ink-950 md:left-0">
                 <div className="size-3 rounded-full border border-ink-600 bg-ink-800" />
               </div>
-              <h3 className="hidden font-mono text-sm uppercase tracking-[0.18em] text-fg-subtle md:block md:pl-16">
+              <h3 className="hidden whitespace-nowrap font-mono text-xs uppercase tracking-[0.16em] text-fg-subtle md:block md:pl-16">
                 {item.title}
               </h3>
             </div>
