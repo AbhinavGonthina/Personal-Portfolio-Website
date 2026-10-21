@@ -55,13 +55,11 @@ export default function Stop({
       <section
         ref={refEl}
         id={id}
-        // Twelve rem top and bottom, the same figure the landing
-        // ends up with when it centres itself in the screen the
-        // sticky bar leaves. Two sections running together put two
-        // of those between their content, so the whole page is
-        // spaced by one measured number instead of several guessed
-        // ones.
-        className="pointer-events-auto scroll-mt-16 py-48"
+        // A screen each, with the content standing in the middle of
+        // it. The page was a long scroll of blocks separated by a
+        // lot of nothing; this gives every section the same frame
+        // and takes the gaps out from between them.
+        className="pointer-events-auto flex min-h-[100svh] scroll-mt-16 flex-col justify-center py-20"
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={n}>{title}</Heading>
