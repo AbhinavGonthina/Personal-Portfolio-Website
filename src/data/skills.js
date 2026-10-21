@@ -68,128 +68,195 @@ export const totalSkills = skillGroups.reduce((n, g) => n + g.items.length, 0);
  * JMeter is the only one Devicon lacks, and it keeps a Simple Icons
  * path - see `JMETER` in paint.js.
  *
- * `proof` is only written where there is something real to point
- * at. A tool that is genuinely on the list but has no story behind
- * it gets none, and the screen says what group it belongs to
- * instead of inventing a project. Everything here traces to the
- * resume or to `experience.js`.
+ * `proof` says how the thing was used, not only where - "the
+ * auto-scaling that took EC2 from 10 instances to about 4" rather
+ * than "athenahealth". Where that cannot be said briefly it names
+ * the place and stops, which is more use than a sentence padded out
+ * to look like one.
+ *
+ * A string where there is one place to point at, an array where
+ * there are several: the screen sets one as a sentence under the
+ * name and several as a bulleted list, because a list set centred
+ * is a list nobody can scan.
  */
 export const skillDetail = {
+  JavaScript: {
+    icon: "javascript",
+    proof: [
+      "CoDesign: posts, profiles, messaging and the matchmaking UI.",
+      "RoadQuest: the whole frontend.",
+    ],
+  },
+  TypeScript: {
+    icon: "typescript",
+    proof: [
+      "Philips: the SDC Simulator and Event Notification frontends.",
+      "Quak: the booking and payment APIs.",
+      "FinishLine, NUHire and OnTrack: the React frontends.",
+    ],
+  },
   Python: {
     icon: "python",
-    proof:
-      "athenahealth: the data-generation pipeline that built and inserted ~722M rows of test data.",
+    proof: [
+      "athenahealth: the pipeline that generated and inserted ~722M rows into Oracle.",
+      "Coursework: data science and machine learning.",
+    ],
   },
   Java: {
     icon: "java",
-    proof:
-      "athenahealth: the Spring Boot services the observability metrics came out of.",
-  },
-  JavaScript: { icon: "javascript", proof: null },
-  TypeScript: {
-    icon: "typescript",
-    proof:
-      "Quak, Rainfall and Pawtograder: the language most of that work is written in.",
-  },
-  C: { icon: "c", proof: null },
-  "C++": { icon: "cplusplus", proof: null },
-  "C#": {
-    icon: "csharp",
-    proof: "Philips: the .NET side of the bedside monitor simulator.",
+    proof: [
+      "athenahealth: Spring Boot microservices, and rebalancing a Zeebe cluster.",
+      "OnTrack: the API.",
+      "Coursework: Object-Oriented Design.",
+    ],
   },
   SQL: {
     icon: "azuresqldatabase",
+    proof: [
+      "athenahealth: Oracle test-data loads across 30 contexts.",
+      "OnTrack: Postgres on Neon.",
+      "Coursework: Intro to Databases.",
+    ],
+  },
+  "C#": {
+    icon: "csharp",
     proof:
-      "OnTrack: a LAG() window function deriving stage-to-stage conversion from status events.",
+      "Philips: the .NET backends behind the SDC Simulator and the Event Notification config API.",
+  },
+  C: {
+    icon: "c",
+    proof:
+      "Computer Systems: a Unix shell, memory allocators, concurrent sorting and work inside the xv6 kernel.",
+  },
+  "C++": {
+    icon: "cplusplus",
+    proof:
+      "Coursework: classes, inheritance and polymorphism, in Intro to C++.",
   },
 
   "AWS (ECS, EKS, S3, EC2)": {
     icon: "amazonwebservices",
-    proof:
-      "athenahealth: ECS tasks and an EC2 auto-scaling group, taking 10 instances down to about 4.",
+    proof: [
+      "athenahealth: ECS tasks and an EC2 auto-scaling group.",
+      "athenahealth: EKS clusters for the data jobs and the Consumer Data Store.",
+      "athenahealth: S3 backups for the data pipeline.",
+      "Coursework: Cloud Computing.",
+    ],
   },
-  Docker: { icon: "docker", proof: null },
+  Docker: {
+    icon: "docker",
+    proof: "Quak: containerising the services.",
+  },
   Kubernetes: {
     icon: "kubernetes",
-    proof:
-      "athenahealth: checkpointed jobs running the data pipeline across 30 contexts.",
+    proof: [
+      "athenahealth: checkpointed jobs that generated 722M rows.",
+      "athenahealth: the EKS hosting for the Consumer Data Store.",
+    ],
   },
   Terraform: {
     icon: "terraform",
     proof:
-      "athenahealth: provisioned the auto-scaling that cut about $5,000 a year of compute.",
+      "athenahealth: every piece of infrastructure as code, including the auto-scaling that took EC2 from 10 instances to about 4 and saved ~$5K a year.",
   },
   Jenkins: {
     icon: "jenkins",
     proof:
-      "athenahealth: the CI/CD pipeline deploying the Consumer Data Store.",
+      "athenahealth: the CI/CD pipeline that deploys the Consumer Data Store to EKS.",
   },
   Grafana: {
     icon: "grafana",
     proof:
-      "athenahealth: a 34-panel dashboard spanning 8 microservices, the team's first.",
+      "athenahealth: a 34-panel dashboard over 8 microservices - the team's first centralised monitoring.",
   },
   Prometheus: {
     icon: "prometheus",
     proof:
-      "athenahealth: the metrics behind that dashboard, exposed through Spring Boot Actuator.",
+      "athenahealth: scraping Spring Boot Actuator metrics to feed the Grafana dashboard.",
   },
   JMeter: {
     icon: "jmeter",
     proof:
-      "athenahealth: load tests at 2,500 concurrent threads, to confirm the scaling behaved.",
+      "athenahealth: load tests at 2,500 concurrent threads, to prove the auto-scaling held.",
   },
 
+  Express: {
+    icon: "express",
+    proof: [
+      "Quak: the booking, payment-splitting and itinerary APIs.",
+      "athenahealth: the Consumer Data Store API.",
+      "FinishLine and NUHire.",
+    ],
+  },
+  Prisma: {
+    icon: "prisma",
+    proof: [
+      "Quak: the ORM behind the booking backend.",
+      "FinishLine: the data layer.",
+    ],
+  },
   "Spring Boot": {
     icon: "spring",
-    proof:
-      "athenahealth: Actuator endpoints exposing per-service metrics. OnTrack: the API.",
+    proof: [
+      "athenahealth: Actuator endpoints exposing per-service metrics.",
+      "OnTrack: the API.",
+    ],
   },
   ".NET": {
     icon: "dotnetcore",
     proof:
-      "Philips: device management and data streaming in the monitor simulator.",
+      "Philips: the SDC Simulator, and the Event Notification config API endpoints.",
   },
-  Express: {
-    icon: "express",
-    proof:
-      "Quak, Rainfall and NER: the APIs behind booking, payments and FinishLine.",
-  },
-  Flask: { icon: "flask", proof: null },
-  Prisma: {
-    icon: "prisma",
-    proof:
-      "Rainfall: the handlers each verified Stripe webhook is dispatched to.",
+  Flask: {
+    icon: "flask",
+    proof: ["CoDesign: the backend.", "Rainfall: the backend services."],
   },
 
   React: {
     icon: "react",
-    proof: "Philips, Quak, NER and Rainfall: the frontend work on all four.",
+    proof:
+      "Every project with a frontend: the Philips SDC Simulator and PIC iX, athenahealth's Data Store, FinishLine, NUHire, OnTrack and CoDesign.",
   },
   "Next.js": {
     icon: "nextjs",
-    proof: "OnTrack: the whole frontend. Pawtograder: the paper exams UI.",
+    proof: "OnTrack and NUHire: the frontend on both.",
   },
   Redux: {
     icon: "redux",
     proof:
-      "Philips: device state in the monitor simulator, including the corruption behind the labeling bugs.",
+      "Philips: SDC Simulator state, including propagating one config across five device settings.",
   },
-  HTML: { icon: "html5", proof: null },
-  CSS: { icon: "css3", proof: null },
+  HTML: { icon: "html5", proof: "Every project with a frontend." },
+  CSS: { icon: "css3", proof: "Every project with a frontend." },
 
   Redis: {
     icon: "redis",
     proof:
-      "Quak: per-route caches over 26 GET endpoints, cutting search latency up to 80%.",
+      "Quak: caching hotel search, which took up to 80% off query latency.",
   },
-  Git: { icon: "git", proof: null },
-  Postman: { icon: "postman", proof: null },
-  Jest: { icon: "jest", proof: null },
-  Vitest: {
-    icon: "vitest",
+  Postman: {
+    icon: "postman",
+    proof: "Testing the APIs on every backend project.",
+  },
+  Git: {
+    icon: "git",
     proof:
-      "Rainfall: 91 tests around the payment path, across three API layers.",
+      "Every project, and pull requests across six repositories at Philips.",
   },
-  JUnit: { icon: "junit", proof: null },
+  Jest: {
+    icon: "jest",
+    proof: [
+      "Philips: suites for the logging UI, the tooltips and config propagation.",
+      "Rainfall: frontend tests.",
+    ],
+  },
+  Vitest: { icon: "vitest", proof: "Rainfall: the frontend tests." },
+  JUnit: {
+    icon: "junit",
+    proof: [
+      "athenahealth: Spring Boot service tests.",
+      "OnTrack: backend tests.",
+      "Coursework: Object-Oriented Design.",
+    ],
+  },
 };

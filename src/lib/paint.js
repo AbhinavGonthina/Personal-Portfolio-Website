@@ -1417,9 +1417,9 @@ function drawSkillPreview(g, W, H, hit, detail) {
   // A pool of light under the mark. The brief asked for a glowing
   // icon and a glow is light on the surface behind a thing, not an
   // outline around it.
-  const BOX = 300;
+  const BOX = 250;
   const bx = mid - BOX / 2;
-  const by = 120;
+  const by = 96;
   const halo = g.createRadialGradient(
     mid,
     by + BOX / 2,
@@ -1444,7 +1444,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
     g.fillText(label, mid, by + BOX / 2 + 38);
   }
 
-  let y = by + BOX + 96;
+  let y = by + BOX + 72;
 
   g.fillStyle = ACCENT.blue;
   g.font = "500 24px " + MONO;
@@ -1452,20 +1452,20 @@ function drawSkillPreview(g, W, H, hit, detail) {
   g.fillText(hit.group.toUpperCase(), mid, y);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-  y += 72;
+  y += 64;
   g.fillStyle = "#ffffff";
-  g.font = "600 58px " + SANS;
+  g.font = "600 54px " + SANS;
   for (const line of wrap(g, hit.item, W - pad * 2)) {
     g.fillText(line, mid, y);
-    y += 66;
+    y += 60;
   }
 
   // A short rule rather than a full-width one: it is closing the
   // name, not dividing the screen.
-  y += 14;
+  y += 12;
   g.fillStyle = "#2b3350";
   g.fillRect(mid - 90, y, 180, 2);
-  y += 62;
+  y += 48;
 
   if (detail?.proof) {
     g.fillStyle = "#6f7694";
@@ -1474,12 +1474,36 @@ function drawSkillPreview(g, W, H, hit, detail) {
     g.fillText("USED IN", mid, y);
     if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-    y += 52;
+    y += 44;
     g.fillStyle = "#c6cde4";
-    g.font = "400 31px " + SANS;
-    for (const line of wrap(g, detail.proof, W - pad * 2)) {
-      g.fillText(line, mid, y);
-      y += 44;
+    g.font = "400 27px " + SANS;
+
+    // One place it was used reads as a sentence; several read as a
+    // list, and a list set centred is a list nobody can scan - the
+    // left edge of every line lands somewhere different. So one
+    // stays centred under the name and several go to bullets down
+    // the left.
+    const proof = [].concat(detail.proof);
+    if (proof.length === 1) {
+      for (const line of wrap(g, proof[0], W - pad * 2)) {
+        g.fillText(line, mid, y);
+        y += 36;
+      }
+    } else {
+      g.textAlign = "left";
+      const tx = pad + 26;
+      for (const item of proof) {
+        const lines = wrap(g, item, W - pad - tx);
+        g.fillStyle = ACCENT.blue;
+        g.fillText("•", pad + 4, y);
+        g.fillStyle = "#c6cde4";
+        for (const line of lines) {
+          g.fillText(line, tx, y);
+          y += 36;
+        }
+        y += 10;
+      }
+      g.textAlign = "center";
     }
   } else {
     g.fillStyle = "#4d5570";

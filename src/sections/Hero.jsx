@@ -37,7 +37,7 @@ import { education } from "../data/about";
  * box, whatever is inside it.
  */
 const BTN =
-  "inline-flex h-10 items-center rounded-full border border-transparent px-5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  "inline-flex h-10 items-center rounded-full border px-5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 const scrollTo = (id) =>
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -64,7 +64,7 @@ function Actions() {
     <div className="flex flex-wrap items-center gap-3">
       <button
         onClick={() => scrollTo("experience")}
-        className={`${BTN} bg-fg text-ink-950 hover:opacity-90`}
+        className={`${BTN} border-transparent bg-fg text-ink-950 hover:opacity-90`}
       >
         View my work
       </button>
@@ -162,25 +162,6 @@ export default function Hero({ ref }) {
               <div className="mt-9">
                 <Actions />
               </div>
-
-              {/* Under the copy, as one wrapping row.
-                  It was a five-row table under the photo, which made
-                  that column half as tall again as this one - and a
-                  column centred against a taller column puts the
-                  photo wherever the table leaves room for it rather
-                  than level with the text. Over here it costs two
-                  lines and the photo is the only thing in the other
-                  column, so centring it means what it says. */}
-              <dl className="mt-10 flex flex-wrap items-baseline gap-x-7 gap-y-3 border-t border-ink-800 pt-7">
-                {EDUCATION.map(([k, v]) => (
-                  <div key={k} className="flex items-baseline gap-2.5">
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-fg-subtle">
-                      {k}
-                    </dt>
-                    <dd className="text-xs text-fg-muted">{v}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
 
             <TiltCard className="order-first mx-auto w-full max-w-[340px] md:order-none md:ml-auto md:mr-0">
@@ -203,6 +184,25 @@ export default function Hero({ ref }) {
               </div>
             </TiltCard>
           </div>
+
+          {/* Below the grid, not inside it.
+              Anything in the left cell is part of what the photo is
+              centred against, so with this row in there the photo
+              was levelling itself against copy-plus-education and
+              sitting low of the copy. Out here it is under
+              everything and the photo lines up with the block it
+              belongs to. Held to the width of the column above it
+              so the row does not run out under the picture. */}
+          <dl className="mt-10 flex max-w-[700px] flex-wrap items-baseline gap-x-7 gap-y-3 border-t border-ink-800 pt-7">
+            {EDUCATION.map(([k, v]) => (
+              <div key={k} className="flex items-baseline gap-2.5">
+                <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-fg-subtle">
+                  {k}
+                </dt>
+                <dd className="text-xs text-fg-muted">{v}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
     );
