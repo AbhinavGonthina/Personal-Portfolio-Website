@@ -285,6 +285,11 @@ export default function Experience({ ref }) {
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={1}>Experience</Heading>
 
+          <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
+            Where I have worked, what each place actually does, and what I was
+            responsible for while I was there.
+          </p>
+
           {/* A timeline rather than eight cards that open.
               The grid fitted a screen, but reading a role meant
               clicking it and watching the other seven shift to make

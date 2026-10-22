@@ -88,12 +88,18 @@ export default function App() {
       {/* The canvas is behind the page, so the wrapper has to let clicks
           through to it. Each section turns them back on. */}
       <main
-        // Room under the last section so it can reach the same
-        // place the others do. A nav link scrolls a section to 112
-        // below the bar; Contact is the last thing on the page, so
-        // without something beneath it the scroll runs out and it
-        // lands wherever the foot of the document happens to be.
-        className={`pointer-events-none relative z-10 pb-52 ${switching ? "sw-pane" : ""}`}
+        // A little under the last section, and no more.
+        //
+        // There were 208 pixels here, so that a nav link to Contact
+        // could park its heading 112 below the bar like every other
+        // section's. Contact is four buttons and two lines now, and
+        // reserving most of a screen underneath it to make one
+        // scroll land tidily meant the document ended in a third of
+        // a screen of nothing that everybody scrolls through and
+        // nobody asked for. The link now runs the page to its foot
+        // and leaves Contact sitting in the lower half of the
+        // window, which is where the last thing on a page belongs.
+        className={`pointer-events-none relative z-10 pb-8 ${switching ? "sw-pane" : ""}`}
       >
         <Hero ref={hero} />
         <About ref={about} />
