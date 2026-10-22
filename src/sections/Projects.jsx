@@ -231,6 +231,11 @@ export default function Projects({ ref }) {
         </div>
       }
     >
+      <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
+        Things I have built outside the roles above, from a hackathon weekend to
+        the site you are reading.
+      </p>
+
       <div className="relative">
         <div ref={railRef} className="overflow-hidden">
           <div className="flex gap-5">

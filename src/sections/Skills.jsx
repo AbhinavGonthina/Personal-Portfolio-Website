@@ -45,8 +45,9 @@ export default function Skills({ ref }) {
   return (
     <Stop id="skills" title="Skills" n={2} plain refEl={ref}>
       <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
-        {totalSkills} of them, ordered within each group by how much of the work
-        above actually leaned on it.
+        The {totalSkills} technologies I have used across the projects below and
+        the roles above, ordered within each group by how much of that work
+        actually leaned on them.
       </p>
 
       <div className="divide-y divide-ink-800 border-y border-ink-800">
