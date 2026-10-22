@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import githubMark from "bootstrap-icons/icons/github.svg?raw";
 import linkedinMark from "bootstrap-icons/icons/linkedin.svg?raw";
 import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
@@ -115,20 +114,14 @@ function Actions() {
 }
 
 export default function Hero({ ref }) {
+  // One question, asked once. This used to keep its own listener on
+  // the width alongside `lib/plain`'s, which is how a narrow window
+  // ended up showing this section plain with the town still drawn
+  // behind it - the store said one thing and this said another.
   const plain = usePlain();
-  const [narrow, setNarrow] = useState(null);
-  useEffect(() => {
-    const q = window.matchMedia("(max-width: 767px)");
-    const sync = () => setNarrow(q.matches);
-    sync();
-    q.addEventListener("change", sync);
-    return () => q.removeEventListener("change", sync);
-  }, []);
-
-  const flat = narrow || plain;
 
   // --- phones, and anyone who asked for the plain read ------------------
-  if (flat) {
+  if (plain) {
     return (
       <section
         ref={ref}
@@ -226,12 +219,6 @@ export default function Hero({ ref }) {
         </div>
       </section>
     );
-  }
-
-  // `null` means the media query has not resolved. Render the shell
-  // only, so a phone never briefly mounts a canvas it throws away.
-  if (narrow === null) {
-    return <section ref={ref} className="h-[94vh] min-h-[620px]" />;
   }
 
   // The name is extruded lettering standing on the pavement in the

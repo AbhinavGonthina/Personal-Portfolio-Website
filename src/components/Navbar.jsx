@@ -3,7 +3,7 @@ import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
-import { usePlain } from "../lib/plain";
+import { useNarrow, usePlain } from "../lib/plain";
 import { runSwitch, useSwitching } from "../lib/switchView";
 import { setFocused, useStopIndex } from "../lib/stage";
 import { beginJump } from "../lib/scrollLock";
@@ -59,6 +59,7 @@ const LINK =
 
 export default function Navbar() {
   const plain = usePlain();
+  const narrow = useNarrow();
   const switching = useSwitching();
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
@@ -149,7 +150,11 @@ export default function Navbar() {
           centre of the page whatever the name on the left or the button on
           the right happen to be. */}
       <nav
-        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6"
+        // Three columns rather than a flex row so the links sit on the
+        // centre of the page whatever is beside them - but the centre
+        // column has to be allowed to shrink below its content on a
+        // phone, or it pushes the bar wider than the window.
+        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto] items-center px-6 md:grid-cols-[1fr_auto_1fr]"
         // The bar itself runs to the edge of the window. Its contents
         // stand off the gap the scroll lock leaves where the scrollbar
         // was, so opening a building does not nudge everything in here
@@ -162,13 +167,25 @@ export default function Navbar() {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
+          aria-label="Back to top"
         >
           <span className="size-1.5 rounded-full bg-fg transition-transform duration-300 group-hover:scale-150" />
-          {profile.name}
+          {/* The dot alone on a phone. The name is the first thing in
+              the page underneath it, and the 130 pixels it takes here
+              are 130 the links do not have. */}
+          <span className="hidden sm:inline">{profile.name}</span>
         </button>
 
+        {/* Shown at every width now.
+            It was `hidden md:flex`, which took the only navigation
+            off the one reading a phone is ever given - five long
+            sections and nothing to do but scroll. The five do not fit
+            across 390 pixels, so below `md` the row scrolls sideways
+            instead of disappearing; the scrollbar itself is taken
+            away because the bar is 56 pixels tall and a scrollbar in
+            it is furniture, not information. */}
         <div
-          className="relative hidden items-center gap-0.5 rounded-full border border-white/10 bg-white/[0.03] p-1 md:flex"
+          className="relative flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-full border border-white/10 bg-white/[0.03] p-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-self-center md:overflow-x-visible [&::-webkit-scrollbar]:hidden"
           onMouseLeave={() => setHovered(null)}
         >
           {NAV_ITEMS.map((item) => (
@@ -180,6 +197,7 @@ export default function Navbar() {
               aria-current={active === item.id ? "true" : undefined}
               className={cn(
                 LINK,
+                "shrink-0",
                 marked === item.id ? "text-fg" : "text-fg-subtle",
               )}
             >
@@ -196,21 +214,25 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* The way out for anyone who would rather just read the thing. */}
+        {/* The way out for anyone who would rather just read the thing.
+            Gone below the width the town is built at, because there
+            the plain read is the only reading there is and the other
+            button is a button to nothing. Asked of the store rather
+            than written as a breakpoint, so the control and the thing
+            it controls cannot be given two different thresholds. */}
         <div className="flex justify-end">
-          <button
-            onClick={() => runSwitch(!plain)}
-            aria-pressed={plain}
-            className={cn(
-              LINK,
-              // Shown from the same width the town is built at.
-              // Below it the plain read is the only version there is,
-              // so a switch to the other one is a switch to nothing.
-              "hidden border border-white/10 text-fg-subtle hover:border-white/20 hover:text-fg md:block",
-            )}
-          >
-            {plain ? "Interactive" : "Simpler read"}
-          </button>
+          {!narrow && (
+            <button
+              onClick={() => runSwitch(!plain)}
+              aria-pressed={plain}
+              className={cn(
+                LINK,
+                "border border-white/10 text-fg-subtle hover:border-white/20 hover:text-fg",
+              )}
+            >
+              {plain ? "Interactive" : "Simpler read"}
+            </button>
+          )}
         </div>
       </nav>
     </header>

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { endArrival } from "./arrival";
-import { getPlain, setPlain } from "./plain";
+import { getPlain, isNarrow, setPlain } from "./plain";
 
 /**
  * Switching between the two readings, by craning out of the town.
@@ -251,6 +251,10 @@ export function sceneReady() {
 
 export function runSwitch(toPlain) {
   if (HELD !== null) return;
+  // Below the threshold there is no town to crane out of, and the
+  // control that calls this is not on screen - but a keyboard, a
+  // stale click or a window resized mid-run can all still get here.
+  if (isNarrow()) return;
   if (typeof window !== "undefined") {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (still.matches) {

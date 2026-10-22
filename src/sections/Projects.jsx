@@ -245,7 +245,11 @@ export default function Projects({ ref }) {
             more of it. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-ink-950 to-transparent"
+          // Narrow on a phone. 96px of fade is a hint that the rail
+          // continues when the card is 332 wide and the screen is
+          // 1440; on a 390 screen it is a quarter of the only card
+          // you can see, greyed out.
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-ink-950 to-transparent sm:w-24"
         />
       </div>
     </Stop>
