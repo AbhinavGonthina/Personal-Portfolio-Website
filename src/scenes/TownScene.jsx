@@ -1104,6 +1104,48 @@ const HELD = frozenAt();
  * The arrival runs on its own clock, shared with the car so the door
  * opens on the same beat the camera turns to look at it.
  */
+/**
+ * The field of view, so a narrow window stops cropping the shots.
+ *
+ * Every stop is composed as a picture - the arc of towers at
+ * Experience is as wide as it is because that is what fits. A
+ * perspective camera is given a vertical angle though, and what a
+ * vertical angle shows horizontally depends on the shape of the
+ * window: at 16:9 the arc fits, and at 1024x700 it does not. The
+ * group labels ran off both sides of the screen.
+ *
+ * So below a reference shape the vertical angle opens until the
+ * horizontal one is back where it was. A narrow window sees more sky
+ * and more pavement rather than less town, which is the trade worth
+ * making - nothing is composed against the top and bottom edges here
+ * and the whole of Experience is composed against the sides.
+ *
+ * 16:10, not 16:9, because 16:10 is the narrowest shape the shots
+ * were framed in. Anything that wide or wider is left exactly as it
+ * was; this only ever gives width back, never takes it.
+ */
+const FOV = 52;
+const REF_ASPECT = 16 / 10;
+
+function Lens() {
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  useEffect(() => {
+    const aspect = size.width / Math.max(1, size.height);
+    const want =
+      aspect >= REF_ASPECT
+        ? FOV
+        : (2 *
+            Math.atan(Math.tan((FOV * Math.PI) / 360) * (REF_ASPECT / aspect)) *
+            180) /
+          Math.PI;
+    if (Math.abs(camera.fov - want) < 0.01) return;
+    camera.fov = want;
+    camera.updateProjectionMatrix();
+  }, [camera, size]);
+  return null;
+}
+
 function Rig({ target, narrow, clock }) {
   // Where the camera is along the walk, which is not always where
   // the scroll is. See the pacing below.
@@ -2022,7 +2064,7 @@ export default function TownScene({
       // second multisampled buffer and resolved it every frame to
       // produce a pixel-identical picture.
       gl={{ antialias: false, powerPreference: "high-performance" }}
-      camera={{ position: STOPS[0].free.pos, fov: 52 }}
+      camera={{ position: STOPS[0].free.pos, fov: FOV }}
       onPointerMissed={() => onFocus(null)}
       style={{ position: "absolute", inset: 0 }}
       // The stage owns where this sits on the page.
@@ -2039,6 +2081,7 @@ export default function TownScene({
           shadows for a desk lamp to cut, and the lamp is the point. */}
       <Sky />
 
+      <Lens />
       <Warmup />
       <Frames />
       {WATCH && <Perf />}

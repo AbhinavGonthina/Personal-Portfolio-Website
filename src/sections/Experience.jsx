@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
@@ -165,7 +165,11 @@ function Detail({ role, onBack, onStep, inScene, hideDates }) {
       )}
 
       {(hasTech || hasStats) && (
-        <div className="mt-7 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-7">
+        // Side by side from `lg`, not `sm`. The width this row gets
+        // is the card's, not the window's, and the card is inset by
+        // the timeline rail - so at 834 the stack of technologies was
+        // one pill per line beside a block of figures.
+        <div className="mt-7 flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-7">
           {hasTech && (
             <div className="min-w-0 flex-1">
               <Label>Built with</Label>
@@ -268,21 +272,10 @@ export default function Experience({ ref }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [focused]);
 
-  // The scene frames a focused building differently when there is no room
-  // for a column beside it, and a phone gets no 3D at all.
-  const [narrow, setNarrow] = useState(null);
-  useEffect(() => {
-    const q = window.matchMedia("(max-width: 767px)");
-    const sync = () => setNarrow(q.matches);
-    sync();
-    q.addEventListener("change", sync);
-    return () => q.removeEventListener("change", sync);
-  }, []);
-
   const current = experience.find((e) => e.id === focused) ?? null;
 
   // --- phones, and anyone who asked for the plain read -------------------
-  if (narrow || plain) {
+  if (plain) {
     return (
       <section
         ref={ref}
@@ -347,15 +340,6 @@ export default function Experience({ ref }) {
           })}
         </div>
       </section>
-    );
-  }
-
-  // `null` means the media query has not resolved yet. Render the shell
-  // only, so a phone never briefly mounts a WebGL context it is about to
-  // throw away.
-  if (narrow === null) {
-    return (
-      <section ref={ref} id="experience" className="h-[94vh] min-h-[620px]" />
     );
   }
 

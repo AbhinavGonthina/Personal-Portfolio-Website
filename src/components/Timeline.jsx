@@ -54,24 +54,32 @@ export default function Timeline({ data }) {
             // the rail is already directly above it, and upstream's
             // top padding put a hand's width of nothing between the
             // two.
-            className={`flex justify-start md:gap-10 ${
+            className={`flex justify-start lg:gap-10 ${
               index === 0 ? "pt-0" : "pt-10 md:pt-14"
             }`}
           >
             {/* The date rides down the screen with you until the next
                 one pushes it off, which is what ties a long entry to
                 the year it belongs to. */}
-            <div className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start md:w-full md:max-w-[260px] md:flex-row md:items-center">
-              <div className="absolute left-0 flex size-10 items-center justify-center rounded-full bg-ink-950 md:left-0">
+            {/* The side column arrives at `lg`, not `md`.
+                It reserves 260px for a date that is never longer than
+                "JUN - AUG 2026", which is worth it on a wide screen
+                and ruinous on a tablet: at 834 it took a third of the
+                page for one line of mono and left the card beside it
+                too narrow to put anything side by side in. Below
+                `lg` the date goes back above the entry, where it
+                costs a line instead of a column. */}
+            <div className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start lg:w-full lg:max-w-[260px] lg:flex-row lg:items-center">
+              <div className="absolute left-0 flex size-10 items-center justify-center rounded-full bg-ink-950">
                 <div className="size-3 rounded-full border border-ink-600 bg-ink-800" />
               </div>
-              <h3 className="hidden whitespace-nowrap font-mono text-xs uppercase tracking-[0.16em] text-fg-subtle md:block md:pl-16">
+              <h3 className="hidden whitespace-nowrap font-mono text-xs uppercase tracking-[0.16em] text-fg-subtle lg:block lg:pl-16">
                 {item.title}
               </h3>
             </div>
 
-            <div className="relative w-full pl-16 pr-0 md:pl-4">
-              <h3 className="mb-4 block font-mono text-xs uppercase tracking-[0.18em] text-fg-subtle md:hidden">
+            <div className="relative w-full pl-14 pr-0 sm:pl-16 lg:pl-4">
+              <h3 className="mb-4 block font-mono text-xs uppercase tracking-[0.18em] text-fg-subtle lg:hidden">
                 {item.title}
               </h3>
               {item.content}
