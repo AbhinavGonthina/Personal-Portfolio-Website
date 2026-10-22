@@ -303,17 +303,22 @@ export function runSwitch(toPlain) {
 export const getSwitch = () => p;
 
 /**
- * Whether a run is in flight, for code that reads it in a frame
- * callback rather than rendering on it.
+ * Whether the page is currently being held away from the top, for
+ * code that reads it in a frame callback rather than rendering on it.
  *
- * The stage uses it to stop reading the scroll for the length of a
- * run. The scroll is locked throughout one and the camera is on the
- * crane's clock, so the page's position says nothing about where the
- * camera should be - and coming home the page is deliberately left
- * where the reader had it, which the stage would otherwise read as a
- * flick across five sections and answer by yanking the page back.
+ * The stage stops reading the scroll while this is true, because
+ * what it would read is a lie: the page is sitting five sections
+ * down on purpose, and the stage's answer to a scroll five sections
+ * down is to haul it back a stop.
+ *
+ * Only while it is held, and not for the length of a run. The way
+ * out scrolls to the top on the click as it always did, and the
+ * stage is meant to see that - the camera snapping to the landing
+ * and craning up from there is what the zoom out of the city looks
+ * like. Blocking the read for the whole run left it lifting off
+ * from whichever stop you happened to be standing at.
  */
-export const isSwitching = () => dir !== 0;
+export const isHolding = () => frozenAt !== 0;
 
 if (HELD !== null) {
   if (HELD >= FLIP) setPlain(true);
