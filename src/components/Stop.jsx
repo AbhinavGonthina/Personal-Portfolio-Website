@@ -42,7 +42,7 @@ export function Heading({ n, aside, children }) {
       </div>
       {/* Picks up the accent at its left end and gives out, rather than
           stopping dead at a fixed width. */}
-      <div className="mt-4 h-px w-40 bg-gradient-to-r from-accent/80 via-white/25 to-transparent" />
+      <div className="mt-4 h-px w-40 bg-gradient-to-r from-accent/80 via-(--lift-edge) to-transparent" />
     </div>
   );
 }
