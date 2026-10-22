@@ -121,17 +121,18 @@ export default function Navbar() {
 
   const marked = hovered ?? active;
 
-  // The bar wears its scrolled dress only when it is a bar.
+  // The bar keeps its scrolled dress through a run.
   //
-  // Past 24 pixels it takes a border, a tinted background and a
-  // hairline, which is what makes a sticky bar read as chrome over
-  // a page. Inside the switch's frame it is not over anything: the
-  // page is shrunk into a rectangle and the bar is shrunk with it,
-  // so that treatment stops reading as chrome and starts reading
-  // as a band ruled across the top of the picture. The reader has
-  // usually scrolled by the time they click, so this was on for
-  // most of every run home.
-  const lit = scrolled && !switching;
+  // It was taken off for the length of one, on the theory that the
+  // border and the tint were what made the bar read as a band
+  // ruled across the top of the framed page. They were not - the
+  // band was the switch's clip-path cutting away the glow the bar
+  // is supposed to sit on, and that is fixed where it lives, in
+  // the clip. Taking the dress off as well only meant the bar
+  // stopped being opaque, so the page ran underneath it in full
+  // view and the thing it is meant to sit over came out in front
+  // of it instead.
+  const lit = scrolled;
 
   return (
     <header
