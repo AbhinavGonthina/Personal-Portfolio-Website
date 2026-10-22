@@ -71,6 +71,41 @@ function Line({ children, className, delay = 0 }) {
   );
 }
 
+/**
+ * The arrow under the invitation, easing down and back the length
+ * of a slow breath. Lifted from the landing's scroll hint so the
+ * one gesture the site makes for "keep going" is the same gesture
+ * in both places.
+ */
+function Chevron() {
+  const still = useReducedMotion();
+  return (
+    <motion.div
+      aria-hidden
+      className="mt-6 flex justify-center text-fg-subtle"
+      initial={still ? false : { opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, amount: 0.6 }}
+      transition={{ duration: 0.5, delay: still ? 0 : 0.9 }}
+    >
+      <motion.span
+        animate={still ? undefined : { y: [0, 7, 0] }}
+        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <svg width="26" height="15" viewBox="0 0 18 11" fill="none">
+          <path
+            d="M1 1l8 8 8-8"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </motion.span>
+    </motion.div>
+  );
+}
+
 export default function Connect({ ref }) {
   const plain = usePlain();
 
@@ -97,24 +132,39 @@ export default function Connect({ ref }) {
   }
 
   return (
-    <Stop id="connect" title="Contact" n={4} plain refEl={ref}>
+    <Stop id="connect" title="Contact" n={4} plain foot refEl={ref}>
       {/* No `max-w-2xl` on this one. Every other section is held to
           the column because it is reading matter; this is the one
-          line on the page that is addressed to somebody, and it
-          takes the full width the rest of the page is built on. */}
-      <p className="-mt-6 text-2xl leading-snug tracking-tight sm:text-3xl md:text-4xl">
+          thing on the page addressed to somebody, so it takes the
+          full width the rest of the page is built on and sits in
+          the middle of it. */}
+      <p className="-mt-6 text-center text-lg leading-snug tracking-tight sm:text-xl md:text-2xl">
         <Line>{profile.currently}</Line>
-        <Line className="mt-3 block text-fg-muted" delay={0.22}>
-          If you would like to hear more about any of it, I would be glad to
-          talk.
+        <Line
+          className="mt-3 block text-base text-fg-muted sm:text-lg"
+          delay={0.22}
+        >
+          Please don&apos;t hesitate to reach out through any of the following
         </Line>
       </p>
+
+      {/* The same chevron the landing uses to say there is more
+          below, doing the same job one last time - except here what
+          is below is four buttons rather than another screen, so it
+          points at them from a hand's width away rather than from
+          the foot of the window.
+
+          It waits for the sentence above it to finish arriving.
+          Starting together, the arrow is pointing at nothing for
+          half a second while the words it belongs to are still
+          landing. */}
+      <Chevron />
 
       {/* One row, four buttons, the mark and the word inside each.
           The handles themselves are gone from the face of them: an
           email address and a GitHub username are what happens after
           the click, not what makes somebody click. */}
-      <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {socials.map((s) => (
           <li key={s.name}>
             <a

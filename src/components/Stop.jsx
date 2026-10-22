@@ -57,6 +57,11 @@ export default function Stop({
   refEl,
   markRef,
   tall,
+  // The last section on the page keeps no gap under it. The 96 is
+  // half of the rhythm between two sections, and below the last one
+  // there is no second half and no next section to separate it
+  // from - only the foot of the document.
+  foot,
 }) {
   if (plain) {
     return (
@@ -85,7 +90,10 @@ export default function Stop({
         //
         // 104 = the bar's 64, plus half of the 112, less the 16 the
         // section already carries on top.
-        className="pointer-events-auto scroll-mt-26 pb-24 pt-4"
+        className={cn(
+          "pointer-events-auto scroll-mt-26 pt-4",
+          foot ? "pb-0" : "pb-24",
+        )}
       >
         <div className="mx-auto w-full max-w-6xl px-6">
           <Heading n={n} aside={aside}>

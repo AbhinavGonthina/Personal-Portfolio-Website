@@ -1,6 +1,6 @@
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
-import { skillGroups, totalSkills } from "../data/skills";
+import { skillGroups } from "../data/skills";
 
 /**
  * The server racks down the left wall of the room, with the same list
@@ -45,9 +45,7 @@ export default function Skills({ ref }) {
   return (
     <Stop id="skills" title="Skills" n={2} plain refEl={ref}>
       <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
-        The {totalSkills} technologies I have used across the projects below and
-        the roles above, ordered within each group by how much of that work
-        actually leaned on them.
+        The technologies I have used across my projects and the roles above.
       </p>
 
       <div className="divide-y divide-ink-800 border-y border-ink-800">

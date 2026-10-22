@@ -232,8 +232,7 @@ export default function Projects({ ref }) {
       }
     >
       <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
-        Things I have built outside the roles above, from a hackathon weekend to
-        the site you are reading.
+        Things I have built outside the roles above over the years.
       </p>
 
       <div className="relative">

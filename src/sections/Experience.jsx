@@ -287,7 +287,7 @@ export default function Experience({ ref }) {
 
           <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
             Where I have worked, what each place actually does, and what I was
-            responsible for while I was there.
+            responsible for.
           </p>
 
           {/* A timeline rather than eight cards that open.
