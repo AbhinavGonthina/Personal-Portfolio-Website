@@ -35,7 +35,7 @@ export default function About({ ref }) {
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
           Currently
         </span>{" "}
-        &mdash; {profile.currently}
+        &middot; {profile.currently}
       </p>
 
       <dl className="mt-8 space-y-4">

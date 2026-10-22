@@ -121,7 +121,7 @@ export const experience = [
     blurb:
       "A startup that makes group travel easier, from booking stays to splitting costs.",
     did: [
-      "I joined early and built much of the backend: group hotel booking through Duffel API, per-hotel cost splitting through Stripe, and the itinerary planning around both. I implemented a Redis cache, which cut latency by up to 80% on destinations people actually search for. When Quak pivoted to an itinerary marketplace I led the mobile app's redesign.",
+      "I joined early and built much of the backend, starting with group hotel booking through Duffel API, per-hotel cost splitting through Stripe, and the itinerary planning around both. I implemented a Redis cache, which cut latency by up to 80% on destinations people actually search for. When Quak pivoted to an itinerary marketplace I led the mobile app's redesign.",
     ],
     stats: [
       { value: "$140K", label: "funding round" },
@@ -166,7 +166,7 @@ export const experience = [
     category: "startup",
     short: "Rainfall",
     company: "Rainfall Learning",
-    role: "Tech Lead — Payments & Internal Tools",
+    role: "Tech Lead, Payments & Internal Tools",
     location: "Boston, MA",
     start: "Jun 2025",
     end: "Aug 2025",
@@ -175,7 +175,7 @@ export const experience = [
     branch: { side: "right", t: 0.38 },
     blurb: "A student-run platform that connects tutees with tutors.",
     did: [
-      "I ran the payments side of Rainfall, which meant getting money from a tutee to a tutor without the product ever holding it. That is what Stripe Connect is for, and most of the work was in not trusting it blindly: Stripe tells you a payment succeeded by calling your server, so every one of those calls gets checked against its signature before anything downstream acts on it. I wrote 91 tests around that path, because payment code that is wrong tends to be wrong quietly.",
+      "I ran the payments side of Rainfall, which meant getting money from a tutee to a tutor without the product ever holding it. That is what Stripe Connect is for, and most of the work was in not trusting it blindly. Stripe tells you a payment succeeded by calling your server, so every one of those calls gets checked against its signature before anything downstream acts on it. I wrote 91 tests around that path, because payment code that is wrong tends to be wrong quietly.",
       "The other half was the checkout itself, and breaking it into pieces small enough that four of us could build it at the same time without stepping on each other.",
     ],
     stats: [
@@ -191,7 +191,7 @@ export const experience = [
     category: "northeastern",
     short: "Khoury",
     company: "Khoury",
-    role: "Teaching Assistant — Discrete Structures",
+    role: "Teaching Assistant, Discrete Structures",
     location: "Boston, MA",
     start: "Aug 2025",
     end: "Dec 2025",
@@ -225,14 +225,13 @@ export const experience = [
     logo: "/logos/badges/oasis.png",
     brand: "#FFFFFF",
     blurb:
-      "Northeastern's student-run product incubator. The Project Series takes an idea to a demo in a semester; the Accelerator is for the teams that keep building after it.",
+      "Northeastern's student-run product incubator. The Project Series takes an idea to a demo in a semester; the Accelerator Series is for the teams that keep building after it.",
     did: [
-      "I am in the Accelerator Series working on NUHire, a hiring simulation where students preparing for co-op sit on the recruiter's side of the table instead of the candidate's. I am rebuilding the frontend: reworking the screens people spend the whole session inside, so the thing reads like the hiring tools it is imitating rather than like a demo of one.",
-      "From January to April 2025 I was in the Project Series, where I built CoDesign, a platform for finding people to collaborate with on creative work. I led the frontend and built the posts, profiles, messaging, matchmaking and authentication out of one set of reusable components, and we showed it at Demo Day.",
+      "In the Accelerator Series I work on NUHire, a hiring simulation that sits students preparing for co-op on the recruiter's side of the table. I am rebuilding its frontend, so the screens a session is spent inside read like the hiring tools they imitate.",
+      "Earlier, from January to April 2025, I was in the Project Series and led the frontend of CoDesign, a platform for finding people to work with on creative projects, building its posts, profiles, messaging and matchmaking. We showed it at Demo Day.",
     ],
     stats: [{ value: "100+", label: "at Oasis Demo Day" }],
-    // TODO(abhinav): the stack for NUHire is not written down yet.
-    tech: [],
+    tech: ["React", "Next.js", "Express", "PostgreSQL"],
   },
   {
     id: "pawtograder",
@@ -250,7 +249,7 @@ export const experience = [
     blurb:
       "The open-source platform Northeastern CS courses use to submit assignments, run autograders and manage grades.",
     did: [
-      "I am on the Paper Exams team, which is adding support for exams written on paper and then scanned in to be graded in Pawtograder. My part is integrating templates and answer regions: a template describes the layout of an exam, and the regions mark where each question's answer sits on the page, so when a scan arrives the system knows which piece of it to put in front of a grader.",
+      "I am on the Paper Exams team, which is adding support for exams written on paper and then scanned in to be graded in Pawtograder. My part is integrating templates and answer regions. A template describes the layout of an exam, and the regions mark where each question's answer sits on the page, so when a scan arrives the system knows which piece of it to put in front of a grader.",
     ],
     stats: [],
     tech: ["TypeScript", "Next.js", "PostgreSQL", "Supabase"],

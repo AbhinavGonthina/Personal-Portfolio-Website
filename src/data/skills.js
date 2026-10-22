@@ -284,7 +284,10 @@ export const skillDetail = {
   "Next.js": {
     icon: "nextjs",
     use: "React with the routing and the rendering already decided.",
-    proof: ["OnTrack: the whole frontend of the job tracker, routing and all."],
+    proof: [
+      "OnTrack: the whole frontend of the job tracker, routing and all.",
+      "NUHire: the screens a hiring session is spent inside.",
+    ],
   },
   Redux: {
     icon: "redux",
