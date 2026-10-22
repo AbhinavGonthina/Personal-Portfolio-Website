@@ -50,7 +50,12 @@ export const skillGroups = [
     label: "Data & Tooling",
     // Prisma lives in Backend. It was in both, which made the two
     // groups look like they had been filled in separately.
-    items: ["Redis", "Postman", "Git", "Jest", "Vitest", "Supertest", "JUnit"],
+    // Supertest is not a tag of its own. It has no mark anywhere -
+    // the library ships none, and neither icon set carries one - so
+    // beside thirty-two drawn logos it was two letters in a box,
+    // and the work it stands for is the same Rainfall payment
+    // tests already credited to Vitest. It is named there instead.
+    items: ["Redis", "Postman", "Git", "Jest", "Vitest", "JUnit"],
   },
 ];
 
@@ -335,12 +340,8 @@ export const skillDetail = {
     use: "The test runner on anything built with Vite.",
     proof: [
       "Rainfall Learning: 91 tests around the payment path, across three API layers.",
+      "Rainfall Learning: the routes driven through a real server with Supertest.",
     ],
-  },
-  Supertest: {
-    icon: "",
-    use: "API tests driven against a running Express app rather than a mock.",
-    proof: ["Rainfall Learning: the payment routes, through a real server."],
   },
   JUnit: {
     icon: "junit",
