@@ -126,12 +126,21 @@ function Card({ p, lead }) {
               Live site &rarr;
             </a>
           )}
+          {/* Lit, because it is a link.
+              It was the same `fg-subtle` as the word "Private" two
+              lines up, which is the one thing on this row that is
+              not clickable - so the only live link on half these
+              cards was wearing the colour reserved for dead text.
+              White rather than the accent: both of these go
+              somewhere, and the live site is the better of the two
+              places, so it keeps the colour and this keeps the
+              weight. The arrow stays with the accent too. */}
           {p.github && (
             <a
               href={p.github}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${LINK} text-fg-subtle hover:text-fg`}
+              className={`${LINK} text-fg hover:text-accent`}
             >
               Source
             </a>
