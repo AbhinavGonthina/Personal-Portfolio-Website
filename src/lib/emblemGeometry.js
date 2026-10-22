@@ -368,11 +368,25 @@ function husky() {
   const base = [];
   const lit = [];
 
-  // Main pad: a rounded triangle, made by flattening a sphere and
-  // squaring off the bottom.
+  // Main pad: a flattened sphere, and nothing else.
+  //
+  // There was a box across the bottom of it, to square the pad off
+  // into a rounded triangle. It was 0.25 deep against a pad 0.126
+  // deep, so it came out through the front and cut the highlight
+  // sitting there in half - which is what the block in the middle
+  // of the paw was. Not a shape of its own: the pale oval with its
+  // bottom sliced off square and one corner of the box left
+  // standing in it.
+  //
+  // Pulled back far enough to clear the highlight, the box stopped
+  // reaching the silhouette it was there to square off - it is
+  // narrower than the sphere at that height - and all it still did
+  // was poke two notches through the bottom of the pad. So it is
+  // gone. The pad is the oval it always looked like.
   base.push(ball(0.3, [0, -0.12, 0], null, [1.15, 1, 0.42]));
-  base.push(box(0.46, 0.22, 0.25, [0, -0.2, 0]));
-  lit.push(ball(0.235, [0, -0.11, 0.06], null, [1.1, 0.95, 0.3]));
+  // Proud of the pad, the way each toe's highlight is proud of its
+  // toe. At 0.06 it sat buried inside a pad 0.126 deep.
+  lit.push(ball(0.235, [0, -0.11, 0.09], null, [1.1, 0.95, 0.3]));
 
   // Four toes over it, the outer pair dropped and turned out.
   const toes = [
