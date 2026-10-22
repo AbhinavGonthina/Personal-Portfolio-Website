@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { isSwitching, useSwitching } from "../lib/switchView";
+import { isHolding, useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
@@ -149,14 +149,18 @@ export default function TownStage({ refs }) {
     if (off) return;
     const read = () => {
       raf.current = 0;
-      // Not while a switch is running. The scroll is locked for the
-      // length of one and the camera is on the crane's clock, so
-      // where the page sits says nothing about where the camera
-      // should be. Coming home it says something actively wrong:
-      // the page is left at the reader's own position on purpose,
-      // and this would read that as a flick across five sections
-      // and answer it by pulling the page back a stop.
-      if (isSwitching()) {
+      // Not while the switch is holding the page away from the top.
+      // It is parked five sections down on purpose, so the reader
+      // keeps their place while the town is built, and the answer
+      // here to a scroll five sections down is to pull it back a
+      // stop.
+      //
+      // Only while it is held. The way out scrolls to the top on
+      // the click, and this has to see that happen: the camera
+      // dropping to the landing and craning up from there is the
+      // zoom out of the city. Gated on the whole run instead, it
+      // lifted off from whichever stop you were standing at.
+      if (isHolding()) {
         raf.current = requestAnimationFrame(read);
         return;
       }
