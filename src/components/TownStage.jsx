@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { useSwitching } from "../lib/switchView";
+import { isSwitching, useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
 import {
@@ -149,6 +149,17 @@ export default function TownStage({ refs }) {
     if (off) return;
     const read = () => {
       raf.current = 0;
+      // Not while a switch is running. The scroll is locked for the
+      // length of one and the camera is on the crane's clock, so
+      // where the page sits says nothing about where the camera
+      // should be. Coming home it says something actively wrong:
+      // the page is left at the reader's own position on purpose,
+      // and this would read that as a flick across five sections
+      // and answer it by pulling the page back a stop.
+      if (isSwitching()) {
+        raf.current = requestAnimationFrame(read);
+        return;
+      }
       const els = refs.map((r) => r.current).filter(Boolean);
       if (els.length < 2) return;
 

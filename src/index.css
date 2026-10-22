@@ -164,12 +164,23 @@
    exactly the bar-height it was supposed to be giving back. */
 main.sw-pane {
   opacity: var(--sw-page, 1);
+  /* The screenful the frame holds is not always the one at the top
+     of the document. Coming home from the plain read the page is
+     left at the reader's own scroll position rather than thrown to
+     the top, and `--sw-y` is how far down that is: the clip window
+     opens there, and the transform pivots there instead of on the
+     element's top edge. Both land on the same point on screen,
+     because the page is scrolled by exactly that much. */
+  transform-origin: 50% var(--sw-y, 0px);
   transform: translate(
       var(--sw-tx, 0px),
       calc(var(--sw-ty, 0px) - 4rem * (1 - var(--sw-s, 1)))
     )
     scale(var(--sw-s, 1));
-  clip-path: inset(0 0 calc(var(--sw-clip, 0) * (100% - 100vh + 4rem)) 0);
+  clip-path: inset(
+    var(--sw-y, 0px) 0
+      calc(var(--sw-clip, 0) * (100% - 100vh + 4rem) - var(--sw-y, 0px)) 0
+  );
 }
 
 /* `header.sw-pane`, not `header`: the bar only carries the class

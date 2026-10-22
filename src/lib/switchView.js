@@ -72,8 +72,13 @@ export const CRANE = span(0, 0.38);
 export const SHUT = span(0.12, 0.42);
 export const SLIDE = span(0.46, 0.76);
 export const OPEN = span(0.78, 0.98);
-/** The page is in the second frame from the moment it appears. */
-const PAGE = span(0.46, 0.6);
+/**
+ * The page is in the second frame from the moment it appears, and
+ * invisible below this. Named, because it is also the point at which
+ * the scroll can be moved without anybody watching it move.
+ */
+const PAGE_IN = 0.46;
+const PAGE = span(PAGE_IN, 0.6);
 const CHROME = span(0, 0.16);
 
 /**
@@ -126,6 +131,9 @@ function paint() {
     // sheet over the canvas, and coming home to the town was a black
     // screen with the town drawing away underneath it.
     root.setProperty("--sw-back", "0");
+    // The window the frame holds is back at the document's top edge,
+    // where the clip-path fallback also puts it.
+    root.setProperty("--sw-y", "0px");
     return;
   }
   root.setProperty("--sw-page", String(PAGE(p)));
@@ -146,6 +154,44 @@ export function placePage(scale, tx, ty) {
   root.setProperty("--sw-ty", `${ty}px`);
 }
 
+/**
+ * The scroll, and why it is not simply thrown to the top.
+ *
+ * Both readings begin at their own beginning - that is the right
+ * behaviour and it is kept. The frame carries one screenful of the
+ * page and takes it from the top of the document, so the run has to
+ * get there.
+ *
+ * What is wrong is doing it on the click. Leaving the town, the page
+ * has not appeared yet and nobody sees it happen. Coming home, the
+ * page is the thing you are looking at: you click, it throws itself
+ * to the top, and then it sits at the top for however long the town
+ * takes to build - geometry, textures, and a shader compile for
+ * every material in it. The first thing the switch does is undo your
+ * place in the reading you are still being shown.
+ *
+ * So coming home the page is left exactly where it is, and the
+ * screenful the frame holds is moved to meet it. `--sw-y` is that
+ * offset: the clip window opens there rather than at the document's
+ * top edge, and the transform pivots there rather than on the
+ * element's top edge - the same point on screen either way, because
+ * the page is scrolled by exactly that much. The scroll goes home
+ * later, at the moment the page stops being visible, which is a
+ * frame nobody can see.
+ */
+let frozenAt = 0;
+
+function freeze(y) {
+  frozenAt = y;
+  document.documentElement.style.setProperty("--sw-y", `${y}px`);
+}
+
+function thaw() {
+  if (!frozenAt) return;
+  window.scrollTo({ top: 0, behavior: "instant" });
+  freeze(0);
+}
+
 function tick(now) {
   // Wall time from the start of the run, not a sum of deltas: a
   // clamped sum stretches to several times its length on a machine
@@ -156,6 +202,9 @@ function tick(now) {
 
   if (was < FLIP && p >= FLIP) setPlain(true);
   else if (was > FLIP && p <= FLIP) setPlain(false);
+  // Below this the page has faded out of its frame, so the scroll
+  // can be sent home with nobody looking at it.
+  if (was > PAGE_IN && p <= PAGE_IN) thaw();
 
   paint();
   if ((dir > 0 && p < 1) || (dir < 0 && p > 0)) {
@@ -208,6 +257,10 @@ export function runSwitch(toPlain) {
       p = toPlain ? 1 : 0;
       dir = 0;
       setPlain(toPlain);
+      // Nothing is animating, so there is no moment to hide the
+      // scroll in and nothing to hide it from.
+      window.scrollTo({ top: 0, behavior: "instant" });
+      freeze(0);
       paint();
       subs.forEach((fn) => fn());
       return;
@@ -217,10 +270,16 @@ export function runSwitch(toPlain) {
   // while the car is still pulling up is a choice about which of the
   // two you want, not a request to watch both at once.
   endArrival();
-  // Scrolled to the top first. The frame shows the page from its
-  // top edge down, so anywhere else in the document and the second
-  // frame arrives holding the middle of it.
-  window.scrollTo({ top: 0, behavior: "instant" });
+  if (toPlain) {
+    // On the way out the page has not appeared yet, so the top is
+    // simply where it starts from.
+    window.scrollTo({ top: 0, behavior: "instant" });
+    freeze(0);
+  } else {
+    // On the way home it is on screen for the first half of the
+    // run. Left where it is, and the frame's window moved to it.
+    freeze(window.scrollY);
+  }
   dir = toPlain ? 1 : -1;
   from = p;
   // Mount first: `useSwitching` flips on this, and that is what puts
@@ -242,6 +301,19 @@ export function runSwitch(toPlain) {
 
 /** Read every frame by the scene. Never subscribes, never renders. */
 export const getSwitch = () => p;
+
+/**
+ * Whether a run is in flight, for code that reads it in a frame
+ * callback rather than rendering on it.
+ *
+ * The stage uses it to stop reading the scroll for the length of a
+ * run. The scroll is locked throughout one and the camera is on the
+ * crane's clock, so the page's position says nothing about where the
+ * camera should be - and coming home the page is deliberately left
+ * where the reader had it, which the stage would otherwise read as a
+ * flick across five sections and answer by yanking the page back.
+ */
+export const isSwitching = () => dir !== 0;
 
 if (HELD !== null) {
   if (HELD >= FLIP) setPlain(true);
