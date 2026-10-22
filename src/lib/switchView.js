@@ -79,6 +79,13 @@ export const OPEN = span(0.78, 0.98);
  */
 const PAGE_IN = 0.46;
 const PAGE = span(PAGE_IN, 0.6);
+
+/**
+ * Where the bar stops being the town's and starts being the page's.
+ * Anywhere between 0.16 and `PAGE_IN`, which is the stretch it
+ * spends at zero opacity.
+ */
+const BAR_HANDS_OVER = 0.3;
 const CHROME = span(0, 0.16);
 
 /**
@@ -143,22 +150,29 @@ function paint() {
   // The bar goes out with the town it belongs to and comes back with
   // the page, which also owns one.
   root.setProperty("--sw-chrome", String(Math.min(1, 1 - CHROME(p) + PAGE(p))));
-  // How much of the bar is the page's rather than the town's.
+  // Whose bar it is, as 0 or 1 and never anything between.
   //
   // There are two bars in this run and they are the same element.
   // While the page is up it rides inside the second frame and
   // carries that frame's placement; while the town is up it is the
-  // town's bar and sits where it always sits. The opacity above
-  // already crossfades between them - this is the other half of
-  // the same fact, and without it the bar was being placed in a
-  // frame it had stopped belonging to.
+  // town's bar and sits where it always sits. Without this it wore
+  // the frame's placement for the whole run, so coming home - where
+  // the view is back on the town below 0.46 and the page's frame is
+  // away off to the right - it faded in over there at half size
+  // before snapping into place.
   //
-  // Coming home that is visible: below 0.46 the view has travelled
-  // back to the town and the page's frame is away off to the
-  // right, but the bar fades in over the last 0.16 still wearing
-  // that frame's transform. It arrived small and off to one side
-  // and snapped into place.
-  root.setProperty("--sw-bar", String(PAGE(p)));
+  // A step, not a ramp. Eased across the handover the bar is on a
+  // fraction of the frame's transform while the page is on all of
+  // it, so for as long as the two are both on screen the bar is
+  // sliding against the page it is supposed to be part of - which
+  // is the bar flying between the two readings as its own object
+  // rather than travelling as the top of a page.
+  //
+  // Which is why the step is taken at 0.3. The bar is fully
+  // invisible from 0.16, where it has finished leaving the town,
+  // to 0.46, where it starts arriving with the page, so a jump
+  // anywhere inside that window is a jump nobody can see.
+  root.setProperty("--sw-bar", p >= BAR_HANDS_OVER ? "1" : "0");
   // A frame holds one screenful. The document behind it is six times
   // that, and unclipped it hangs out of the bottom of its own frame.
   root.setProperty("--sw-clip", "1");
