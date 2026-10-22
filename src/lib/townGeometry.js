@@ -185,10 +185,20 @@ const T = 0.16;
 // Near black, because the city it stands in is near black and the
 // blue hairline is what draws all of it. A lit facade beside unlit
 // towers reads as a different scene, not a different building.
-const HOUSE_WALL = "#15161f";
-const HOUSE_ROOF = "#33202a";
+/**
+ * Baked into the vertices rather than set on a material, which is
+ * what makes the house one draw call - and what makes it immune to
+ * light. No ambient term lifts a vertex colour of #15161f, so in
+ * daylight the inside of the house stayed a cave with a lamp in it
+ * while everything around it went pale. The geometry is rebuilt
+ * when the palette changes instead.
+ */
+const HOUSE_PAINT = {
+  dark: { wall: "#15161f", roof: "#33202a" },
+  light: { wall: "#dfe0e8", roof: "#9c6472" },
+};
 
-export function house() {
+export function house(theme) {
   const base = [];
   const lit = [];
   const hw = HOUSE.w / 2;
@@ -294,8 +304,9 @@ export function house() {
     }
   }
 
-  tint(base, 0, HOUSE_WALL);
-  tint(base, roofFrom, HOUSE_ROOF, roofTo);
+  const paint = HOUSE_PAINT[theme] ?? HOUSE_PAINT.dark;
+  tint(base, 0, paint.wall);
+  tint(base, roofFrom, paint.roof, roofTo);
   return { base: merge(base), lit: merge(lit) };
 }
 

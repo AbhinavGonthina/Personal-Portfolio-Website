@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { MAT } from "../lib/townMaterials";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /**
@@ -122,16 +123,16 @@ export function Ground({
     <>
       {grid && (
         <gridHelper
-          args={[size, divisions, "#343438", "#1e1e22"]}
+          args={[size, divisions, MAT.gridA, MAT.gridB]}
           position={[0, 0.02, 0]}
         />
       )}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
         <planeGeometry args={[size, size]} />
         <meshStandardMaterial
-          color="#05050a"
-          roughness={0.16}
-          metalness={0.92}
+          color={MAT.ground}
+          roughness={MAT.groundRough}
+          metalness={MAT.groundMetal}
           transparent
           opacity={opacity}
         />

@@ -5,7 +5,8 @@ import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
 import { getSeen, setSeen, getJourney } from "../lib/stage";
 import { STOP, STOPS } from "../lib/stops";
-import { ACCENT, useTownMaterials } from "../lib/townMaterials";
+import { ACCENT, MAT, SCENE, useTownMaterials } from "../lib/townMaterials";
+import { useTheme } from "../lib/theme";
 import { Billboard, Dressing, House, Interior, Mailboxes } from "./town";
 import { box, cyl } from "../lib/geo";
 import { makeTextTexture } from "../lib/canvasText";
@@ -821,14 +822,15 @@ const SIGN_H = 0.52;
 
 function ClusterSigns({ hidden }) {
   const mats = useRef([]);
+  const theme = useTheme();
   const made = useMemo(
     () =>
       ARC.map(({ id, ground, centre }) => ({
         id,
-        ...makeTextTexture(ground),
+        ...makeTextTexture(ground, { theme }),
         angle: centre * DEG,
       })),
-    [],
+    [theme],
   );
   useEffect(() => () => made.forEach((m) => m.tex.dispose()), [made]);
 
@@ -903,14 +905,14 @@ function Distant() {
   return (
     <group>
       <mesh geometry={made.base}>
-        <meshBasicMaterial color="#04040a" />
+        <meshBasicMaterial color={MAT.far} />
       </mesh>
       {/* One colour for the far lights rather than eight: at this
           distance individual hues turn to mud, and a single cool white
           with the accents only in the foreground keeps the eight that
           matter legible. */}
       <mesh geometry={made.lit}>
-        <meshBasicMaterial color="#5f6ea8" toneMapped={false} />
+        <meshBasicMaterial color={MAT.farLine} toneMapped={false} />
       </mesh>
     </group>
   );
@@ -1462,7 +1464,7 @@ function crane(state, cam) {
   LOOK.y += (WIDE.ly - LOOK.y) * c;
   LOOK.z += (WIDE.lz - LOOK.z) * c;
   const fog = state.scene.fog;
-  if (fog) fog.density = FOG.near + (FOG.far - FOG.near) * c;
+  if (fog) fog.density = (FOG.near + (FOG.far - FOG.near) * c) * SCENE.fog;
 
   // Then the view travels to the second frame.
   //
@@ -1789,7 +1791,8 @@ function Welcome({ clock }) {
   // depend on exactly when this component happened to mount - and in
   // practice it was over before the scene was on screen.
   const age = useRef(0);
-  const made = useMemo(() => makeTextTexture("WELCOME"), []);
+  const theme = useTheme();
+  const made = useMemo(() => makeTextTexture("WELCOME", { theme }), [theme]);
   useEffect(() => () => made.tex.dispose(), [made]);
 
   useFrame((state, delta) => {
@@ -1905,15 +1908,24 @@ function Sky() {
   const dir = useRef();
   const inside = useNear(STOP.experience + 0.6, STOP.contact - 0.4);
 
+  // Read from the palette every frame rather than captured, so a
+  // change of time of day eases in on the same spring the walk
+  // indoors already uses instead of snapping.
   useFrame((_, delta) => {
     const k = 1 - Math.exp(-3 * delta);
     const t = inside ? 0 : 1;
+    const [a0, a1] = SCENE.ambient;
+    const [, , h0, h1] = SCENE.hemi;
+    const [d0, d1] = SCENE.dir;
     if (amb.current)
-      amb.current.intensity += (0.07 + t * 0.25 - amb.current.intensity) * k;
-    if (hemi.current)
-      hemi.current.intensity += (0.18 + t * 1 - hemi.current.intensity) * k;
+      amb.current.intensity += (a0 + t * a1 - amb.current.intensity) * k;
+    if (hemi.current) {
+      hemi.current.intensity += (h0 + t * h1 - hemi.current.intensity) * k;
+      hemi.current.color.set(SCENE.hemi[0]);
+      hemi.current.groundColor.set(SCENE.hemi[1]);
+    }
     if (dir.current)
-      dir.current.intensity += (0.08 + t * 0.78 - dir.current.intensity) * k;
+      dir.current.intensity += (d0 + t * d1 - dir.current.intensity) * k;
   });
 
   return (
@@ -1923,6 +1935,28 @@ function Sky() {
       <directionalLight ref={dir} position={[14, 18, 22]} intensity={0.85} />
     </>
   );
+}
+
+/**
+ * The colour behind everything, and the fog that reaches it.
+ *
+ * Both have to be the same or the horizon becomes a seam, so they
+ * are set together from one place and in a frame callback rather
+ * than as props - the fog's density is already animated per frame
+ * by the walk indoors, and two owners of one object is how they
+ * end up fighting.
+ */
+function Air() {
+  const scene = useThree((s) => s.scene);
+  useFrame(() => {
+    if (scene.background?.getHexString?.() !== SCENE.sky.slice(1)) {
+      scene.background?.set(SCENE.sky);
+    }
+    if (scene.fog && scene.fog.color.getHexString() !== SCENE.sky.slice(1)) {
+      scene.fog.color.set(SCENE.sky);
+    }
+  });
+  return null;
 }
 
 /**
@@ -2021,6 +2055,11 @@ export default function TownScene({
   marks,
 }) {
   const layout = useLayout();
+  // The two settings that are props on an element rather than
+  // values a frame callback can write: the bloom pass is
+  // reconfigured by re-rendering it, not by poking at it.
+  useTheme();
+  const { bloom, bloomFloor, motes } = SCENE;
   const town = useTownMaterials();
   // Shared between the rig and the car, so the door opens on the
   // same beat the camera turns to look at it.
@@ -2081,6 +2120,7 @@ export default function TownScene({
           shadows for a desk lamp to cut, and the lamp is the point. */}
       <Sky />
 
+      <Air />
       <Lens />
       <Warmup />
       <Frames />
@@ -2088,7 +2128,7 @@ export default function TownScene({
       <Rig target={target} narrow={narrow} clock={clock} />
       {arriving && <Car clock={clock} />}
       <Distant />
-      <Motes />
+      {motes && <Motes />}
       <Lamps />
       <Welcome clock={clock} />
       <Town
@@ -2130,10 +2170,15 @@ export default function TownScene({
           frame, and 8 of them at this resolution is bandwidth the
           line art cannot show the benefit of. */}
       <EffectComposer enableNormalPass={false} multisampling={4}>
+        {/* Glow is a thing that happens to a bright object against
+            a dark one. In daylight the threshold goes to 1 and the
+            intensity to almost nothing, which leaves the pass in
+            place - taking it out would rebuild the composer - and
+            leaves it with nothing to find. */}
         <Bloom
           mipmapBlur
-          intensity={1.15}
-          luminanceThreshold={0.9}
+          intensity={bloom}
+          luminanceThreshold={bloomFloor}
           luminanceSmoothing={0.3}
         />
       </EffectComposer>

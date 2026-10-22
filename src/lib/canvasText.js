@@ -8,7 +8,10 @@ import * as THREE from "three";
  * in these scenes is loaded from disk and the lettering should not be the
  * exception.
  */
-export function makeTextTexture(text, { weight = 700, tracking = 20 } = {}) {
+export function makeTextTexture(
+  text,
+  { weight = 700, tracking = 20, theme = "dark" } = {},
+) {
   const H = 150;
   const PAD = 24;
   const c = document.createElement("canvas");
@@ -25,7 +28,10 @@ export function makeTextTexture(text, { weight = 700, tracking = 20 } = {}) {
   setup();
   g.textAlign = "center";
   g.textBaseline = "middle";
-  g.fillStyle = "#ffffff";
+  // Lettering, so it is whatever reads against the sky behind it.
+  // The sign is unlit geometry with this texture on it; white on a
+  // pale sky is a sign nobody can read.
+  g.fillStyle = theme === "light" ? "#1a1f2b" : "#ffffff";
   g.fillText(text, c.width / 2, c.height / 2);
 
   const tex = new THREE.CanvasTexture(c);

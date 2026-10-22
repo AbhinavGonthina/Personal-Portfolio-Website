@@ -86,6 +86,20 @@ export function setTheme(next) {
 
 export const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
+/**
+ * Subscribe without rendering.
+ *
+ * The town's palette is not markup - it is three.js materials, a
+ * background colour, light intensities and a bloom setting, none
+ * of which React owns. They are rebuilt from a listener here
+ * rather than from a component, so there is no question of which
+ * runs first on the frame the theme changes.
+ */
+export function onTheme(fn) {
+  subscribers.add(fn);
+  return () => subscribers.delete(fn);
+}
+
 /** Read in frame loops and by the painters. Never subscribes. */
 export const getTheme = () => theme;
 export const isLight = () => theme === "light";
