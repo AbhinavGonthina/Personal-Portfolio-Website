@@ -18,17 +18,46 @@ import { siApachejmeter } from "simple-icons";
 const MONO = '"Geist Mono Variable", ui-monospace, monospace';
 const SANS = '"Geist Variable", ui-sans-serif, system-ui, sans-serif';
 
-function canvas(w, h) {
+/**
+ * How many real pixels each painted unit gets on the monitor.
+ *
+ * The screen on the desk is the one surface in the town you are
+ * meant to read rather than look at, and it was painted at one
+ * texel per unit - 1680 across a plane that fills most of the
+ * window. At that density every mip the GPU picks is a blurrier
+ * one than the text needs, which is why the screenshots on it
+ * looked like screenshots of screenshots.
+ *
+ * Drawing at two and letting the texture come back down is
+ * supersampling: the type and the project stills are resolved at
+ * twice the rate and filtered down, which is sharper than a
+ * straight 1:1 sample and far sharper than a mip of one. It costs
+ * four times the texture memory on three textures, which is why it
+ * is here and not on everything.
+ */
+const SS = 2;
+
+/**
+ * `ss` scales the backing store and the context together, so every
+ * painter goes on writing the same coordinates it always did and
+ * the hit boxes it hands back stay in those units.
+ */
+function canvas(w, h, ss = 1) {
   const c = document.createElement("canvas");
-  c.width = w;
-  c.height = h;
-  return [c, c.getContext("2d")];
+  c.width = w * ss;
+  c.height = h * ss;
+  const g = c.getContext("2d");
+  if (ss !== 1) g.scale(ss, ss);
+  return [c, g];
 }
 
 function finish(c) {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
+  // The ceiling, not 8. A screen read at an angle is exactly the
+  // case anisotropic filtering exists for, and the cost is paid
+  // per sample on one quad.
+  tex.anisotropy = 16;
   return tex;
 }
 
@@ -231,7 +260,7 @@ export function paintProjectsGrid(list) {
   const rows = Math.ceil(list.length / COLS);
   const H = HEAD + rows * (CARD_H + GAP) + PAD;
 
-  const [c, g] = canvas(W, H);
+  const [c, g] = canvas(W, H, SS);
   const hits = [];
 
   g.fillStyle = "#0d1117";
@@ -339,7 +368,7 @@ export function paintProjectsGrid(list) {
 export function paintBrowserChrome() {
   const W = CHROME_VIEW.w;
   const H = CHROME_VIEW.h;
-  const [c, g] = canvas(W, H);
+  const [c, g] = canvas(W, H, SS);
   g.textBaseline = "middle";
   g.textAlign = "left";
 
@@ -497,7 +526,9 @@ export function paintBrowserChrome() {
 export function paintDragHint() {
   const W = 1200;
   const H = 340;
-  const [c, g] = canvas(W, H);
+  // Supersampled with the rest of the screen it sits over. Left at
+  // one it was the one soft thing on a sharp monitor.
+  const [c, g] = canvas(W, H, SS);
   g.textBaseline = "middle";
   g.textAlign = "center";
 
@@ -592,7 +623,7 @@ export function paintProjectDetail(p, shot) {
   const ROW_GAP = 30;
   const BAR_H = 12;
   const PILL_H = 34;
-  const [c, g] = canvas(W, H);
+  const [c, g] = canvas(W, H, SS);
   const hits = [];
 
   g.fillStyle = "#0d1117";
@@ -822,7 +853,8 @@ export function paintProjectDetail(p, shot) {
   if (p.github) button("GitHub repo", bx, wide, false, "__github", p.github);
 
   // The preview, down the right and nearly the full height of what
-  // is left under the tabs.
+  // is left under the tabs. That rectangle is the room the picture
+  // has, not the picture's frame.
   const px = RX;
   const pw = W - px - PAD;
   // Clear of the rule under the tabs rather than hung off it, and
@@ -830,50 +862,53 @@ export function paintProjectDetail(p, shot) {
   // than at the top of it.
   const py = tabY + 44;
   const ph = H - py - 40;
-  g.fillStyle = "#010409";
-  g.strokeStyle = "#30363d";
-  g.lineWidth = 2;
-  roundRect(g, px, py, pw, ph, 10);
-  g.fill();
-  g.stroke();
 
   if (shot) {
-    // Scaled by height, not to cover, and never stretched.
+    // The outline is the picture's own edge.
     //
-    // Covering crops whatever will not fit underneath, which on a
-    // phone screenshot is most of the screenshot - a status bar
-    // and the top of a header. By height the whole screen is in
-    // the frame: a tall one sits as a narrow panel in the middle
-    // of it, a wide one runs off the sides and loses only its
-    // edges.
+    // It used to be a fixed panel with the still fitted inside it,
+    // and since half of these are phone screenshots the usual
+    // result was a tall strip of picture with a hand's width of
+    // black either side of it, inside a border belonging to
+    // neither. Contained and then drawn around, there is no
+    // background to see: the frame is whatever shape the picture
+    // turned out to be.
     //
-    // Inset, so the frame is still there. Fitted to the panel's full
-    // height a tall screenshot - a phone, which is what half of
-    // these are - covers the top and bottom of the outline it is
-    // supposed to be sitting inside, and the panel stops reading as
-    // a frame at all.
-    const INSET = 12;
-    const iw = pw - INSET * 2;
-    const ih = ph - INSET * 2;
-    const s = ih / shot.height;
+    // Contain, not cover. Cover made sense when the frame was
+    // fixed - the alternative was letterboxing - and it does not
+    // now, because a shape that does not fit simply gets a
+    // shorter frame instead of losing its edges.
+    const s = Math.min(pw / shot.width, ph / shot.height);
     const sw = shot.width * s;
     const sh = shot.height * s;
+    const sx = px + (pw - sw) / 2;
+    const sy = py + (ph - sh) / 2;
+
     g.save();
-    roundRect(g, px + INSET, py + INSET, iw, ih, 6);
+    roundRect(g, sx, sy, sw, sh, 10);
     g.clip();
-    g.drawImage(
-      shot,
-      px + INSET + (iw - sw) / 2,
-      py + INSET + (ih - sh) / 2,
-      sw,
-      sh,
-    );
+    g.imageSmoothingQuality = "high";
+    g.drawImage(shot, sx, sy, sw, sh);
     g.restore();
+
+    // Over the picture, not under it. Drawn first it is covered by
+    // the very thing it is supposed to be containing.
+    g.strokeStyle = "#30363d";
+    g.lineWidth = 2;
+    roundRect(g, sx, sy, sw, sh, 10);
+    g.stroke();
   } else {
+    // Nothing to draw around, so the empty frame is the message.
+    g.fillStyle = "#010409";
+    g.strokeStyle = "#30363d";
+    g.lineWidth = 2;
+    roundRect(g, px, py, pw, ph, 10);
+    g.fill();
+    g.stroke();
     g.fillStyle = "#30363d";
     g.font = `400 16px ${MONO}`;
     g.textAlign = "center";
-    g.fillText("no preview — see the live site", px + pw / 2, py + ph / 2);
+    g.fillText("no preview - see the live site", px + pw / 2, py + ph / 2);
     g.textAlign = "left";
   }
 
