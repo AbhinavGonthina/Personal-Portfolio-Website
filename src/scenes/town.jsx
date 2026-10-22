@@ -322,8 +322,11 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
   const tip = useRef();
   const drag = useRef(null);
   // The scroll fraction already written to the texture, so a frame
-  // in which nothing moved does not write it again.
+  // in which nothing moved does not write it again - and the
+  // texture it was written to, because a fraction that has not
+  // changed says nothing about a texture that has.
   const put = useRef(-1);
+  const wrote = useRef(null);
   // What the pointer is over, as one of the painter's hit boxes.
   const hov = useRef(null);
   const mark = useRef();
@@ -399,8 +402,26 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
     // still. Writing the same numbers into the texture on every one
     // of them re-uploads a matrix to say nothing changed.
     const frac = scrollable ? reel.cur / reel.max : 0;
-    if (frac === put.current) return;
+    // A new texture needs the window written to it whatever the
+    // scroll is doing. `repeat` on a fresh `CanvasTexture` is
+    // (1, 1), which maps the whole canvas onto the plane - and the
+    // grid canvas is half as tall again as the screen, so the
+    // monitor shows all twelve cards squeezed into the height of
+    // nine. That is what the stretched screen after a hot reload
+    // was: the module repaints, the texture is replaced, `tall` is
+    // unchanged at 1034 so the effect above does not re-run, and
+    // the only thing that would have set `repeat` returned early
+    // because the scroll had not moved.
+    //
+    // In production the same gap is there and nothing has walked
+    // into it yet: the monitor unmounts when the plain read takes
+    // over, so a fresh grid arrives with fresh refs, and a detail
+    // view wants exactly the (1, 1) a new texture already has.
+    // Both are accidents of the current arrangement rather than
+    // anything this guard knows.
+    if (frac === put.current && tex === wrote.current) return;
     put.current = frac;
+    wrote.current = tex;
 
     tex.repeat.set(1, span);
     tex.offset.set(0, (1 - span) * (1 - frac));
