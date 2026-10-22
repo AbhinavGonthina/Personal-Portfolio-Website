@@ -1,25 +1,9 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
-import { useTheme } from "../lib/theme";
 import { isHolding, useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
-import {
-  paintBoard,
-  paintBrowserChrome,
-  paintDragHint,
-  paintProjectDetail,
-  paintProjectsGrid,
-  paintBoardFace,
-  paintMark,
-  paintSkills,
-} from "../lib/paint";
-import { BOARD_LAMPS as LAMPS_AT } from "../lib/townGeometry";
-import { projects } from "../data/projects";
-import { profile, socials } from "../data/profile";
-import { education } from "../data/about";
-import { skillGroups } from "../data/skills";
 import { useStills } from "../lib/stills";
 import { rewind, seek } from "../lib/reel";
 import {
@@ -31,7 +15,19 @@ import {
 } from "../lib/scrollLock";
 import { cn } from "../lib/cn";
 
-const TownScene = lazy(() => import("../scenes/TownScene"));
+/**
+ * The scene, and the canvas textures it is dressed with, both
+ * behind the same boundary.
+ *
+ * `lib/paint` imports three for `CanvasTexture`, and
+ * `lib/townGeometry` imports it through `lib/geo`. Both used to be
+ * imported here, and this component is mounted on every visit - so
+ * the entry's static graph reached three, and every reader
+ * downloaded 193 kB gzip of renderer whether or not they ever saw
+ * the town. The painting moved down into the lazy chunk with the
+ * scene; nothing else about it changed.
+ */
+const Painted = lazy(() => import("../scenes/Painted"));
 
 /**
  * The one canvas, fixed behind the page.
@@ -73,18 +69,15 @@ export default function TownStage({ refs }) {
   // The scroll position at the previous frame, to tell a link that
   // has finished moving the page from one that is still in flight.
   const prevY = useRef(-1);
+  // Set when something other than the scroll could have moved a
+  // section, so the next frame measures instead of skipping.
+  const stale = useRef(true);
   // The section tops as last measured, so the scroll handler can
   // clamp without laying the page out again on every event.
   const tops = useRef([]);
   // Still mounted while the crane is running: the town is the thing
   // being craned away from, and it is on screen for most of it.
   const switching = useSwitching();
-  // Every surface in the town is a canvas texture, so a change of
-  // palette is a repaint rather than a restyle. Naming it as a
-  // dependency is the whole mechanism: these memos already rebuild
-  // when the reading changes, and the theme is the same kind of
-  // fact about what they should contain.
-  const theme = useTheme();
   const off = !!((plain && !switching) || still);
 
   // Nothing moves while the car is pulling up. The camera is on its
@@ -95,71 +88,17 @@ export default function TownStage({ refs }) {
   // camera somewhere the crane then has to fight it back from.
   useScrollLock((arriving && !off) || switching);
 
-  // Everything the town has to say is painted into a canvas texture
-  // once and only repainted when what it shows changes.
-  const marks = useMemo(
-    () => (off ? [] : socials.map((s) => paintMark(s.icon, s.name, theme))),
-    [off, theme],
-  );
-  const board = useMemo(
-    () => (off ? null : paintBoard(profile, education, theme)),
-    [off, theme],
-  );
-  // Where the two lamps hang, as a fraction across the board, so the
-  // pools they cast land under them rather than near them.
-  const boardFace = useMemo(
-    () => (off ? null : paintBoardFace(LAMPS_AT, theme)),
-    [off, theme],
-  );
-  const skills = useMemo(
-    () => (off ? null : paintSkills(skillGroups, theme)),
-    [off, theme],
-  );
-
-  // Which tag the pointer is on, and the screen painted for it.
-  //
-  // Held here rather than in the scene because painting a canvas is
-  // not frame work: it happens when the answer changes, which is a
-  // few times a second at the very most, and never while nothing is
-  // moving.
-  // Which repository is open, and the stills the detail view draws.
-  //
-  // The grid is painted once onto a canvas taller than the monitor
-  // and scrolled by moving the texture, so it does not belong to
-  // `shot` and is not repainted as the page moves. Only opening a
-  // project repaints anything.
+  // Which repository is open. The painting of it lives in the
+  // lazy chunk; this is here because the scroll reader closes it
+  // when the camera walks away from the desk.
   const [opened, setOpened] = useState(null);
   const stills = useStills(off);
-  const grid = useMemo(
-    () => (off ? null : paintProjectsGrid(projects, theme)),
-    [off, theme],
-  );
-  const hint = useMemo(() => (off ? null : paintDragHint(theme)), [off, theme]);
-  const chrome = useMemo(
-    () => (off ? null : paintBrowserChrome(theme)),
-    [off, theme],
-  );
-  const detail = useMemo(() => {
-    if (off || !opened) return null;
-    const p = projects.find((x) => x.id === opened);
-    return p ? paintProjectDetail(p, stills[p.id], theme) : null;
-  }, [off, opened, stills, theme]);
-  const screen = detail ?? grid;
 
   // Opening or closing a repository puts the new page at its top.
   const open = (id) => {
     rewind();
     setOpened(id);
   };
-
-  useEffect(() => () => marks.forEach((m) => m.dispose()), [marks]);
-  useEffect(() => () => board?.dispose(), [board]);
-  useEffect(() => () => boardFace?.dispose(), [boardFace]);
-  useEffect(() => () => skills?.tex?.dispose(), [skills]);
-  useEffect(() => () => grid?.tex?.dispose(), [grid]);
-  useEffect(() => () => hint?.dispose(), [hint]);
-  useEffect(() => () => chrome?.dispose(), [chrome]);
-  useEffect(() => () => detail?.tex?.dispose(), [detail]);
 
   useEffect(() => {
     if (off) return;
@@ -186,6 +125,29 @@ export default function TownStage({ refs }) {
         if (!raf.current) raf.current = requestAnimationFrame(read);
       };
       if (isHolding()) return again();
+
+      // A page that has not moved cannot have moved the camera.
+      //
+      // This loop runs every frame for the whole visit, and the
+      // first thing it used to do was read six bounding rects -
+      // sixty times a second, forever, whether or not anything had
+      // happened. Everything below depends on the scroll, so when
+      // the scroll is where it was last frame there is nothing
+      // here to work out.
+      //
+      // `trackJump` is the exception and still runs: a jump ends
+      // when the page has moved and then stopped, so the frame
+      // where nothing moved is exactly the one it is waiting for.
+      //
+      // `stale` is set by anything that can change the answer
+      // without the scroll changing - a resize, or the sections
+      // themselves being swapped for the other reading.
+      const y0 = window.scrollY;
+      if (y0 === prevY.current && !stale.current) {
+        trackJump(false);
+        return again();
+      }
+      stale.current = false;
 
       const els = refs.map((r) => r.current).filter(Boolean);
       if (els.length < 2) return again();
@@ -382,12 +344,19 @@ export default function TownStage({ refs }) {
       }
       if (!raf.current) raf.current = requestAnimationFrame(read);
     };
+    // A resize changes every section's height, which is the one
+    // way the answer moves without the scroll moving.
+    const onResize = () => {
+      stale.current = true;
+      read();
+    };
+    stale.current = true;
     read();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", read);
+    window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", read);
+      window.removeEventListener("resize", onResize);
       if (raf.current) cancelAnimationFrame(raf.current);
     };
   }, [off, refs]);
@@ -409,19 +378,13 @@ export default function TownStage({ refs }) {
     >
       {ready && (
         <Suspense fallback={null}>
-          <TownScene
-            active={live}
+          <Painted
+            live={live}
             focused={focused}
             onFocus={setFocused}
-            narrow={false}
-            screen={screen}
-            skills={skills}
-            chrome={chrome}
-            hint={hint}
             onOpen={open}
-            board={board}
-            boardFace={boardFace}
-            marks={marks}
+            opened={opened}
+            stills={stills}
           />
         </Suspense>
       )}

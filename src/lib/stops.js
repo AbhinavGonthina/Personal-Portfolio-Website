@@ -1,4 +1,4 @@
-import { BOARD, DESK, HOUSE, TOWN, WALL_PANEL } from "./townGeometry";
+import { BOARD, DESK, HOUSE, TOWN, WALL_PANEL } from "./townLayout";
 
 /**
  * Where the camera stands at each section, in order down the page.

@@ -46,6 +46,12 @@ const nearSub = (fn) => {
 };
 
 export const setJourney = (v) => {
+  // Only when it has actually moved, which is what `setSeen` below
+  // has always done. The page reader calls this every frame of the
+  // visit, and each call walked a set of eight or so subscribers
+  // and made React compare a snapshot for each one - sixty times a
+  // second to be told nothing had changed.
+  if (v === journey) return;
   journey = v;
   nearSubs.forEach((fn) => fn());
 };
