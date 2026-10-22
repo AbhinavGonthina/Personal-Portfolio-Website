@@ -13,9 +13,8 @@ export const projects = [
     blurb:
       "Job application tracker that visualizes an entire interview pipeline as a Sankey diagram.",
     description:
-      "A job application tracker built for SWE/CS job searches. It derives stage-to-stage conversion from status events with a SQL LAG() window function, scores resumes against job descriptions through the Gemini API (caching by SHA-256 input hash to avoid duplicate calls), and enforces three-tier rate limiting with in-memory Bucket4j token buckets plus PostgreSQL fixed-window counters.",
+      "A tracker for a software job search. It scores a resume against a job description through Gemini, and draws the whole pipeline as a Sankey diagram so you can see where applications stop.",
     category: "personal",
-    featured: true,
     period: "Aug 2025 – Present",
     tech: [
       "Next.js",
@@ -27,16 +26,16 @@ export const projects = [
     ],
     image: "/projects/ontrack.webp",
     live: "https://ontrack.abhinavgonthina.dev",
-    github: "https://github.com/AbhinavGonthina",
+    github: "https://github.com/AbhinavGonthina/ontrack",
   },
   {
     id: "portfolio",
     title: "This Website",
-    blurb: "The site you're on — rebuilt from scratch in 2026.",
+    blurb: "The site you're on, rebuilt from scratch in 2026.",
     description:
-      "A full rewrite of my portfolio. The previous version is archived in the repo under legacy/.",
+      "A full rewrite of my portfolio, as a town you walk through by scrolling. The previous version is archived in the repo under legacy/.",
     category: "personal",
-    period: "2026",
+    period: "Sep 2026 – Present",
     tech: ["React", "Vite", "Material UI", "Motion"],
     image: "/projects/portfolio.webp",
     github: "https://github.com/AbhinavGonthina/Personal-Portfolio-Website",
@@ -59,8 +58,7 @@ export const projects = [
       "Material UI",
     ],
     image: "/projects/rainfall.webp",
-    imageFit: "contain",
-    live: "https://rainfall-learning.com/",
+    private: true,
   },
   {
     id: "quak",
@@ -88,6 +86,7 @@ export const projects = [
       "/projects/quak-3.webp",
       "/projects/quak-4.webp",
     ],
+    private: true,
   },
   {
     id: "codesign",
@@ -99,10 +98,22 @@ export const projects = [
     category: "personal",
     period: "2025",
     tech: ["React", "JavaScript", "Tailwind CSS", "Flask", "Python", "MongoDB"],
-    image: "/logos/codesign.webp",
-    imageFit: "contain",
+    image: "/projects/codesign.webp",
     live: "https://codesign-group1.netlify.app/",
     github: "https://github.com/Aryan0102/CoDesign",
+  },
+  {
+    id: "prepit",
+    title: "PrepIt",
+    blurb:
+      "AI interview prep: a company, your resume and a job description in, a personalised prep report out.",
+    description:
+      "Give it a company name, your resume and a job description. An agent looks the company up, compares the two, and writes a prep report: what to know going in, where you line up, and what they are likely to ask.",
+    category: "personal",
+    period: "2026",
+    tech: ["React", "Python", "Flask", "Subconscious API"],
+    image: "/projects/prepit.webp",
+    github: "https://github.com/AbhinavGonthina/PrepIt",
   },
   {
     id: "recreon",
@@ -121,6 +132,7 @@ export const projects = [
       "Expo",
     ],
     image: "/projects/recreon.webp",
+    private: true,
   },
   {
     id: "roadquest",
@@ -159,6 +171,7 @@ export const projects = [
     tech: ["Java", "impworld"],
     video: "/videos/ConnectionsDemo.mp4",
     poster: "/projects/connections-poster.webp",
+    private: true,
   },
   {
     id: "ztype",
@@ -171,6 +184,7 @@ export const projects = [
     tech: ["Java", "impworld"],
     video: "/videos/ZTypeDemo.mp4",
     poster: "/projects/ztype-poster.webp",
+    private: true,
   },
   {
     id: "lightemall",
@@ -182,6 +196,7 @@ export const projects = [
     period: "Coursework",
     tech: ["Java", "impworld"],
     image: "/projects/lightemall.webp",
+    private: true,
   },
   {
     id: "cleanboston",
@@ -194,5 +209,6 @@ export const projects = [
     tech: ["Racket"],
     video: "/videos/BostonCO2Demo.mp4",
     poster: "/projects/cleanboston-poster.webp",
+    private: true,
   },
 ];
