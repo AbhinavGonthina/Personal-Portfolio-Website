@@ -234,10 +234,6 @@ function tick(now) {
 
   if (was < FLIP && p >= FLIP) setPlain(true);
   else if (was > FLIP && p <= FLIP) setPlain(false);
-  // Below this the page has faded out of its frame, so the scroll
-  // can be sent home with nobody looking at it.
-  if (was > PAGE_IN && p <= PAGE_IN) thaw();
-
   paint();
   if ((dir > 0 && p < 1) || (dir < 0 && p > 0)) {
     raf = requestAnimationFrame(tick);
@@ -284,6 +280,27 @@ let waiting = 0;
 const WARM_CEILING = 8000;
 
 function begin() {
+  // Both readings start at their own beginning, and this is the
+  // last moment that can be arranged without anybody watching the
+  // page move on its own.
+  //
+  // The scroll used to go home half way through the run instead,
+  // once the page had faded out of its frame - which meant the
+  // first half of every run home carried whatever section the
+  // reader had been standing in. Click Interactive from Contact
+  // and the transition showed Contact, with the bar highlighting
+  // it, and then the town opened on the welcome. The frame is
+  // supposed to be handing one reading over to the other, not
+  // replaying where you just were.
+  //
+  // Here, not on the click, because the click is the one place it
+  // must not happen: that is the wait, the spinner is up, the
+  // scene is still being built, and a page that throws itself to
+  // the top and then sits there is the thing this was moved out
+  // of the way of. By the time this runs the scene has reported
+  // and the clock starts in the same frame, so the reset and the
+  // first movement of the crane are one event.
+  thaw();
   t0 = performance.now();
   if (!raf) raf = requestAnimationFrame(tick);
 }

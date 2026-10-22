@@ -191,11 +191,17 @@ export default function TownStage({ refs }) {
       // any of them has been given a height. Every rect comes back
       // at zero, every section top is the same number, and the
       // test below for "past the last one" is `0 >= 0` - so the
-      // camera was told it was at the final stop. That is the
-      // mailboxes appearing for a frame on the way home and then
-      // the town snapping back to the landing, from wherever in
-      // the plain read the reader happened to be standing.
-      if (at[at.length - 1] <= at[0] + 1) return again();
+      // camera is told it is at the final stop.
+      //
+      // Six sections down a page are six increasing numbers. Any
+      // other answer is a page that is not finished, whether that
+      // is all of them at zero or only the last two, so none of it
+      // is measured until they are a ladder.
+      let laid = true;
+      for (let i = 1; i < at.length; i++) {
+        if (at[i] <= at[i - 1]) laid = false;
+      }
+      if (!laid) return again();
       tops.current = at;
 
       // A stop holds you for a second, and holding the position is
