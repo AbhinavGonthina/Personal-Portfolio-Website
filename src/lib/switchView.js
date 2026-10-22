@@ -131,6 +131,8 @@ function paint() {
     // sheet over the canvas, and coming home to the town was a black
     // screen with the town drawing away underneath it.
     root.setProperty("--sw-back", "0");
+    // At rest the bar is nobody's passenger.
+    root.setProperty("--sw-bar", "0");
     // The window the frame holds is back at the document's top edge,
     // where the clip-path fallback also puts it.
     root.setProperty("--sw-y", "0px");
@@ -141,6 +143,22 @@ function paint() {
   // The bar goes out with the town it belongs to and comes back with
   // the page, which also owns one.
   root.setProperty("--sw-chrome", String(Math.min(1, 1 - CHROME(p) + PAGE(p))));
+  // How much of the bar is the page's rather than the town's.
+  //
+  // There are two bars in this run and they are the same element.
+  // While the page is up it rides inside the second frame and
+  // carries that frame's placement; while the town is up it is the
+  // town's bar and sits where it always sits. The opacity above
+  // already crossfades between them - this is the other half of
+  // the same fact, and without it the bar was being placed in a
+  // frame it had stopped belonging to.
+  //
+  // Coming home that is visible: below 0.46 the view has travelled
+  // back to the town and the page's frame is away off to the
+  // right, but the bar fades in over the last 0.16 still wearing
+  // that frame's transform. It arrived small and off to one side
+  // and snapped into place.
+  root.setProperty("--sw-bar", String(PAGE(p)));
   // A frame holds one screenful. The document behind it is six times
   // that, and unclipped it hangs out of the bottom of its own frame.
   root.setProperty("--sw-clip", "1");

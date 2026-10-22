@@ -205,6 +205,24 @@ header.sw-pane,
   opacity: var(--sw-chrome, 1);
 }
 
+/* The bar goes into the frame only as far as it belongs to the page.
+
+   `--sw-bar` is 1 while the page is up and 0 while the town is, so
+   this is the shared transform scaled back to identity as the bar
+   stops being the page's. Without it the bar wore the second
+   frame's placement for the whole run, including the last sixth of
+   the way home - where the view is back on the town, the page's
+   frame is off to the right, and the bar was fading in over there
+   at half size before snapping into place. */
+header.sw-pane {
+  transform-origin: 50% 0%;
+  transform: translate(
+      calc(var(--sw-tx, 0px) * var(--sw-bar, 0)),
+      calc(var(--sw-ty, 0px) * var(--sw-bar, 0))
+    )
+    scale(calc(1 + (var(--sw-s, 1) - 1) * var(--sw-bar, 0)));
+}
+
 /**
  * A light that travels once around the edge of the featured card.
  *
