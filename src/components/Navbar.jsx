@@ -121,6 +121,18 @@ export default function Navbar() {
 
   const marked = hovered ?? active;
 
+  // The bar wears its scrolled dress only when it is a bar.
+  //
+  // Past 24 pixels it takes a border, a tinted background and a
+  // hairline, which is what makes a sticky bar read as chrome over
+  // a page. Inside the switch's frame it is not over anything: the
+  // page is shrunk into a rectangle and the bar is shrunk with it,
+  // so that treatment stops reading as chrome and starts reading
+  // as a band ruled across the top of the picture. The reader has
+  // usually scrolled by the time they click, so this was on for
+  // most of every run home.
+  const lit = scrolled && !switching;
+
   return (
     <header
       className={cn(
@@ -131,7 +143,7 @@ export default function Navbar() {
         // and does not need a transform on it the rest of the time.
         "sticky top-0 z-50 transition-colors duration-300",
         switching && "sw-pane",
-        scrolled
+        lit
           ? "border-b border-ink-700/70 bg-ink-950/70 backdrop-blur-xl"
           : "border-b border-transparent bg-transparent",
       )}
@@ -142,7 +154,7 @@ export default function Navbar() {
         aria-hidden
         className={cn(
           "pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent transition-opacity duration-500",
-          scrolled ? "opacity-100" : "opacity-0",
+          lit ? "opacity-100" : "opacity-0",
         )}
       />
 

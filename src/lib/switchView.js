@@ -234,7 +234,22 @@ function tick(now) {
  * to strand somebody in the reading they just asked to leave.
  */
 let waiting = 0;
-const WARM_CEILING = 3000;
+/**
+ * Three seconds was not a ceiling, it was a deadline the scene
+ * regularly missed, and missing it is the worst outcome there is:
+ * the crane plays its two and a bit seconds against a canvas that
+ * has not drawn, so what you watch is a black screen, and the town
+ * appears fully formed at the end of an animation that was
+ * supposed to deliver it. Coming back after a long time on the
+ * plain read is exactly when the scene is slowest to come up.
+ *
+ * This is only reached when the scene never reports at all. The
+ * spinner is on screen throughout, which is a true thing to be
+ * showing while a scene is being built, and a reader who waits
+ * eight seconds and then sees the crane is better served than one
+ * who waits three and sees nothing happen.
+ */
+const WARM_CEILING = 8000;
 
 function begin() {
   t0 = performance.now();
