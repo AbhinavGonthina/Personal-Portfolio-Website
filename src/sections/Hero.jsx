@@ -231,7 +231,7 @@ export default function Hero({ ref }) {
       className="pointer-events-none relative h-[94vh] min-h-[620px] w-full"
     >
       <h1 className="sr-only">
-        {profile.name} &mdash; {profile.role}
+        {profile.name}, {profile.role}
       </h1>
     </section>
   );

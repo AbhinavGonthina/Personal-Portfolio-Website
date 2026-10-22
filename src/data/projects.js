@@ -64,7 +64,7 @@ export const projects = [
     id: "quak",
     title: "Quak Travel",
     blurb:
-      "The world's first itinerary marketplace — buy and sell travel itineraries.",
+      "The world's first itinerary marketplace, for buying and selling travel itineraries.",
     description:
       "An emerging travel startup letting travelers buy and sell itineraries. Previously a travel hub with trip planning and accommodation purchasing. The images show work from before the company's rebrand; current mocks are under NDA.",
     category: "startup",
@@ -94,7 +94,7 @@ export const projects = [
     blurb:
       "A Fiverr-inspired platform connecting aspiring developers and designers.",
     description:
-      "CoDesign connects aspiring developers and designers looking to collaborate on the platform. Note: the backend is on a free tier and takes a minute to spin up.",
+      "CoDesign connects aspiring developers and designers looking to collaborate on the platform. Note that the backend is on a free tier and takes a minute to spin up.",
     category: "personal",
     period: "2025",
     tech: ["React", "JavaScript", "Tailwind CSS", "Flask", "Python", "MongoDB"],
@@ -106,9 +106,9 @@ export const projects = [
     id: "prepit",
     title: "PrepIt",
     blurb:
-      "AI interview prep: a company, your resume and a job description in, a personalised prep report out.",
+      "AI interview prep. A company, your resume and a job description in, a personalised prep report out.",
     description:
-      "Give it a company name, your resume and a job description. An agent looks the company up, compares the two, and writes a prep report: what to know going in, where you line up, and what they are likely to ask.",
+      "Give it a company name, your resume and a job description. An agent looks the company up, compares the two, and writes a prep report covering what to know going in, where you line up, and what they are likely to ask.",
     category: "personal",
     period: "2026",
     tech: ["React", "Python", "Flask", "Subconscious API"],

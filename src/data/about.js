@@ -9,8 +9,8 @@ export const education = {
 };
 
 export const bio = [
-  "I'm a Computer Science student at Northeastern University in Boston, graduating in April 2027. Most of what I enjoy sits where backend systems meet the interfaces built on top of them — designing an API, then making the thing that consumes it feel good to use.",
-  "Over the last two years I've worked across healthcare technology, travel, and education: AWS infrastructure and observability at athenahealth, patient monitoring systems at Philips, and mobile and payments work at Quak Travel. On the side I'm building OnTrack, a job application tracker.",
+  "I'm a Computer Science student at Northeastern University in Boston, graduating in April 2027. Most of what I enjoy sits where backend systems meet the interfaces built on top of them, designing an API and then making the thing that consumes it feel good to use.",
+  "Over the last two years I've worked across healthcare technology, travel, and education; AWS infrastructure and observability at athenahealth, patient monitoring systems at Philips, and mobile and payments work at Quak Travel. On the side I'm building OnTrack, a job application tracker.",
 ];
 
 // Fall 2026
