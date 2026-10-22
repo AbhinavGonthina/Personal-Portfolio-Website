@@ -99,7 +99,15 @@ export default function App() {
         // nobody asked for. The link now runs the page to its foot
         // and leaves Contact sitting in the lower half of the
         // window, which is where the last thing on a page belongs.
-        className={`pointer-events-none relative z-10 pb-8 ${switching ? "sw-pane" : ""}`}
+        //
+        // 24 in the plain read, which is what the copyright line
+        // has above it between the rule and the words, so it sits
+        // in the same air on both sides instead of on a shelf.
+        //
+        // The town keeps the 208 it always had. Nothing about that
+        // reading changed; its last section is a whole viewport and
+        // the camera has to be able to reach the far end of it.
+        className={`pointer-events-none relative z-10 ${plain ? "pb-6" : "pb-52"} ${switching ? "sw-pane" : ""}`}
       >
         <Hero ref={hero} />
         <About ref={about} />
