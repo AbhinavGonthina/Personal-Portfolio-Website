@@ -4,6 +4,9 @@ import { cn } from "../lib/cn";
 import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
 import { useNarrow, usePlain } from "../lib/plain";
+import { toggleTheme, useTheme } from "../lib/theme";
+import sunMark from "bootstrap-icons/icons/sun.svg?raw";
+import moonMark from "bootstrap-icons/icons/moon.svg?raw";
 import { runSwitch, useSwitching } from "../lib/switchView";
 import { setFocused, useStopIndex } from "../lib/stage";
 import { beginJump } from "../lib/scrollLock";
@@ -60,6 +63,7 @@ const LINK =
 export default function Navbar() {
   const plain = usePlain();
   const narrow = useNarrow();
+  const theme = useTheme();
   const switching = useSwitching();
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
@@ -154,7 +158,7 @@ export default function Navbar() {
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent transition-opacity duration-500",
+          "pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-(--lift-edge) to-transparent transition-opacity duration-500",
           lit ? "opacity-100" : "opacity-0",
         )}
       />
@@ -198,7 +202,7 @@ export default function Navbar() {
             away because the bar is 56 pixels tall and a scrollbar in
             it is furniture, not information. */}
         <div
-          className="relative flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-full border border-white/10 bg-white/[0.03] p-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-self-center md:overflow-x-visible [&::-webkit-scrollbar]:hidden"
+          className="relative flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-full border border-(--lift-line) bg-(--lift-fill) p-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-self-center md:overflow-x-visible [&::-webkit-scrollbar]:hidden"
           onMouseLeave={() => setHovered(null)}
         >
           {NAV_ITEMS.map((item) => (
@@ -218,7 +222,7 @@ export default function Navbar() {
                 <motion.span
                   layoutId="nav-pill"
                   aria-hidden
-                  className="absolute inset-0 -z-10 rounded-full bg-white/[0.09] ring-1 ring-inset ring-white/15"
+                  className="absolute inset-0 -z-10 rounded-full bg-(--lift-fill-strong) ring-1 ring-inset ring-(--lift-ring)"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
@@ -233,14 +237,34 @@ export default function Navbar() {
             button is a button to nothing. Asked of the store rather
             than written as a breakpoint, so the control and the thing
             it controls cannot be given two different thresholds. */}
-        <div className="flex justify-end">
+        <div className="flex items-center justify-end gap-2">
+          {/* Day or night, in both readings. The icon is the one you
+              are going to rather than the one you are in, which is
+              how every other switch on a phone reads. */}
+          <button
+            onClick={toggleTheme}
+            aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
+            className={cn(
+              "grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+              "hover:border-(--lift-line-strong) hover:text-fg",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+            )}
+          >
+            <span
+              aria-hidden
+              className="size-3.5 [&>svg]:size-full"
+              dangerouslySetInnerHTML={{
+                __html: theme === "dark" ? sunMark : moonMark,
+              }}
+            />
+          </button>
           {!narrow && (
             <button
               onClick={() => runSwitch(!plain)}
               aria-pressed={plain}
               className={cn(
                 LINK,
-                "border border-white/10 text-fg-subtle hover:border-white/20 hover:text-fg",
+                "border border-(--lift-line) text-fg-subtle hover:border-(--lift-line-strong) hover:text-fg",
               )}
             >
               {plain ? "Interactive" : "Simpler read"}

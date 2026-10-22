@@ -182,7 +182,7 @@ export default function Hero({ ref }) {
                     a padded box with a second rounded ring drawn in
                     the gap, which left a hairline of background
                     showing all the way round it. */}
-              <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-ink-950 [transform:translateZ(0px)]">
+              <div className="relative overflow-hidden rounded-2xl border border-(--lift-line) bg-ink-950 [transform:translateZ(0px)]">
                 <img
                   src={profile.photo}
                   alt={`Portrait of ${profile.name}`}
@@ -192,7 +192,7 @@ export default function Hero({ ref }) {
                 />
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10"
+                  className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-(--lift-line)"
                 />
               </div>
             </TiltCard>

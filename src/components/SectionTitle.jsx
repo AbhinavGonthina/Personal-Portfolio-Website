@@ -52,13 +52,13 @@ export default function SectionTitle() {
             // inside `transition` is not a thing motion reads.
             exit={{ opacity: 0, y: -6, transition: { duration: 0.16 } }}
             transition={{ duration: 0.34, ease: EASE }}
-            className="w-fit rounded-lg border border-white/[0.07] bg-black/25 px-4 py-3 backdrop-blur-[2px]"
+            className="w-fit rounded-lg border border-(--lift-line) bg-(--plate) px-4 py-3 backdrop-blur-[2px]"
           >
             <h2
               className="flex items-baseline gap-3 text-3xl font-semibold tracking-tight"
               style={{ textShadow: "0 0 10px rgba(100, 200, 255, 0.4)" }}
             >
-              <span className="font-mono text-sm font-normal tracking-[0.12em] text-[#6fe3f5]/70">
+              <span className="font-mono text-sm font-normal tracking-[0.12em] text-accent/70">
                 {String(n).padStart(2, "0")}
                 <span className="mx-1.5 text-fg-subtle">//</span>
               </span>
@@ -67,7 +67,7 @@ export default function SectionTitle() {
             {/* The rule picks up the same cyan at its left end and
                 fades out, so it reads as a readout underline rather
                 than a ruled line under a word. */}
-            <div className="mt-2.5 h-px w-28 bg-gradient-to-r from-[#6fe3f5] via-white/40 to-transparent" />
+            <div className="mt-2.5 h-px w-28 bg-gradient-to-r from-accent via-(--lift-edge-strong) to-transparent" />
           </motion.div>
         )}
       </AnimatePresence>

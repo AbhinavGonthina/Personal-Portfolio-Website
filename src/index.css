@@ -62,6 +62,91 @@
   --animate-grid: grid 22s linear infinite;
 }
 
+/**
+ * Day.
+ *
+ * The ramp is not inverted, it is rebuilt. Inverting a near-black
+ * ramp gives a near-white one where every step is the same distance
+ * apart, and light surfaces do not work that way: on black the eye
+ * reads separation from light added, on white it reads it from
+ * shadow, and shadow runs out much sooner. So the light steps are
+ * closer together at the top and the borders carry more of the work
+ * than the fills do.
+ *
+ * `--color-fg` is not pure black either. White text on black is the
+ * one pairing where full contrast is comfortable; black on white at
+ * the same ratio is a glare, which is why the darkest text here is
+ * a very dark grey.
+ *
+ * The accent moves too. The cyan the scene is lit with reads as a
+ * light at night and as a highlighter pen on white, so day takes the
+ * same hue brought right down in lightness until it is a colour
+ * rather than a glow.
+ */
+:root[data-theme="light"] {
+  --color-ink-950: #ffffff;
+  --color-ink-900: #f6f6f7;
+  --color-ink-850: #f1f1f3;
+  --color-ink-800: #e8e8ea;
+  --color-ink-700: #d8d8dc;
+  --color-ink-600: #bdbdc4;
+
+  --color-fg: #15151a;
+  --color-fg-muted: #51515c;
+  --color-fg-subtle: #74747f;
+
+  --color-ring: #6b6b76;
+  --color-accent: #0e7f94;
+}
+
+/**
+ * The handful of places that paint with literal white or black
+ * rather than with a token.
+ *
+ * They are all the same idea - a hairline or a wash lifted off the
+ * surface underneath - and on black that idea is white at a low
+ * alpha. On white it has to be black at a low alpha, so the two
+ * values live here as a pair and the components use the variable.
+ */
+:root {
+  --lift: 255 255 255;
+  --lift-line: rgb(255 255 255 / 0.1);
+  --lift-line-strong: rgb(255 255 255 / 0.2);
+  --lift-fill: rgb(255 255 255 / 0.03);
+  --lift-fill-strong: rgb(255 255 255 / 0.09);
+  --lift-ring: rgb(255 255 255 / 0.15);
+  --lift-edge: rgb(255 255 255 / 0.25);
+  --lift-edge-strong: rgb(255 255 255 / 0.4);
+  --plate: rgb(0 0 0 / 0.25);
+}
+
+:root[data-theme="light"] {
+  --lift: 0 0 0;
+  --lift-line: rgb(0 0 0 / 0.12);
+  --lift-line-strong: rgb(0 0 0 / 0.22);
+  --lift-fill: rgb(0 0 0 / 0.035);
+  --lift-fill-strong: rgb(0 0 0 / 0.07);
+  --lift-ring: rgb(0 0 0 / 0.14);
+  --lift-edge: rgb(0 0 0 / 0.22);
+  --lift-edge-strong: rgb(0 0 0 / 0.35);
+  --plate: rgb(255 255 255 / 0.55);
+}
+
+/* The theme is swapped on a click, so the surfaces move together
+   rather than each one snapping on its own schedule. Not on
+   everything - a transition on `*` catches the switch's own
+   transforms and the scene's custom properties. */
+:root[data-theme] body,
+:root[data-theme] header,
+:root[data-theme] section,
+:root[data-theme] article,
+:root[data-theme] aside {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease;
+}
+
 @keyframes grid {
   0% {
     transform: translateY(-50%);
