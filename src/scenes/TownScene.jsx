@@ -1065,6 +1065,13 @@ const WATCH =
   new URLSearchParams(window.location.search).has("perf");
 
 function Perf() {
+  // The scene itself, for the bench script. Behind `?perf` with the
+  // rest of this, so nothing is exported in a normal page.
+  const three = useThree();
+  useEffect(() => {
+    window.__three = three;
+    return () => delete window.__three;
+  }, [three]);
   const n = useRef(0);
   const t = useRef(0);
   const acc = useRef({ calls: 0, tris: 0 });
@@ -1948,13 +1955,16 @@ function Sky() {
  */
 function Air() {
   const scene = useThree((s) => s.scene);
+  // The colour last written, as the string the palette holds.
+  // Comparing against `getHexString()` meant three string
+  // allocations a frame - two `slice`s and the hex itself - to
+  // answer a question that only changes when somebody clicks.
+  const on = useRef(null);
   useFrame(() => {
-    if (scene.background?.getHexString?.() !== SCENE.sky.slice(1)) {
-      scene.background?.set(SCENE.sky);
-    }
-    if (scene.fog && scene.fog.color.getHexString() !== SCENE.sky.slice(1)) {
-      scene.fog.color.set(SCENE.sky);
-    }
+    if (on.current === SCENE.sky) return;
+    on.current = SCENE.sky;
+    scene.background?.set(SCENE.sky);
+    scene.fog?.color.set(SCENE.sky);
   });
   return null;
 }

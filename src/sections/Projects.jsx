@@ -27,6 +27,18 @@ const STEP =
 const LINK =
   "font-mono text-[11px] uppercase tracking-[0.18em] transition-colors";
 
+/**
+ * The card-sized copy of a still, which is what the rail wants.
+ *
+ * The originals are up to 1800px wide because the monitor in the
+ * town draws them at 1720. A card is 332 CSS px, so the rail was
+ * downloading and decoding about five times the pixels it can
+ * show - and a decoded 1800x1125 bitmap is 8MB of memory whether
+ * or not any of it is visible. Every still has a 700px sibling
+ * beside it, which is 332 at twice the density.
+ */
+const card = (src) => src.replace(/\.webp$/, "-card.webp");
+
 function Shot({ p }) {
   const src = p.image ?? p.poster;
   if (!src) return null;
@@ -45,9 +57,17 @@ function Shot({ p }) {
           panel, a wide one runs off the sides, and both show the
           part worth seeing. */}
       <img
-        src={src}
+        src={src.endsWith(".webp") ? card(src) : src}
         alt=""
         loading="lazy"
+        decoding="async"
+        // If a still ever ships without its card-sized sibling,
+        // fall back to the full one rather than showing a hole.
+        onError={(e) => {
+          if (e.currentTarget.src !== new URL(src, location.href).href) {
+            e.currentTarget.src = src;
+          }
+        }}
         className={`transition-transform duration-500 group-hover:scale-[1.04] ${
           // A wordmark is fitted whole inside the frame. Scaled by
           // height like a screenshot it overflows the sides and
