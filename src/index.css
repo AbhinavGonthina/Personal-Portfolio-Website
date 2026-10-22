@@ -177,8 +177,22 @@ main.sw-pane {
       calc(var(--sw-ty, 0px) - 4rem * (1 - var(--sw-s, 1)))
     )
     scale(var(--sw-s, 1));
+  /* The window opens one bar-height above the page, not level with
+     it.
+
+     The bar is in flow, so it owns the first 4rem of the document
+     and the page begins underneath. The landing's glow is drawn
+     deliberately overflowing upward into that strip, so the bar
+     has something behind it and does not get outlined in light
+     along its bottom edge - and a clip level with the page's top
+     edge cut exactly that overflow away, which drew the outline
+     the overflow exists to prevent. Inside the frame the bar came
+     out as a black band ruled across the top of the picture.
+
+     The strip is where the bar is, and the bar is painted over it,
+     so nothing else of the page shows there. */
   clip-path: inset(
-    var(--sw-y, 0px) 0
+    calc(var(--sw-y, 0px) - var(--sw-clip, 0) * 4rem) 0
       calc(var(--sw-clip, 0) * (100% - 100vh + 4rem) - var(--sw-y, 0px)) 0
   );
 }
