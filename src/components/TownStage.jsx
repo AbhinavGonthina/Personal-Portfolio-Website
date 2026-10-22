@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { setFocused, setJourney, useFocused } from "../lib/stage";
 import { usePlain } from "../lib/plain";
+import { useTheme } from "../lib/theme";
 import { isHolding, useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
 import { STOP, STOPS } from "../lib/stops";
@@ -78,6 +79,12 @@ export default function TownStage({ refs }) {
   // Still mounted while the crane is running: the town is the thing
   // being craned away from, and it is on screen for most of it.
   const switching = useSwitching();
+  // Every surface in the town is a canvas texture, so a change of
+  // palette is a repaint rather than a restyle. Naming it as a
+  // dependency is the whole mechanism: these memos already rebuild
+  // when the reading changes, and the theme is the same kind of
+  // fact about what they should contain.
+  const theme = useTheme();
   const off = !!((plain && !switching) || still);
 
   // Nothing moves while the car is pulling up. The camera is on its
@@ -91,20 +98,23 @@ export default function TownStage({ refs }) {
   // Everything the town has to say is painted into a canvas texture
   // once and only repainted when what it shows changes.
   const marks = useMemo(
-    () => (off ? [] : socials.map((s) => paintMark(s.icon, s.name))),
-    [off],
+    () => (off ? [] : socials.map((s) => paintMark(s.icon, s.name, theme))),
+    [off, theme],
   );
   const board = useMemo(
-    () => (off ? null : paintBoard(profile, education)),
-    [off],
+    () => (off ? null : paintBoard(profile, education, theme)),
+    [off, theme],
   );
   // Where the two lamps hang, as a fraction across the board, so the
   // pools they cast land under them rather than near them.
   const boardFace = useMemo(
-    () => (off ? null : paintBoardFace(LAMPS_AT)),
-    [off],
+    () => (off ? null : paintBoardFace(LAMPS_AT, theme)),
+    [off, theme],
   );
-  const skills = useMemo(() => (off ? null : paintSkills(skillGroups)), [off]);
+  const skills = useMemo(
+    () => (off ? null : paintSkills(skillGroups, theme)),
+    [off, theme],
+  );
 
   // Which tag the pointer is on, and the screen painted for it.
   //
@@ -120,14 +130,20 @@ export default function TownStage({ refs }) {
   // project repaints anything.
   const [opened, setOpened] = useState(null);
   const stills = useStills(off);
-  const grid = useMemo(() => (off ? null : paintProjectsGrid(projects)), [off]);
-  const hint = useMemo(() => (off ? null : paintDragHint()), [off]);
-  const chrome = useMemo(() => (off ? null : paintBrowserChrome()), [off]);
+  const grid = useMemo(
+    () => (off ? null : paintProjectsGrid(projects, theme)),
+    [off, theme],
+  );
+  const hint = useMemo(() => (off ? null : paintDragHint(theme)), [off, theme]);
+  const chrome = useMemo(
+    () => (off ? null : paintBrowserChrome(theme)),
+    [off, theme],
+  );
   const detail = useMemo(() => {
     if (off || !opened) return null;
     const p = projects.find((x) => x.id === opened);
-    return p ? paintProjectDetail(p, stills[p.id]) : null;
-  }, [off, opened, stills]);
+    return p ? paintProjectDetail(p, stills[p.id], theme) : null;
+  }, [off, opened, stills, theme]);
   const screen = detail ?? grid;
 
   // Opening or closing a repository puts the new page at its top.

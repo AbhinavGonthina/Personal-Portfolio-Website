@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { getTheme } from "./theme";
 import { ACCENT } from "./townMaterials";
 import githubMark from "bootstrap-icons/icons/github.svg?raw";
 import linkedinMark from "bootstrap-icons/icons/linkedin.svg?raw";
@@ -14,6 +15,160 @@ import { siApachejmeter } from "simple-icons";
  * procedural - no asset pipeline, nothing to 404, and the type matches
  * the rest of the site because it is the same font stack.
  */
+
+/**
+ * Two palettes, because the town has two times of day.
+ *
+ * Everything in this file paints onto a canvas that ends up as a
+ * texture in the scene, so none of it can be reached by CSS. The
+ * colours were written as literals when there was only one answer;
+ * each one stood for a role, and the roles are what is named here.
+ *
+ * The monitor is a picture of a GitHub page, so its two sets are
+ * GitHub's own dark and light themes rather than anything invented.
+ * Brand marks - the traffic lights, the language dots - are not in
+ * here at all: a language dot is the same colour in daylight.
+ */
+const NIGHT = {
+  scrim0: "rgba(1,3,8,0)",
+  scrim55: "rgba(1,3,8,0.55)",
+  scrim90: "rgba(1,3,8,0.9)",
+  scrim97: "rgba(1,3,8,0.97)",
+  shadow: "rgba(0,0,0,0.9)",
+  shadowUp: "rgba(0,0,0,0.95)",
+  halo0: "rgba(143,168,255,0)",
+  halo035: "rgba(143,168,255,0.035)",
+  halo05: "rgba(143,168,255,0.05)",
+  halo16: "rgba(143,168,255,0.16)",
+  wash0: "rgba(110,130,200,0)",
+  wash03: "rgba(110,130,200,0.03)",
+  sheen: "rgba(132,154,235,0.11)",
+  sheenUp: "rgba(150,172,255,0.30)",
+  page: "#0d1117",
+  pageSoft: "#161b22",
+  pageSunk: "#010409",
+  chip: "#21262d",
+  line: "#30363d",
+  lineSoft: "#21262d",
+  ink: "#e6edf3",
+  inkBody: "#c9d1d9",
+  inkMuted: "#8b949e",
+  inkFaint: "#7d8590",
+  inkGhost: "#6e7681",
+  inkGhostest: "#484f58",
+  link: "#4493f8",
+  linkSoft: "#79c0ff",
+  tab: "#fd8c73",
+  go: "#238636",
+  goEdge: "#2ea043",
+  goInk: "#ffffff",
+  lock: "#3fb950",
+  tagInk: "#6e94c9",
+  tagEdge: "#21304a",
+  panel: "#05070e",
+  panelDeep: "#04060b",
+  panelDark: "#05050a",
+  panelLift: "#080a12",
+  panelEdge: "#2b3350",
+  panelEdgeUp: "#262c45",
+  panelEdgeLo: "#232942",
+  panelEdgeHi: "#27304a",
+  panelInk: "#e8ecff",
+  panelBody: "#d7dcea",
+  panelMuted: "#aab3c9",
+  panelFaint: "#6f7694",
+  panelLine: "#151b29",
+  panelLine2: "#1d2436",
+  panelLine3: "#0d101b",
+  panelLine4: "#0e1118",
+  panelLine5: "#11131c",
+  panelLine6: "#23232b",
+  glowInk: "#8fa8ff",
+  boardInk: "#ffffff",
+  boardBody: "#b9c3d2",
+  boardFaint: "#6f7788",
+  boardSoft: "#c6cde4",
+  boardWash: "#dfe6ff",
+  boardDim: "#b6bcc8",
+  boardPale: "#f4f4f5",
+  accent: "#6fe3f5",
+};
+
+const DAY = {
+  scrim0: "rgba(246,248,251,0)",
+  scrim55: "rgba(246,248,251,0.6)",
+  scrim90: "rgba(246,248,251,0.92)",
+  scrim97: "rgba(246,248,251,0.97)",
+  shadow: "rgba(255,255,255,0.85)",
+  shadowUp: "rgba(255,255,255,0.9)",
+  halo0: "rgba(59,85,184,0)",
+  halo035: "rgba(59,85,184,0.05)",
+  halo05: "rgba(59,85,184,0.06)",
+  halo16: "rgba(59,85,184,0.14)",
+  wash0: "rgba(80,100,170,0)",
+  wash03: "rgba(80,100,170,0.05)",
+  sheen: "rgba(90,112,190,0.1)",
+  sheenUp: "rgba(70,92,175,0.26)",
+  page: "#ffffff",
+  pageSoft: "#f6f8fa",
+  pageSunk: "#eef1f4",
+  chip: "#f6f8fa",
+  line: "#d1d9e0",
+  lineSoft: "#e4e8ec",
+  ink: "#1f2328",
+  inkBody: "#32383f",
+  inkMuted: "#59636e",
+  inkFaint: "#6e7781",
+  inkGhost: "#8c959f",
+  inkGhostest: "#afb8c1",
+  link: "#0969da",
+  linkSoft: "#0550ae",
+  tab: "#fd8c73",
+  go: "#1f883d",
+  goEdge: "#1a7f37",
+  goInk: "#ffffff",
+  lock: "#1a7f37",
+  tagInk: "#0550ae",
+  tagEdge: "#cfd8e6",
+  panel: "#f7f8fb",
+  panelDeep: "#f2f4f9",
+  panelDark: "#eef0f6",
+  panelLift: "#f4f6fa",
+  panelEdge: "#c8cee0",
+  panelEdgeUp: "#d2d7e6",
+  panelEdgeLo: "#dde1ec",
+  panelEdgeHi: "#ccd2e2",
+  panelInk: "#1a1f33",
+  panelBody: "#2c3147",
+  panelMuted: "#4e5570",
+  panelFaint: "#6a7190",
+  panelLine: "#e2e5ee",
+  panelLine2: "#dadeea",
+  panelLine3: "#edeff5",
+  panelLine4: "#eaecf3",
+  panelLine5: "#e7e9f1",
+  panelLine6: "#e6e7ee",
+  glowInk: "#3b55b8",
+  boardInk: "#15151a",
+  boardBody: "#4b5361",
+  boardFaint: "#737b89",
+  boardSoft: "#3e4558",
+  boardWash: "#2b3147",
+  boardDim: "#555c69",
+  boardPale: "#1c1c22",
+  accent: "#0e7f94",
+};
+
+/**
+ * Read once at the top of every painter rather than per fill. A
+ * painter runs to completion in one tick, so the palette cannot
+ * change underneath it, and a repaint is what a theme change
+ * triggers anyway.
+ */
+let C = NIGHT;
+const sync = (theme = getTheme()) => {
+  C = theme === "light" ? DAY : NIGHT;
+};
 
 const MONO = '"Geist Mono Variable", ui-monospace, monospace';
 const SANS = '"Geist Variable", ui-sans-serif, system-ui, sans-serif';
@@ -134,10 +289,11 @@ function drawIcon(g, name, size) {
 const MARK_W = 256;
 const MARK_H = 342;
 
-export function paintMark(icon, name) {
+export function paintMark(icon, name, theme) {
+  sync(theme);
   const [c, g] = canvas(MARK_W, MARK_H);
-  g.fillStyle = "#e8ecff";
-  g.strokeStyle = "#e8ecff";
+  g.fillStyle = C.panelInk;
+  g.strokeStyle = C.panelInk;
 
   // Inset, so the mark has air around it rather than running to the
   // edge of its square.
@@ -240,7 +396,8 @@ function pill(g, x, y, label, font, ink, edge, padX = 10, h = 26) {
   return w;
 }
 
-export function paintProjectsGrid(list) {
+export function paintProjectsGrid(list, theme) {
+  sync(theme);
   const W = SCREEN_VIEW.w;
   const PAD = 30;
   const GAP = 20;
@@ -263,15 +420,15 @@ export function paintProjectsGrid(list) {
   const [c, g] = canvas(W, H, SS);
   const hits = [];
 
-  g.fillStyle = "#0d1117";
+  g.fillStyle = C.page;
   g.fillRect(0, 0, W, H);
   g.textBaseline = "alphabetic";
   g.textAlign = "left";
 
-  g.fillStyle = "#7d8590";
+  g.fillStyle = C.inkFaint;
   g.font = `600 20px ${SANS}`;
   g.fillText("Pinned", PAD, 48);
-  g.strokeStyle = "#21262d";
+  g.strokeStyle = C.chip;
   g.lineWidth = 2;
   g.beginPath();
   g.moveTo(PAD + 82, 42);
@@ -279,16 +436,16 @@ export function paintProjectsGrid(list) {
   g.stroke();
 
   const card = (p, x, y, w) => {
-    g.fillStyle = "#0d1117";
-    g.strokeStyle = "#30363d";
+    g.fillStyle = C.page;
+    g.strokeStyle = C.line;
     g.lineWidth = 2;
     roundRect(g, x, y, w, CARD_H, 10);
     g.fill();
     g.stroke();
 
-    repoGlyph(g, x + 18, y + 20, 24, "#7d8590");
+    repoGlyph(g, x + 18, y + 20, 24, C.inkFaint);
 
-    g.fillStyle = "#4493f8";
+    g.fillStyle = C.link;
     g.font = `600 22px ${SANS}`;
     const name = p.title.replace(/\s+/g, "-");
     g.fillText(name, x + 52, y + 40);
@@ -301,13 +458,13 @@ export function paintProjectsGrid(list) {
       y + 20,
       p.private ? "Private" : "Public",
       `400 14px ${SANS}`,
-      "#7d8590",
-      "#30363d",
+      C.inkFaint,
+      C.line,
       11,
       25,
     );
 
-    g.fillStyle = "#8b949e";
+    g.fillStyle = C.inkMuted;
     g.font = `400 17px ${SANS}`;
     let ty = y + 78;
     for (const line of wrap(g, p.blurb ?? "", w - 40).slice(0, 3)) {
@@ -318,13 +475,13 @@ export function paintProjectsGrid(list) {
     // Language dot and the rest of the stack, the way a repo card
     // puts its one language first and nothing else.
     const lang = (p.tech ?? [])[0];
-    const dot = LANG_DOT[lang] ?? "#8b949e";
+    const dot = LANG_DOT[lang] ?? C.inkMuted;
     const by = y + CARD_H - 26;
     g.fillStyle = dot;
     g.beginPath();
     g.arc(x + 25, by - 5, 6.5, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = "#8b949e";
+    g.fillStyle = C.inkMuted;
     g.font = `400 16px ${SANS}`;
     g.fillText(lang ?? "", x + 40, by);
 
@@ -340,8 +497,8 @@ export function paintProjectsGrid(list) {
           by - 17,
           t,
           `400 13px ${MONO}`,
-          "#6e94c9",
-          "#21304a",
+          C.tagInk,
+          C.tagEdge,
           8,
           23,
         ) + 7;
@@ -365,14 +522,15 @@ export function paintProjectsGrid(list) {
  * on the desk reads as a browser showing a page rather than as a
  * picture of a page.
  */
-export function paintBrowserChrome() {
+export function paintBrowserChrome(theme) {
+  sync(theme);
   const W = CHROME_VIEW.w;
   const H = CHROME_VIEW.h;
   const [c, g] = canvas(W, H, SS);
   g.textBaseline = "middle";
   g.textAlign = "left";
 
-  g.fillStyle = "#161b22";
+  g.fillStyle = C.pageSoft;
   g.fillRect(0, 0, W, H);
 
   // Tab strip.
@@ -386,7 +544,7 @@ export function paintBrowserChrome() {
 
   const tabX = 150;
   const tabW = 560;
-  g.fillStyle = "#0d1117";
+  g.fillStyle = C.page;
   g.beginPath();
   g.moveTo(tabX, TAB_H);
   g.lineTo(tabX + 14, 16);
@@ -397,11 +555,11 @@ export function paintBrowserChrome() {
   g.closePath();
   g.fill();
 
-  repoGlyph(g, tabX + 42, TAB_H / 2 - 13, 26, "#8b949e");
-  g.fillStyle = "#c9d1d9";
+  repoGlyph(g, tabX + 42, TAB_H / 2 - 13, 26, C.inkMuted);
+  g.fillStyle = C.inkBody;
   g.font = `400 25px ${SANS}`;
   g.fillText("abhinavgonthina · GitHub", tabX + 84, TAB_H / 2 + 1);
-  g.strokeStyle = "#8b949e";
+  g.strokeStyle = C.inkMuted;
   g.lineWidth = 3;
   g.lineCap = "round";
   const cx = tabX + tabW - 44;
@@ -413,7 +571,7 @@ export function paintBrowserChrome() {
   g.stroke();
 
   // Toolbar.
-  g.fillStyle = "#0d1117";
+  g.fillStyle = C.page;
   g.fillRect(0, TAB_H, W, H - TAB_H);
   const my = TAB_H + (H - TAB_H) / 2;
 
@@ -437,8 +595,8 @@ export function paintBrowserChrome() {
   };
   // Back is live, forward is greyed, because there is nowhere
   // forward to go - which is what a browser shows too.
-  navArrow(46, -1, "#c9d1d9");
-  navArrow(100, 1, "#484f58");
+  navArrow(46, -1, C.inkBody);
+  navArrow(100, 1, C.inkGhostest);
 
   // Reload.
   //
@@ -461,7 +619,7 @@ export function paintBrowserChrome() {
   // past, which leaves daylight between them.
   const END = Math.PI * 1.5;
   g.lineWidth = 2.6;
-  g.strokeStyle = "#c9d1d9";
+  g.strokeStyle = C.inkBody;
   g.beginPath();
   g.arc(rx0, my, rr, -Math.PI * 0.14, END);
   g.stroke();
@@ -476,7 +634,7 @@ export function paintBrowserChrome() {
   const ny2 = Math.sin(END);
   const LEN = 6.5;
   const HALF = 4.1;
-  g.fillStyle = "#c9d1d9";
+  g.fillStyle = C.inkBody;
   g.beginPath();
   g.moveTo(ex + tx * LEN, ey + ty * LEN);
   g.lineTo(ex - nx2 * HALF, ey - ny2 * HALF);
@@ -487,28 +645,28 @@ export function paintBrowserChrome() {
   // The address bar.
   const ax = 196;
   const aw = W - ax - 70;
-  g.fillStyle = "#161b22";
-  g.strokeStyle = "#30363d";
+  g.fillStyle = C.pageSoft;
+  g.strokeStyle = C.line;
   g.lineWidth = 2;
   roundRect(g, ax, my - 26, aw, 52, 26);
   g.fill();
   g.stroke();
 
   // A padlock, because that is the glyph everyone reads as "browser".
-  g.strokeStyle = "#3fb950";
+  g.strokeStyle = C.lock;
   g.lineWidth = 3;
   g.beginPath();
   g.arc(ax + 34, my - 4, 7, Math.PI, 0);
   g.stroke();
-  g.fillStyle = "#3fb950";
+  g.fillStyle = C.lock;
   roundRect(g, ax + 25, my - 4, 18, 14, 3);
   g.fill();
 
   g.font = `400 24px ${MONO}`;
-  g.fillStyle = "#6e7681";
+  g.fillStyle = C.inkGhost;
   g.fillText("https://", ax + 60, my + 1);
   const pre = g.measureText("https://").width;
-  g.fillStyle = "#c9d1d9";
+  g.fillStyle = C.inkBody;
   g.fillText("github.com/abhinavgonthina", ax + 60 + pre, my + 1);
 
   return finish(c);
@@ -523,7 +681,8 @@ export function paintBrowserChrome() {
  * shadow is the only thing holding it up, and it is there because
  * white text over a list of white text is unreadable without one.
  */
-export function paintDragHint() {
+export function paintDragHint(theme) {
+  sync(theme);
   const W = 1200;
   const H = 340;
   // Supersampled with the rest of the screen it sits over. Left at
@@ -557,10 +716,10 @@ export function paintDragHint() {
   // no edge to see, so it still reads as the screen dimming rather
   // than as a box on the list.
   const haze = g.createRadialGradient(mx, 176, 0, mx, 176, 170);
-  haze.addColorStop(0, "rgba(1,3,8,0.97)");
-  haze.addColorStop(0.45, "rgba(1,3,8,0.9)");
-  haze.addColorStop(0.75, "rgba(1,3,8,0.55)");
-  haze.addColorStop(1, "rgba(1,3,8,0)");
+  haze.addColorStop(0, C.scrim97);
+  haze.addColorStop(0.45, C.scrim90);
+  haze.addColorStop(0.75, C.scrim55);
+  haze.addColorStop(1, C.scrim0);
   g.save();
   g.translate(mx, 176);
   g.scale(2.9, 1);
@@ -570,9 +729,9 @@ export function paintDragHint() {
   g.restore();
 
   g.save();
-  g.shadowColor = "rgba(0,0,0,0.95)";
+  g.shadowColor = C.shadowUp;
   g.shadowBlur = 26;
-  g.strokeStyle = "#e6edf3";
+  g.strokeStyle = C.ink;
   g.lineWidth = 7;
   g.lineCap = "round";
   g.lineJoin = "round";
@@ -593,9 +752,9 @@ export function paintDragHint() {
   // made it read as part of the page behind it rather than as the
   // screen talking over the top.
   g.save();
-  g.shadowColor = "rgba(0,0,0,0.95)";
+  g.shadowColor = C.shadowUp;
   g.shadowBlur = 30;
-  g.fillStyle = "#ffffff";
+  g.fillStyle = C.boardInk;
   g.font = `600 62px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = "10px";
   g.fillText("DRAG TO SCROLL", mx, TITLE);
@@ -603,9 +762,9 @@ export function paintDragHint() {
   g.restore();
 
   g.save();
-  g.shadowColor = "rgba(0,0,0,0.9)";
+  g.shadowColor = C.shadow;
   g.shadowBlur = 20;
-  g.fillStyle = "#b9c3d2";
+  g.fillStyle = C.boardBody;
   g.font = `400 25px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = "6px";
   g.fillText("CLICK A REPOSITORY TO OPEN IT", mx, UNDER);
@@ -615,7 +774,8 @@ export function paintDragHint() {
   return finish(c);
 }
 
-export function paintProjectDetail(p, shot) {
+export function paintProjectDetail(p, shot, theme) {
+  sync(theme);
   const W = SCREEN_VIEW.w;
   const H = SCREEN_VIEW.h;
   const PAD = 30;
@@ -626,15 +786,15 @@ export function paintProjectDetail(p, shot) {
   const [c, g] = canvas(W, H, SS);
   const hits = [];
 
-  g.fillStyle = "#0d1117";
+  g.fillStyle = C.page;
   g.fillRect(0, 0, W, H);
   g.textBaseline = "alphabetic";
   g.textAlign = "left";
 
   // Back bar.
-  g.fillStyle = "#161b22";
+  g.fillStyle = C.pageSoft;
   g.fillRect(0, 0, W, 64);
-  g.strokeStyle = "#30363d";
+  g.strokeStyle = C.line;
   g.lineWidth = 2;
   g.beginPath();
   g.moveTo(0, 64);
@@ -645,13 +805,13 @@ export function paintProjectDetail(p, shot) {
   g.font = `600 21px ${SANS}`;
   const backLabel = "←  Back to pinned";
   const backW = g.measureText(backLabel).width + 48;
-  g.fillStyle = "#21262d";
-  g.strokeStyle = "#4493f8";
+  g.fillStyle = C.chip;
+  g.strokeStyle = C.link;
   g.lineWidth = 2;
   roundRect(g, PAD, 11, backW, 42, 21);
   g.fill();
   g.stroke();
-  g.fillStyle = "#79c0ff";
+  g.fillStyle = C.linkSoft;
   g.fillText(backLabel, PAD + 24, 38);
   hits.push({
     id: "__back",
@@ -665,8 +825,8 @@ export function paintProjectDetail(p, shot) {
 
   // The breadcrumb: owner in regular, repository in bold, the way
   // GitHub weights the half of the path that matters.
-  repoGlyph(g, PAD, 78, 26, "#8b949e");
-  g.fillStyle = "#4493f8";
+  repoGlyph(g, PAD, 78, 26, C.inkMuted);
+  g.fillStyle = C.link;
   g.font = `400 27px ${SANS}`;
   const owner = "abhinavgonthina / ";
   g.fillText(owner, PAD + 40, 102);
@@ -681,8 +841,8 @@ export function paintProjectDetail(p, shot) {
     81,
     p.private ? "Private" : "Public",
     `400 15px ${SANS}`,
-    "#8b949e",
-    "#30363d",
+    C.inkMuted,
+    C.line,
     12,
     27,
   );
@@ -693,13 +853,13 @@ export function paintProjectDetail(p, shot) {
     g.font = `500 15px ${SANS}`;
     const w = g.measureText(label).width + 32;
     rx -= w;
-    g.fillStyle = "#21262d";
-    g.strokeStyle = "#30363d";
+    g.fillStyle = C.chip;
+    g.strokeStyle = C.line;
     g.lineWidth = 1.5;
     roundRect(g, rx, 80, w, 30, 6);
     g.fill();
     g.stroke();
-    g.fillStyle = "#c9d1d9";
+    g.fillStyle = C.inkBody;
     g.fillText(label, rx + 16, 100);
     rx -= 10;
   }
@@ -719,15 +879,15 @@ export function paintProjectDetail(p, shot) {
   TABS.forEach((t, i) => {
     g.font = `${i === 0 ? 600 : 400} 17px ${SANS}`;
     const w = g.measureText(t).width;
-    g.fillStyle = i === 0 ? "#e6edf3" : "#8b949e";
+    g.fillStyle = i === 0 ? C.ink : C.inkMuted;
     g.fillText(t, tx, tabY);
     if (i === 0) {
-      g.fillStyle = "#fd8c73";
+      g.fillStyle = C.tab;
       g.fillRect(tx - 6, tabY + 18, w + 12, 3);
     }
     tx += w + 34;
   });
-  g.strokeStyle = "#30363d";
+  g.strokeStyle = C.line;
   g.lineWidth = 2;
   g.beginPath();
   g.moveTo(0, tabY + 20);
@@ -740,17 +900,17 @@ export function paintProjectDetail(p, shot) {
   const RX = 790;
   const LW = RX - PAD - 34;
 
-  g.fillStyle = "#8b949e";
+  g.fillStyle = C.inkMuted;
   g.font = `600 18px ${SANS}`;
   if ("letterSpacing" in g) g.letterSpacing = "1.5px";
   g.fillText("ABOUT", PAD, TOP);
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-  g.fillStyle = "#7d8590";
+  g.fillStyle = C.inkFaint;
   g.font = `400 17px ${MONO}`;
   g.fillText(p.period ?? "", PAD + 108, TOP);
 
-  g.fillStyle = "#c9d1d9";
+  g.fillStyle = C.inkBody;
   g.font = `400 23px ${SANS}`;
   let y = TOP + 40;
   // Six lines, not seven. Seven plus two rows of pills reaches far
@@ -769,7 +929,8 @@ export function paintProjectDetail(p, shot) {
     const bw = LW;
     const seg = bw / tech.length;
     tech.forEach((t, i) => {
-      g.fillStyle = LANG_DOT[t] ?? ["#8b949e", "#6e7681", "#484f58"][i % 3];
+      g.fillStyle =
+        LANG_DOT[t] ?? [C.inkMuted, C.inkGhost, C.inkGhostest][i % 3];
       const sx = PAD + i * seg;
       g.fillRect(
         sx,
@@ -789,17 +950,8 @@ export function paintProjectDetail(p, shot) {
         y += PILL_H + 10;
       }
       px +=
-        pill(
-          g,
-          px,
-          y,
-          t,
-          `400 17px ${MONO}`,
-          "#6e94c9",
-          "#21304a",
-          13,
-          PILL_H,
-        ) + 10;
+        pill(g, px, y, t, `400 17px ${MONO}`, C.tagInk, C.tagEdge, 13, PILL_H) +
+        10;
     }
     // `y` is the top of the last row of pills, so the bottom of the
     // block is one pill further down. Both gaps are measured the
@@ -821,13 +973,13 @@ export function paintProjectDetail(p, shot) {
   // supposed to match the one above it was negative.
   const by = y + ROW_GAP;
   const button = (label, bx, wide, primary, id, href) => {
-    g.fillStyle = primary ? "#238636" : "#21262d";
-    g.strokeStyle = primary ? "#2ea043" : "#30363d";
+    g.fillStyle = primary ? C.go : C.chip;
+    g.strokeStyle = primary ? C.goEdge : C.line;
     g.lineWidth = 2;
     roundRect(g, bx, by, wide, 56, 10);
     g.fill();
     g.stroke();
-    g.fillStyle = primary ? "#ffffff" : "#c9d1d9";
+    g.fillStyle = primary ? C.goInk : C.inkBody;
     g.font = `600 22px ${SANS}`;
     g.textAlign = "center";
     g.fillText(label, bx + wide / 2, by + 36);
@@ -893,19 +1045,19 @@ export function paintProjectDetail(p, shot) {
 
     // Over the picture, not under it. Drawn first it is covered by
     // the very thing it is supposed to be containing.
-    g.strokeStyle = "#30363d";
+    g.strokeStyle = C.line;
     g.lineWidth = 2;
     roundRect(g, sx, sy, sw, sh, 10);
     g.stroke();
   } else {
     // Nothing to draw around, so the empty frame is the message.
-    g.fillStyle = "#010409";
-    g.strokeStyle = "#30363d";
+    g.fillStyle = C.pageSunk;
+    g.strokeStyle = C.line;
     g.lineWidth = 2;
     roundRect(g, px, py, pw, ph, 10);
     g.fill();
     g.stroke();
-    g.fillStyle = "#30363d";
+    g.fillStyle = C.line;
     g.font = `400 16px ${MONO}`;
     g.textAlign = "center";
     g.fillText("no preview - see the live site", px + pw / 2, py + ph / 2);
@@ -943,7 +1095,8 @@ const wrap = (g, text, maxW) => {
  * are two radial gradients added under where the lamps hang, and the
  * lamps themselves are still the geometry they always were.
  */
-export function paintBoardFace(lamps) {
+export function paintBoardFace(lamps, theme) {
+  sync(theme);
   // Big enough to carry the grid and the scanlines for the whole
   // board. They used to live on the panel, which is a smaller plane
   // sitting on this one - so the texture stopped dead at the panel's
@@ -954,11 +1107,11 @@ export function paintBoardFace(lamps) {
   const H = 999;
   const [c, g] = canvas(W, H);
 
-  g.fillStyle = "#05050a";
+  g.fillStyle = C.panelDark;
   g.fillRect(0, 0, W, H);
 
   // The ground grid, carried up onto the board.
-  g.strokeStyle = "#11131c";
+  g.strokeStyle = C.panelLine5;
   g.lineWidth = 2;
   g.beginPath();
   for (let x = 0; x <= W; x += 50) {
@@ -973,7 +1126,7 @@ export function paintBoardFace(lamps) {
 
   // Scanlines, at the opacity where you stop seeing them and start
   // seeing a screen. Any heavier and the type sits behind a comb.
-  g.fillStyle = "rgba(143,168,255,0.035)";
+  g.fillStyle = C.halo035;
   for (let y = 0; y < H; y += 7) g.fillRect(0, y, W, 2);
 
   // Added, not drawn over: where two pools overlap they should get
@@ -983,10 +1136,10 @@ export function paintBoardFace(lamps) {
     const cx = W * at;
     const cy = -H * 0.1;
     const grd = g.createRadialGradient(cx, cy, 0, cx, cy, H * 1.15);
-    grd.addColorStop(0, "rgba(150,172,255,0.30)");
-    grd.addColorStop(0.35, "rgba(132,154,235,0.11)");
-    grd.addColorStop(0.72, "rgba(110,130,200,0.03)");
-    grd.addColorStop(1, "rgba(110,130,200,0)");
+    grd.addColorStop(0, C.sheenUp);
+    grd.addColorStop(0.35, C.sheen);
+    grd.addColorStop(0.72, C.wash03);
+    grd.addColorStop(1, C.wash0);
     g.fillStyle = grd;
     g.fillRect(0, 0, W, H);
   }
@@ -1021,14 +1174,15 @@ export function paintBoardFace(lamps) {
  */
 const S = 2;
 
-export function paintBoard(profile, education) {
+export function paintBoard(profile, education, theme) {
+  sync(theme);
   const W = 1100 * S;
   const H = 990 * S;
   const [c, g] = canvas(W, H);
   const pad = 66 * S;
   const right = W - pad;
   const ACC = ACCENT.blue;
-  const RULE = "#23232b";
+  const RULE = C.panelLine6;
 
   // Nothing is painted behind the words. The grid, the scanlines and
   // the light from the gantry are on the board face underneath, which
@@ -1061,14 +1215,14 @@ export function paintBoard(profile, education) {
   // at - 932 of the 968 there are - and the size is chosen by that
   // rather than by eye, because one line is the brief and the only
   // question left was how much of it to use.
-  g.fillStyle = "#ffffff";
+  g.fillStyle = C.boardInk;
   sans(110, 600);
   g.fillText(profile.name, pad - 5 * S, pad + 190 * S);
 
   g.fillStyle = RULE;
   g.fillRect(pad, pad + 234 * S, right - pad, 2 * S);
 
-  g.fillStyle = "#b6bcc8";
+  g.fillStyle = C.boardDim;
   sans(40);
   // A gap between the sentences, not between the lines inside one:
   // the break is what makes them two statements rather than one
@@ -1087,8 +1241,8 @@ export function paintBoard(profile, education) {
   // widths are known and fixed, and a layout that cannot reflow
   // cannot reflow into something nobody looked at.
   const stats = [
-    ["GPA", education.gpa, "#ffffff"],
-    ["GRADUATING", education.graduation, "#ffffff"],
+    ["GPA", education.gpa, C.boardInk],
+    ["GRADUATING", education.graduation, C.boardInk],
     ["SEEKING", profile.seeking, ACC],
   ];
   const COL = [0, 290, 580];
@@ -1096,7 +1250,7 @@ export function paintBoard(profile, education) {
   g.fillRect(pad, pad + 672 * S, right - pad, 2 * S);
   stats.forEach(([label, value, ink], i) => {
     const cx = pad + COL[i] * S;
-    g.fillStyle = "#6f7788";
+    g.fillStyle = C.boardFaint;
     mono(26, 5);
     g.fillText(label, cx, pad + 724 * S);
     g.fillStyle = ink;
@@ -1294,7 +1448,7 @@ function drawTech(g, icon, x, y, box) {
   g.translate(x + (box - icon.vw * s) / 2, y + (box - icon.vh * s) / 2);
   g.scale(s, s);
   for (const sh of icon.shapes) {
-    g.fillStyle = sh.fill ?? "#dfe6ff";
+    g.fillStyle = sh.fill ?? C.boardWash;
     g.fill(sh.p);
   }
   g.restore();
@@ -1311,24 +1465,25 @@ function drawTech(g, icon, x, y, box) {
  */
 export const SKILL_PANE = { x0: 0.638, x1: 0.974, y0: 0.115, y1: 0.93 };
 
-export function paintSkills(groups) {
+export function paintSkills(groups, theme) {
+  sync(theme);
   const W = 1600;
   const H = 805;
   const [c, g] = canvas(W, H);
   const hits = [];
 
-  g.fillStyle = "#080a12";
+  g.fillStyle = C.panelLift;
   g.fillRect(0, 0, W, H);
-  g.strokeStyle = "#232942";
+  g.strokeStyle = C.panelEdgeLo;
   g.lineWidth = 6;
   g.strokeRect(3, 3, W - 6, H - 6);
 
   // Title bar. Three dots and a filename, which is the one piece of
   // furniture that says "terminal" before a single word is read.
   const BAR = 62;
-  g.fillStyle = "#0d101b";
+  g.fillStyle = C.panelLine3;
   g.fillRect(3, 3, W - 6, BAR);
-  g.strokeStyle = "#232942";
+  g.strokeStyle = C.panelEdgeLo;
   g.lineWidth = 2;
   g.beginPath();
   g.moveTo(3, BAR + 3);
@@ -1345,7 +1500,7 @@ export function paintSkills(groups) {
 
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
-  g.fillStyle = "#6f7694";
+  g.fillStyle = C.panelFaint;
   g.font = "500 24px " + MONO;
   if ("letterSpacing" in g) g.letterSpacing = "2px";
   g.fillText("skills_manifest.sh", 150, 3 + BAR / 2 + 9);
@@ -1359,9 +1514,9 @@ export function paintSkills(groups) {
   const py0 = SKILL_PANE.y0 * H;
   const pw = (SKILL_PANE.x1 - SKILL_PANE.x0) * W;
   const ph = (SKILL_PANE.y1 - SKILL_PANE.y0) * H;
-  g.fillStyle = "#05070e";
+  g.fillStyle = C.panel;
   g.fillRect(px0, py0, pw, ph);
-  g.strokeStyle = "#262c45";
+  g.strokeStyle = C.panelEdgeUp;
   g.lineWidth = 2;
   g.strokeRect(px0, py0, pw, ph);
 
@@ -1374,7 +1529,7 @@ export function paintSkills(groups) {
   let y = 150;
 
   for (const group of groups) {
-    g.fillStyle = "#6f7694";
+    g.fillStyle = C.panelFaint;
     g.font = "500 25px " + MONO;
     if ("letterSpacing" in g) g.letterSpacing = "5px";
     g.fillText(group.label.toUpperCase(), LEFT, y);
@@ -1389,12 +1544,12 @@ export function paintSkills(groups) {
         x = LEFT;
         y += 48;
       }
-      g.strokeStyle = "#262c45";
+      g.strokeStyle = C.panelEdgeUp;
       g.lineWidth = 2;
       g.beginPath();
       g.roundRect(x, y - 30, w, 42, 10);
       g.stroke();
-      g.fillStyle = "#c6cde4";
+      g.fillStyle = C.boardSoft;
       g.fillText(item, x + 18, y);
       hits.push({
         item,
@@ -1433,7 +1588,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
   // canvas, but letter spacing and alpha do not reset themselves.
   g.globalAlpha = 1;
   if ("letterSpacing" in g) g.letterSpacing = "0px";
-  g.fillStyle = "#05070e";
+  g.fillStyle = C.panel;
   g.fillRect(0, 0, W, H);
   g.textAlign = "center";
   g.textBaseline = "alphabetic";
@@ -1452,7 +1607,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
     g.fillRect(mid + 8, y - 54, 34, 58);
 
     y += 120;
-    g.fillStyle = "#ffffff";
+    g.fillStyle = C.panelInk;
     g.font = "500 40px " + MONO;
     if ("letterSpacing" in g) g.letterSpacing = "8px";
     g.fillText("SELECT A SKILL", mid + 4, y);
@@ -1463,11 +1618,11 @@ function drawSkillPreview(g, W, H, hit, detail) {
     // rule. Set tighter here, the waiting state read as a different
     // screen rather than the same one with nothing in it yet.
     y += 56;
-    g.fillStyle = "#2b3350";
+    g.fillStyle = C.panelEdge;
     g.fillRect(mid - 110, y, 220, 2);
 
     y += 72;
-    g.fillStyle = "#6f7694";
+    g.fillStyle = C.panelFaint;
     g.font = "400 29px " + SANS;
     for (const line of ["Point at any tag to see", "where it was used."]) {
       g.fillText(line, mid, y);
@@ -1490,9 +1645,9 @@ function drawSkillPreview(g, W, H, hit, detail) {
     by + BOX / 2,
     BOX,
   );
-  halo.addColorStop(0, "rgba(143,168,255,0.16)");
-  halo.addColorStop(0.5, "rgba(143,168,255,0.05)");
-  halo.addColorStop(1, "rgba(143,168,255,0)");
+  halo.addColorStop(0, C.halo16);
+  halo.addColorStop(0.5, C.halo05);
+  halo.addColorStop(1, C.halo0);
   g.fillStyle = halo;
   g.fillRect(bx - BOX / 2, by - BOX / 2, BOX * 2, BOX * 2);
 
@@ -1501,7 +1656,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
     drawTech(g, icon, bx, by, BOX);
   } else {
     const label = hit.item.replace(/[^A-Za-z#+]/g, "").slice(0, 2) || "?";
-    g.fillStyle = "#8fa8ff";
+    g.fillStyle = C.glowInk;
     g.font = "600 110px " + SANS;
     g.fillText(label, mid, by + BOX / 2 + 38);
   }
@@ -1515,7 +1670,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
   if ("letterSpacing" in g) g.letterSpacing = "0px";
 
   y += 60;
-  g.fillStyle = "#ffffff";
+  g.fillStyle = C.panelInk;
   g.font = "600 52px " + SANS;
   for (const line of wrap(g, hit.item, W - pad * 2)) {
     g.fillText(line, mid, y);
@@ -1525,7 +1680,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
   // A short rule rather than a full-width one: it is closing the
   // name, not dividing the screen.
   y += 12;
-  g.fillStyle = "#2b3350";
+  g.fillStyle = C.panelEdge;
   g.fillRect(mid - 90, y, 180, 2);
   // The rule closes the name. It has to sit nearer to the name than
   // to the sentence under it, or it reads as the sentence's own
@@ -1536,7 +1691,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
   // it answers the question the tag raises before any list of
   // places does.
   if (detail?.use) {
-    g.fillStyle = "#d7dcea";
+    g.fillStyle = C.panelBody;
     g.font = "400 30px " + SANS;
     for (const line of wrap(g, detail.use, W - pad * 2)) {
       g.fillText(line, mid, y);
@@ -1558,7 +1713,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
       const lines = wrap(g, item, W - pad - tx);
       g.fillStyle = ACCENT.blue;
       g.fillText("•", pad + 4, y);
-      g.fillStyle = "#aab3c9";
+      g.fillStyle = C.panelMuted;
       for (const line of lines) {
         g.fillText(line, tx, y);
         y += 38;
@@ -1596,6 +1751,7 @@ export function makeSkillScreen() {
   return {
     tex,
     draw(hit, detail) {
+      sync();
       drawSkillPreview(g, W, H, hit, detail);
       tex.needsUpdate = true;
     },
@@ -1630,18 +1786,19 @@ export const HEADREST_BAR = { x: 0.11, y: 0.737, w: 0.78, h: 0.03 };
  * These numbers are the same layout shifted so the two margins
  * match; `HEADREST_BAR` moves with them.
  */
-export function paintHeadrest(label, note) {
+export function paintHeadrest(label, note, theme) {
+  sync(theme);
   const W = 640;
   const H = 420;
   const [c, g] = canvas(W, H);
   const pad = 58;
 
-  g.fillStyle = "#04060b";
+  g.fillStyle = C.panelDeep;
   g.fillRect(0, 0, W, H);
 
   // The grid under everything, at the same spacing and nearly the same
   // tone as the one the town is standing on.
-  g.strokeStyle = "#0e1118";
+  g.strokeStyle = C.panelLine4;
   g.lineWidth = 1;
   g.beginPath();
   for (let x = 0; x <= W; x += 40) {
@@ -1656,7 +1813,7 @@ export function paintHeadrest(label, note) {
 
   // Corner ticks. A full border makes a card; four corners make a
   // readout.
-  g.strokeStyle = "#27304a";
+  g.strokeStyle = C.panelEdgeHi;
   g.lineWidth = 3;
   const t = 26;
   for (const [cx, sx] of [
@@ -1678,7 +1835,7 @@ export function paintHeadrest(label, note) {
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
 
-  g.fillStyle = "#6fe3f5";
+  g.fillStyle = C.accent;
   g.font = `500 20px ${MONO}`;
   if ("letterSpacing" in g) g.letterSpacing = "7px";
   g.fillText(note.toUpperCase(), pad, 118);
@@ -1686,13 +1843,13 @@ export function paintHeadrest(label, note) {
 
   // The hairline under the eyebrow: the same mark every section
   // heading on the site carries.
-  g.fillStyle = "#6fe3f5";
+  g.fillStyle = C.accent;
   g.fillRect(pad, 136, 52, 2);
 
   // Shrunk to fit rather than wrapped. "You have arrived" is half
   // again as long as "Loading" and a second line would push the bar
   // off the bottom of a screen this size.
-  g.fillStyle = "#f4f4f5";
+  g.fillStyle = C.boardPale;
   let size = 58;
   do {
     g.font = `600 ${size}px ${SANS}`;
@@ -1705,11 +1862,11 @@ export function paintHeadrest(label, note) {
   const by = HEADREST_BAR.y * H;
   const bw = HEADREST_BAR.w * W;
   const bh = HEADREST_BAR.h * H;
-  g.strokeStyle = "#1d2436";
+  g.strokeStyle = C.panelLine2;
   g.lineWidth = 2;
   g.strokeRect(bx - 1, by - 1, bw + 2, bh + 2);
   // Ticks along it, so a part-filled bar reads as a distance.
-  g.fillStyle = "#151b29";
+  g.fillStyle = C.panelLine;
   for (let i = 1; i < 8; i++) {
     g.fillRect(bx + (bw * i) / 8, by + 2, 1, bh - 4);
   }
