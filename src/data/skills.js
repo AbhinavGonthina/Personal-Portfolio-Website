@@ -267,6 +267,7 @@ export const skillDetail = {
     icon: "flask",
     use: "Small Python backends, where a framework should stay out of the way.",
     proof: [
+      "PrepIt: the backend that sends a resume and a job description to the agent and streams the report back.",
       "RoadQuest: the service that turned a route into a set of quests to do along it.",
       "CoDesign: the API the platform sits on.",
     ],
