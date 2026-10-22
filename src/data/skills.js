@@ -219,10 +219,10 @@ export const skillDetail = {
     icon: "express",
     use: "My usual answer when something needs a backend.",
     proof: [
-      "Quak Travel: the booking, payment-splitting and itinerary APIs.",
-      "Rainfall Learning: the API behind checkout and the Stripe webhooks.",
+      "Quak Travel: the booking and payment-splitting APIs.",
+      "Rainfall Learning: checkout and the Stripe webhooks.",
       "NUHire: the backend for the hiring simulation.",
-      "Northeastern Electric Racing: the services behind FinishLine.",
+      "Electric Racing: the services behind FinishLine.",
     ],
   },
   Prisma: {

@@ -1493,7 +1493,10 @@ function drawSkillPreview(g, W, H, hit, detail) {
   y += 12;
   g.fillStyle = "#2b3350";
   g.fillRect(mid - 90, y, 180, 2);
-  y += 46;
+  // The rule closes the name. It has to sit nearer to the name than
+  // to the sentence under it, or it reads as the sentence's own
+  // underline and the two run together as one block.
+  y += 72;
 
   // What the thing is for, in his hands. Every skill has one, and
   // it answers the question the tag raises before any list of
