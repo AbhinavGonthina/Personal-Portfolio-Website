@@ -109,6 +109,13 @@ function Card({ p, lead }) {
             the links sit on one line across the whole rail instead
             of stepping up and down with each blurb. */}
         <div className="mt-auto flex items-center gap-4 pt-4">
+          {/* Something on the line rather than nothing. Half of
+              these have no repository to send you to and no site
+              to open, and a card whose last row is empty reads as
+              one whose links failed to render. */}
+          {p.private && (
+            <span className={`${LINK} text-fg-subtle`}>Private</span>
+          )}
           {p.live && (
             <a
               href={p.live}

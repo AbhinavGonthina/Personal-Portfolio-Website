@@ -199,23 +199,6 @@ function repoGlyph(g, x, y, s, colour) {
   g.stroke();
 }
 
-/** The star GitHub puts on a repository worth looking at. */
-function starGlyph(g, cx, cy, r, colour) {
-  g.fillStyle = colour;
-  g.beginPath();
-  for (let i = 0; i < 10; i++) {
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    const rad = i % 2 ? r * 0.45 : r;
-    const px = cx + Math.cos(a) * rad;
-    const py = cy + Math.sin(a) * rad;
-    if (i) g.lineTo(px, py);
-    else g.moveTo(px, py);
-  }
-  g.closePath();
-  g.fill();
-}
-
-/** A pill with an outline and nothing in it but a word. */
 function pill(g, x, y, label, font, ink, edge, padX = 10, h = 26) {
   g.font = font;
   const w = g.measureText(label).width + padX * 2;
@@ -240,12 +223,12 @@ export function paintProjectsGrid(list) {
   // stays put instead of sliding away on the first drag.
   const HEAD = 76;
 
-  // The first repository takes two columns. A grid where every cell
-  // is the same size says every repository is worth the same amount
-  // of your attention, which is not true of this list - so the one
-  // at the front is given the room to say more and an edge that
-  // picks it out of the dark.
-  const rows = Math.ceil((list.length + 1) / COLS);
+  // Every cell the same size. The first repository used to take two
+  // columns and carry a star, which read well at ten projects and
+  // stopped doing so at twelve: three rows of three behind one
+  // double-wide leaves a hole in the grid, and the thing it was
+  // pointing at is the first card you look at anyway.
+  const rows = Math.ceil(list.length / COLS);
   const H = HEAD + rows * (CARD_H + GAP) + PAD;
 
   const [c, g] = canvas(W, H);
@@ -266,18 +249,18 @@ export function paintProjectsGrid(list) {
   g.lineTo(W - PAD, 42);
   g.stroke();
 
-  const card = (p, x, y, w, feat) => {
-    g.fillStyle = feat ? "#0f1824" : "#0d1117";
-    g.strokeStyle = feat ? "#2f5d96" : "#30363d";
-    g.lineWidth = feat ? 3 : 2;
+  const card = (p, x, y, w) => {
+    g.fillStyle = "#0d1117";
+    g.strokeStyle = "#30363d";
+    g.lineWidth = 2;
     roundRect(g, x, y, w, CARD_H, 10);
     g.fill();
     g.stroke();
 
-    repoGlyph(g, x + 18, y + 20, 24, feat ? "#8b949e" : "#7d8590");
+    repoGlyph(g, x + 18, y + 20, 24, "#7d8590");
 
     g.fillStyle = "#4493f8";
-    g.font = `600 ${feat ? 26 : 22}px ${SANS}`;
+    g.font = `600 22px ${SANS}`;
     const name = p.title.replace(/\s+/g, "-");
     g.fillText(name, x + 52, y + 40);
     const nameW = g.measureText(name).width;
@@ -287,7 +270,7 @@ export function paintProjectsGrid(list) {
       g,
       x + 64 + nameW,
       y + 20,
-      "Public",
+      p.private ? "Private" : "Public",
       `400 14px ${SANS}`,
       "#7d8590",
       "#30363d",
@@ -295,20 +278,12 @@ export function paintProjectsGrid(list) {
       25,
     );
 
-    if (feat) {
-      starGlyph(g, x + w - 112, y + 33, 11, "#e3b341");
-      g.fillStyle = "#e3b341";
-      g.font = `600 15px ${SANS}`;
-      g.fillText("Featured", x + w - 96, y + 39);
-    }
-
     g.fillStyle = "#8b949e";
-    g.font = `400 ${feat ? 19 : 17}px ${SANS}`;
+    g.font = `400 17px ${SANS}`;
     let ty = y + 78;
-    const body = feat ? (p.description ?? p.blurb) : p.blurb;
-    for (const line of wrap(g, body ?? "", w - 40).slice(0, feat ? 4 : 3)) {
+    for (const line of wrap(g, p.blurb ?? "", w - 40).slice(0, 3)) {
       g.fillText(line, x + 18, ty);
-      ty += feat ? 27 : 24;
+      ty += 24;
     }
 
     // Language dot and the rest of the stack, the way a repo card
@@ -325,7 +300,7 @@ export function paintProjectsGrid(list) {
     g.fillText(lang ?? "", x + 40, by);
 
     let tx = x + 50 + g.measureText(lang ?? "").width;
-    for (const t of (p.tech ?? []).slice(1, feat ? 8 : 4)) {
+    for (const t of (p.tech ?? []).slice(1, 4)) {
       g.font = `400 13px ${MONO}`;
       const tw = g.measureText(t).width + 16;
       if (tx + tw > x + w - 16) break;
@@ -346,15 +321,10 @@ export function paintProjectsGrid(list) {
     hits.push({ id: p.id, r: 10, x0: x, y0: y, x1: x + w, y1: y + CARD_H });
   };
 
-  let slot = 0;
   list.forEach((p, i) => {
-    const feat = i === 0;
-    const col = slot % COLS;
-    const row = (slot - col) / COLS;
-    const x = PAD + col * (CARD_W + GAP);
-    const y = HEAD + row * (CARD_H + GAP);
-    card(p, x, y, feat ? CARD_W * 2 + GAP : CARD_W, feat);
-    slot += feat ? 2 : 1;
+    const col = i % COLS;
+    const row = (i - col) / COLS;
+    card(p, PAD + col * (CARD_W + GAP), HEAD + row * (CARD_H + GAP), CARD_W);
   });
 
   return { tex: finish(c), hits, height: H };
@@ -678,7 +648,7 @@ export function paintProjectDetail(p, shot) {
     g,
     PAD + 54 + ownerW + nameW,
     81,
-    "Public",
+    p.private ? "Private" : "Public",
     `400 15px ${SANS}`,
     "#8b949e",
     "#30363d",
@@ -752,7 +722,10 @@ export function paintProjectDetail(p, shot) {
   g.fillStyle = "#c9d1d9";
   g.font = `400 23px ${SANS}`;
   let y = TOP + 40;
-  for (const line of wrap(g, p.description ?? p.blurb ?? "", LW).slice(0, 7)) {
+  // Six lines, not seven. Seven plus two rows of pills reaches far
+  // enough down the screen that the buttons have nowhere left to
+  // go - see the clamp this replaced, below.
+  for (const line of wrap(g, p.description ?? p.blurb ?? "", LW).slice(0, 6)) {
     g.fillText(line, PAD, y);
     y += 33;
   }
@@ -808,7 +781,14 @@ export function paintProjectDetail(p, shot) {
   // screen. Pinned to the bottom they read as a toolbar belonging to
   // the window instead of to the repository, and on a short
   // description there was a hand's width of nothing above them.
-  const by = Math.min(y + ROW_GAP, H - 132);
+  //
+  // One gap, the same one that sits under the language bar, and no
+  // ceiling on it. There used to be a `Math.min` here holding the
+  // buttons off the floor, and on the longest description it did
+  // not hold them off anything - it pulled them up to 594 when the
+  // pills ended at 617, so the one gap on this screen that is
+  // supposed to match the one above it was negative.
+  const by = y + ROW_GAP;
   const button = (label, bx, wide, primary, id, href) => {
     g.fillStyle = primary ? "#238636" : "#21262d";
     g.strokeStyle = primary ? "#2ea043" : "#30363d";
@@ -866,13 +846,28 @@ export function paintProjectDetail(p, shot) {
     // the frame: a tall one sits as a narrow panel in the middle
     // of it, a wide one runs off the sides and loses only its
     // edges.
-    const s = ph / shot.height;
+    //
+    // Inset, so the frame is still there. Fitted to the panel's full
+    // height a tall screenshot - a phone, which is what half of
+    // these are - covers the top and bottom of the outline it is
+    // supposed to be sitting inside, and the panel stops reading as
+    // a frame at all.
+    const INSET = 12;
+    const iw = pw - INSET * 2;
+    const ih = ph - INSET * 2;
+    const s = ih / shot.height;
     const sw = shot.width * s;
     const sh = shot.height * s;
     g.save();
-    roundRect(g, px, py, pw, ph, 10);
+    roundRect(g, px + INSET, py + INSET, iw, ih, 6);
     g.clip();
-    g.drawImage(shot, px + (pw - sw) / 2, py + (ph - sh) / 2, sw, sh);
+    g.drawImage(
+      shot,
+      px + INSET + (iw - sw) / 2,
+      py + INSET + (ih - sh) / 2,
+      sw,
+      sh,
+    );
     g.restore();
   } else {
     g.fillStyle = "#30363d";
