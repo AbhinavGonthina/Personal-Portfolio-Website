@@ -1503,9 +1503,9 @@ function drawSkillPreview(g, W, H, hit, detail) {
     g.font = "400 30px " + SANS;
     for (const line of wrap(g, detail.use, W - pad * 2)) {
       g.fillText(line, mid, y);
-      y += 40;
+      y += 44;
     }
-    y += 10;
+    y += 16;
   }
 
   // Then where, as bullets down the left. Centred, a list is one
@@ -1513,7 +1513,7 @@ function drawSkillPreview(g, W, H, hit, detail) {
   // different.
   const proof = detail?.proof ? [].concat(detail.proof) : [];
   if (proof.length) {
-    y += 18;
+    y += 30;
     g.textAlign = "left";
     g.font = "400 28px " + SANS;
     const tx = pad + 28;
