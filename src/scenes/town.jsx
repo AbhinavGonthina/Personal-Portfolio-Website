@@ -33,6 +33,7 @@ import { makeTextTexture } from "../lib/canvasText";
 import { makeSkillScreen, SCREEN_VIEW, SKILL_PANE } from "../lib/paint";
 import { skillHover } from "../lib/skillHover";
 import { skillDetail } from "../data/skills";
+import { useTheme } from "../lib/theme";
 import { reel } from "../lib/reel";
 import { ExtrudedText } from "./street";
 
@@ -278,8 +279,19 @@ const HOVER_SHADER = {
 function SkillScreen({ live }) {
   const screen = useMemo(makeSkillScreen, []);
   const on = useRef(undefined);
+  const theme = useTheme();
 
   useEffect(() => () => screen.tex.dispose(), [screen]);
+
+  // This one canvas is kept and redrawn in place, and the guard
+  // below only ever notices the pointer moving - so a change of
+  // palette has to say the picture is stale. Repainted here, and
+  // the guard cleared so a hover that is already up is redrawn on
+  // the next frame.
+  useEffect(() => {
+    on.current = null;
+    screen.draw(null, null);
+  }, [theme, screen]);
 
   useFrame(() => {
     const want = live ? skillHover.hit : null;
