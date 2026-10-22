@@ -1428,16 +1428,20 @@ function drawSkillPreview(g, W, H, hit, detail) {
     g.fillText("SELECT A SKILL", mid + 4, y);
     if ("letterSpacing" in g) g.letterSpacing = "0px";
 
-    y += 34;
+    // The same rhythm the pointed-at screen has: the rule sits well
+    // clear of the heading it closes, and the copy clear of the
+    // rule. Set tighter here, the waiting state read as a different
+    // screen rather than the same one with nothing in it yet.
+    y += 56;
     g.fillStyle = "#2b3350";
     g.fillRect(mid - 110, y, 220, 2);
 
-    y += 66;
+    y += 72;
     g.fillStyle = "#6f7694";
     g.font = "400 29px " + SANS;
     for (const line of ["Point at any tag to see", "where it was used."]) {
       g.fillText(line, mid, y);
-      y += 42;
+      y += 44;
     }
     return;
   }
