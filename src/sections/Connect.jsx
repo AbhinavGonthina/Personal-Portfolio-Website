@@ -27,46 +27,66 @@ const MARKS = {
 };
 
 /**
- * The invitation, a word at a time.
+ * The first line, typed.
  *
- * Set as one block it is a sentence you have already finished reading
- * before it finishes arriving. A word at a time it is still only half
- * a second in total, but it lands the way somebody says it rather
- * than the way a page loads, and the last thing before the buttons is
- * the thing that asks you to use them.
+ * A character at a time across one second, which is slow enough to
+ * watch and quick enough that nobody is waiting on it. Every
+ * character is in the document from the start and only its opacity
+ * changes, so the line is laid out once - a line that grows by a
+ * letter at a time reflows on every letter, and a centred one
+ * slides sideways while it does.
  *
  * Once, on the way in, and never again - `once` on the viewport, so
  * scrolling back past it does not replay. Honoured by the reduced
  * motion setting, where it is simply text.
  */
-function Line({ children, className, delay = 0 }) {
+const TYPED_FOR = 1;
+
+function Typed({ children, className }) {
   const still = useReducedMotion();
-  const words = String(children).split(" ");
-  if (still) return <span className={className}>{children}</span>;
+  const text = String(children);
+  if (still) return <span className={className}>{text}</span>;
   return (
     <motion.span
       className={className}
       initial="out"
       whileInView="in"
       viewport={{ once: true, amount: 0.4 }}
-      transition={{ staggerChildren: 0.028, delayChildren: delay }}
+      transition={{ staggerChildren: TYPED_FOR / text.length }}
     >
-      {words.map((w, i) => (
+      {[...text].map((c, i) => (
         <motion.span
-          // The word and its following space move together, or the
-          // line reflows as each one lands.
-          key={`${w}-${i}`}
-          className="inline-block whitespace-pre"
-          variants={{
-            out: { opacity: 0, y: "0.4em" },
-            in: { opacity: 1, y: 0 },
-          }}
-          transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+          // Plain inline spans, not inline-block. A box per letter
+          // would let the line break inside a word; inline spans
+          // leave the browser's own break opportunities alone.
+          key={i}
+          variants={{ out: { opacity: 0 }, in: { opacity: 1 } }}
+          transition={{ duration: 0 }}
         >
-          {w}
-          {i < words.length - 1 ? " " : ""}
+          {c}
         </motion.span>
       ))}
+    </motion.span>
+  );
+}
+
+/**
+ * The second line, which does not type. Two typewriters in a row is
+ * a gimmick; one sentence arriving and the next one appearing under
+ * it while you are still reading the first is how it would be said.
+ */
+function Fade({ children, className, delay = 0 }) {
+  const still = useReducedMotion();
+  if (still) return <span className={className}>{children}</span>;
+  return (
+    <motion.span
+      className={className}
+      initial={{ opacity: 0, y: 6 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
     </motion.span>
   );
 }
@@ -82,11 +102,11 @@ function Chevron() {
   return (
     <motion.div
       aria-hidden
-      className="mt-6 flex justify-center text-fg-subtle"
+      className="mt-7 flex justify-center text-fg-subtle"
       initial={still ? false : { opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.6 }}
-      transition={{ duration: 0.5, delay: still ? 0 : 0.9 }}
+      transition={{ duration: 0.5, delay: still ? 0 : TYPED_FOR + 0.75 }}
     >
       <motion.span
         animate={still ? undefined : { y: [0, 7, 0] }}
@@ -138,14 +158,15 @@ export default function Connect({ ref }) {
           thing on the page addressed to somebody, so it takes the
           full width the rest of the page is built on and sits in
           the middle of it. */}
-      <p className="-mt-6 text-center text-lg leading-snug tracking-tight sm:text-xl md:text-2xl">
-        <Line>{profile.currently}</Line>
-        <Line
-          className="mt-3 block text-base text-fg-muted sm:text-lg"
-          delay={0.22}
+      <p className="pt-2 text-center text-lg leading-snug tracking-tight sm:text-xl md:text-2xl">
+        <Typed>{profile.currently}</Typed>
+        {/* After the typing, not alongside it. */}
+        <Fade
+          className="mt-4 block text-base text-fg-muted sm:text-lg"
+          delay={TYPED_FOR + 0.15}
         >
           Please don&apos;t hesitate to reach out through any of the following
-        </Line>
+        </Fade>
       </p>
 
       {/* The same chevron the landing uses to say there is more
@@ -164,7 +185,7 @@ export default function Connect({ ref }) {
           The handles themselves are gone from the face of them: an
           email address and a GitHub username are what happens after
           the click, not what makes somebody click. */}
-      <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <ul className="mt-11 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {socials.map((s) => (
           <li key={s.name}>
             <a
