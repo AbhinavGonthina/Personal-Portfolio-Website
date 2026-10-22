@@ -160,12 +160,19 @@ export default function TownStage({ refs }) {
       // dropping to the landing and craning up from there is the
       // zoom out of the city. Gated on the whole run instead, it
       // lifted off from whichever stop you were standing at.
-      if (isHolding()) {
-        raf.current = requestAnimationFrame(read);
-        return;
-      }
+      //
+      // Every one of these says "look again next frame" rather
+      // than returning. A bare `return` here does not wait for a
+      // better frame, it ends the loop: nothing else schedules
+      // `read`, so the camera stops following the page for the
+      // rest of the visit.
+      const again = () => {
+        if (!raf.current) raf.current = requestAnimationFrame(read);
+      };
+      if (isHolding()) return again();
+
       const els = refs.map((r) => r.current).filter(Boolean);
-      if (els.length < 2) return;
+      if (els.length < 2) return again();
 
       // Where the scroll sits between two section tops is where the
       // camera sits between two stops. Measured against document
@@ -176,6 +183,19 @@ export default function TownStage({ refs }) {
       // the section rather than from the page.
       const raw = window.scrollY;
       const at = els.map((el) => el.getBoundingClientRect().top + raw);
+
+      // Not until the browser has laid them out.
+      //
+      // The reading flips inside the frame loop, so the town's
+      // sections mount and this can run in the same frame, before
+      // any of them has been given a height. Every rect comes back
+      // at zero, every section top is the same number, and the
+      // test below for "past the last one" is `0 >= 0` - so the
+      // camera was told it was at the final stop. That is the
+      // mailboxes appearing for a frame on the way home and then
+      // the town snapping back to the landing, from wherever in
+      // the plain read the reader happened to be standing.
+      if (at[at.length - 1] <= at[0] + 1) return again();
       tops.current = at;
 
       // A stop holds you for a second, and holding the position is
