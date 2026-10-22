@@ -66,7 +66,7 @@ export const projects = [
     blurb:
       "The world's first itinerary marketplace, for buying and selling travel itineraries.",
     description:
-      "An emerging travel startup letting travelers buy and sell itineraries. Previously a travel hub with trip planning and accommodation purchasing. The images show work from before the company's rebrand; current mocks are under NDA.",
+      "An emerging travel startup letting travelers buy and sell itineraries. Previously a travel hub with trip planning and accommodation purchasing.",
     category: "startup",
     period: "Mar 2025 – Jan 2026",
     tech: [
@@ -106,9 +106,9 @@ export const projects = [
     id: "prepit",
     title: "PrepIt",
     blurb:
-      "AI interview prep. A company, your resume and a job description in, a personalised prep report out.",
+      "AI interview prep. A company, your resume and a job description in, a personalised prep report out. Built in under two hours.",
     description:
-      "Give it a company name, your resume and a job description. An agent looks the company up, compares the two, and writes a prep report covering what to know going in, where you line up, and what they are likely to ask.",
+      "Give it a company name, your resume and a job description. An agent looks the company up, compares the two, and writes a prep report covering what to know going in, where you line up, and what they are likely to ask. Built in under two hours.",
     category: "personal",
     period: "2026",
     tech: ["React", "Python", "Flask", "Subconscious API"],
