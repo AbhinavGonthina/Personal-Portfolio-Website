@@ -51,7 +51,13 @@ import { ExtrudedText } from "./street";
  */
 
 function useBuilt(build) {
-  const made = useMemo(build, [build]);
+  // Keyed on the palette as well as the builder. Most of these
+  // geometries carry no colour at all and rebuild for nothing when
+  // the theme changes, which is a handful of merges on a click -
+  // the alternative is remembering which ones bake a colour in,
+  // and being wrong about one of them is a cave in daylight.
+  const theme = useTheme();
+  const made = useMemo(() => build(theme), [build, theme]);
   useEffect(
     () => () => {
       if (!made) return;
@@ -900,7 +906,11 @@ export function Mailboxes({ mats, visible, labels, live, greet }) {
   // boxes are on. Extruded rather than painted, like the word that
   // falls at the other end of the walk - the two ends of the site
   // say their piece the same way.
-  const thanks = useMemo(() => makeTextTexture("THANK YOU"), []);
+  const theme = useTheme();
+  const thanks = useMemo(
+    () => makeTextTexture("THANK YOU", { theme }),
+    [theme],
+  );
   useEffect(() => () => thanks.tex.dispose(), [thanks]);
 
   return (
