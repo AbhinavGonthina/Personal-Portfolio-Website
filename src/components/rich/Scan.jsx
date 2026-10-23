@@ -1,6 +1,5 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { edges } from "./Backdrop";
 import { useBudget, useSwap, worthIt } from "./webgl";
 
 /**
@@ -25,20 +24,22 @@ export default function Scan() {
   return (
     <div
       aria-hidden
-      // No `overflow-hidden` here, unlike every other backdrop
-      // on the page, and it is load-bearing: a box with hidden
-      // overflow is a scroll container, and a `sticky` child
-      // sticks to *that* box rather than to the window. With it
-      // on, the grid pinned itself to the top of the section and
-      // stayed there while the rest of Experience scrolled past
-      // underneath it.
+      // No `overflow-hidden`, unlike every other backdrop here,
+      // and it is load-bearing: a box with hidden overflow is a
+      // scroll container, and a `sticky` child sticks to *that*
+      // box rather than to the window. With it on, the grid
+      // pinned itself to the top of the section and the rest of
+      // Experience scrolled past underneath it.
       //
-      // Nothing escapes without it. A sticky element cannot
-      // leave its own containing block, so the canvas is held
-      // inside the section at both ends, and the mask below
-      // feathers it at the edges anyway.
+      // No edge mask either, which is the other departure. Every
+      // other backdrop is feathered so it does not end on a
+      // ruled line, but feathering a grid takes the lines out of
+      // the corners - and the corners are where a perspective
+      // grid does its work, because that is where the walls
+      // meet. Nothing is lost by leaving them: the sticky box is
+      // taller than the window at both ends, so its own edges
+      // are never on screen to need softening.
       className="pointer-events-none absolute inset-0 -z-10"
-      style={edges()}
     >
       {!off && (
         // Sticky, and this is the one thing here that is not a
@@ -54,7 +55,7 @@ export default function Scan() {
         // section as you read, which for a sweep that travels
         // top to bottom anyway is also the better picture.
         <div
-          className="sticky top-0 h-screen w-full transition-opacity duration-200"
+          className="sticky -top-[8vh] h-[116vh] w-full transition-opacity duration-200"
           style={{
             opacity: holds === "going" || hidden ? 0 : light ? 0.45 : 0.55,
           }}
@@ -68,7 +69,17 @@ export default function Scan() {
             // moire against the rail and the card edges.
             cells={7}
             lineThickness={1}
-            depth={2}
+            // The shallowest room the component allows.
+            //
+            // `depth` is how far the box recedes, and at anything
+            // above about one the walls, floor and ceiling stack
+            // up into a set of concentric rectangles marching to
+            // a vanishing point. That is a tunnel, and a tunnel
+            // behind a column of reading matter is a second
+            // picture competing with the first. At 0.5 the back
+            // wall is close enough that what is left reads as a
+            // grid with a little depth in it.
+            depth={0.5}
             depthFade={0.75}
             parallax={0.4}
             points={false}
