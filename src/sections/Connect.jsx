@@ -5,6 +5,8 @@ import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
 import fileMark from "bootstrap-icons/icons/file-earmark-text.svg?raw";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
+import { useLevel } from "../lib/readLevel";
+import { Dots, Wash } from "../components/rich/Backdrop";
 import { profile, socials } from "../data/profile";
 
 /**
@@ -128,6 +130,7 @@ function Chevron() {
 
 export default function Connect({ ref }) {
   const plain = usePlain();
+  const rich = useLevel() !== "bare";
 
   if (!plain) {
     return (
@@ -153,6 +156,12 @@ export default function Connect({ ref }) {
 
   return (
     <Stop id="connect" title="Contact" n={4} plain foot refEl={ref}>
+      {rich && (
+        <>
+          <Dots className="opacity-40" />
+          <Wash tint="var(--color-accent)" at="50% 100%" size="60% 70%" />
+        </>
+      )}
       {/* No `max-w-2xl` on this one. Every other section is held to
           the column because it is reading matter; this is the one
           thing on the page addressed to somebody, so it takes the

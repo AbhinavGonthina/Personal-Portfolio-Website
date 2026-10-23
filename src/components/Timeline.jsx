@@ -27,7 +27,7 @@ import { useEffect, useRef, useState } from "react";
  * values driven by scroll progress, so there is no loop running -
  * the work happens only while the page is moving.
  */
-export default function Timeline({ data }) {
+export default function Timeline({ data, tight = false }) {
   const ref = useRef(null);
   const containerRef = useRef(null);
   const [height, setHeight] = useState(0);
@@ -69,7 +69,10 @@ export default function Timeline({ data }) {
                 too narrow to put anything side by side in. Below
                 `lg` the date goes back above the entry, where it
                 costs a line instead of a column. */}
-            <div className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start lg:w-full lg:max-w-[260px] lg:flex-row lg:items-center">
+            <div
+              className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start lg:w-full lg:flex-row lg:items-center"
+              style={{ maxWidth: tight ? 170 : 260 }}
+            >
               <div className="absolute left-0 flex size-10 items-center justify-center rounded-full bg-ink-950">
                 <div className="size-3 rounded-full border border-ink-600 bg-ink-800" />
               </div>
