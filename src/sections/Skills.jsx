@@ -2,6 +2,7 @@ import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
+import { Dots } from "../components/rich/Backdrop";
 import { VelocityRow, VelocityRows } from "../components/rich/Velocity";
 import Glow from "../components/rich/Glow";
 import Glitch from "../components/rich/Glitch";
@@ -178,6 +179,7 @@ export default function Skills({ ref }) {
           lead-in and the two drifting bands above them had
           nothing behind them at all. Exactly the mistake Projects
           had, in a different section. */}
+      <Dots />
       <Glitch />
 
       <p className="relative -mt-6 max-w-2xl text-fg-muted">

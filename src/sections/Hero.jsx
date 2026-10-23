@@ -5,6 +5,7 @@ import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
+import { Dots } from "../components/rich/Backdrop";
 import AuroraText from "../components/rich/AuroraText";
 import Ether from "../components/rich/Ether";
 import { profile, RESUME_URL, socials } from "../data/profile";
@@ -180,6 +181,7 @@ export default function Hero({ ref }) {
             stacked on each other is how a landing turns to fog. */}
         {rich && (
           <>
+            <Dots className="opacity-40" />
             {/* The fluid, over the two washes and under everything
                 that is read.
 

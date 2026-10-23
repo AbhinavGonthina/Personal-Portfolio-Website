@@ -4,6 +4,7 @@ import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
+import { Dots } from "../components/rich/Backdrop";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
 import Topo from "../components/rich/Topo";
@@ -340,6 +341,7 @@ export default function Projects({ ref }) {
           the black the section was complained about for. */}
       {rich && (
         <>
+          <Dots />
           <Topo />
         </>
       )}

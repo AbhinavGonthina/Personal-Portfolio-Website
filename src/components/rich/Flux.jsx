@@ -40,7 +40,7 @@ export default function Flux() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 -top-24 bottom-0 -z-10 overflow-hidden"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       // Faded at the edges, so the section below the contour map
       // begins without a line ruled between the two.
       style={edges()}

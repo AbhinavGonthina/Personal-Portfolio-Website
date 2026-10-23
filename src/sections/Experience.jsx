@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
+import { Dots } from "../components/rich/Backdrop";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import Weave from "../components/rich/Weave";
@@ -297,6 +298,7 @@ export default function Experience({ ref }) {
           <>
             {/* Squares. A dated list of roles against a rail is
                 already a blueprint; this is the paper it is on. */}
+            <Dots />
             <Weave kind="grid" size={44} opacity={0.5} />
           </>
         )}

@@ -51,7 +51,7 @@ export default function Topo() {
     // nothing can add document under the page again.
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 -top-24 bottom-0 -z-10 overflow-hidden"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       // Faded at the edges, like the dot field has always been.
       // Without this the contour map stopped dead on the section
       // boundary - a ruled horizontal line with one background
