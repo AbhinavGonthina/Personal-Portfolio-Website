@@ -5,7 +5,6 @@ import { useTheme } from "../lib/theme";
 import { VelocityRow, VelocityRows } from "../components/rich/Velocity";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
-import Weave from "../components/rich/Weave";
 import { skillGroups, skillDetail } from "../data/skills";
 
 /**
@@ -197,15 +196,6 @@ export default function Skills({ ref }) {
       </VelocityRows>
 
       <div className="relative mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Diagonals, faintly in the accent. Drafting hatch: it
-            fills the field without implying rows and columns, and
-            the bento on top of it has plenty of those. */}
-        <Weave
-          kind="hatch"
-          size={30}
-          opacity={0.3}
-          tint="color-mix(in oklab, var(--color-accent) 42%, transparent)"
-        />
         <Dots />
         {BENTO.map(([id, span]) => {
           const group = skillGroups.find((g) => g.id === id);

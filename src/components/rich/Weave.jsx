@@ -1,18 +1,15 @@
 /**
  * The texture a section is drawn on.
  *
- * One component, three geometries, because four sections sharing
- * one backdrop is four sections that look like one long section -
- * and a square grid is right under a timeline and meaningless
- * under a gallery.
- *
- *   grid   squares, under Experience. A blueprint, which is what
- *          a dated list of roles against a rail already is.
- *   hatch  diagonals, under Skills. Drafting hatch; it fills a
- *          field without implying rows and columns, and the bento
- *          above it has plenty of those already.
- *   rules  horizontals that drift upward, under Projects. A
- *          contact sheet, under a rail of screenshots.
+ * One component, three geometries, on the principle that two
+ * sections sharing a backdrop look like one long section. Only
+ * `grid` is on the page at the moment, under Experience, where a
+ * dated list of roles against a rail is already a blueprint and
+ * this is the paper it is on. `hatch` and `rules` were under
+ * Skills and Projects and have been taken off again; they are
+ * kept here because the next thing tried under those two will
+ * want somewhere to go, and because an unused branch of a
+ * gradient costs nothing.
  *
  * All three are `repeating-linear-gradient` on a single div, so
  * each one is a background the browser paints the way it paints
@@ -27,7 +24,8 @@
  * count of rows, so on a short section the lower ones fell
  * outside it. Nothing clips an absolute child by default, so they
  * were adding five hundred pixels of empty document under the
- * footer.
+ * footer. Hence the clip below, which stays whatever goes in
+ * here next.
  */
 const FEATHER = "8rem";
 const band = (dir) =>
