@@ -126,9 +126,24 @@ function Actions() {
  * arrived at by looking: at 0.5 the tagline was still competing
  * with a swirl, and below 0.2 there is a visible hole in the
  * colour in the shape of the text block.
+ *
+ * The first band reaches full strength 19 per cent down rather
+ * than 10, which puts it clear of the bar instead of underneath
+ * it, and that is a fix rather than a preference.
+ *
+ * While the two readings are swapping, `main` is clipped to one
+ * screenful. The clip is written to open a bar-height *above* the
+ * page, so the bar has something behind it - but that is a
+ * negative inset, and a negative inset is clamped to zero. So for
+ * the length of the run the strip behind the bar is empty, and
+ * with the fluid at full strength from 60 pixels down it ended at
+ * the clip in a hard edge: a black band ruled across the top of
+ * the picture, which is the exact thing the clip was written to
+ * avoid. Starting the fluid below the bar means there is no edge
+ * there to cut, in either state.
  */
 const HOLD = [
-  "linear-gradient(to bottom, transparent, black 10%, black 66%, transparent)",
+  "linear-gradient(to bottom, transparent, black 19%, black 66%, transparent)",
   "radial-gradient(52% 46% at 30% 52%, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 35%, black 78%)",
 ].join(", ");
 
