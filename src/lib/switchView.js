@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { endArrival } from "./arrival";
 import { getPlain, isNarrow, setPlain } from "./plain";
+import { suspendRaw } from "./readLevel";
 
 /**
  * Switching between the two readings, by craning out of the town.
@@ -338,6 +339,10 @@ export function runSwitch(toPlain) {
   // while the car is still pulling up is a choice about which of the
   // two you want, not a request to watch both at once.
   endArrival();
+  // Raw stands down for a run out of it and comes back on the way
+  // home, which is what makes the setting survive a trip through
+  // the town.
+  if (toPlain) suspendRaw(false);
   if (toPlain) {
     // On the way out the page has not appeared yet, so the top is
     // simply where it starts from.
