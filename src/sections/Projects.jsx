@@ -7,6 +7,7 @@ import { useTheme } from "../lib/theme";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
+import Topo from "../components/rich/Topo";
 import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
@@ -330,16 +331,30 @@ export default function Projects({ ref }) {
         </div>
       }
     >
-        <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
+      {/* Both of these are `absolute inset-0`, and the nearest
+          positioned ancestor is the section itself - so here they
+          cover the whole of Projects. They used to sit inside the
+          wrapper around the rail, which is eleven hundred by four
+          hundred and sixty and entirely filled with opaque cards:
+          the backdrop was behind the one part of the section that
+          could not show it, and everything around the cards was
+          the black the section was complained about for. */}
+      {rich && (
+        <>
+          {/* Contour lines. A rail of screenshots wants a
+              landscape behind it rather than a ruled sheet, and
+              this is the one background on the page made of
+              neither squares nor blur. */}
+          <Topo />
+          <Dots />
+        </>
+      )}
+
+        <p className="relative -mt-6 mb-10 max-w-2xl text-fg-muted">
           Things I have built outside the roles above over the years.
         </p>
 
       <div className="relative">
-        {rich && (
-          <>
-            <Dots />
-          </>
-        )}
         <div ref={railRef} className="overflow-hidden">
           <div className="flex gap-5">
             {projects.map((p, i) => (

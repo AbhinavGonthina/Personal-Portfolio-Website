@@ -1,6 +1,7 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
+import { useHoldsUp, worthIt } from "./webgl";
 
 /**
  * The fluid behind the first screen, and everything that decides
@@ -33,108 +34,11 @@ const Fluid = lazy(() => import("./LiquidEther"));
 const NIGHT = ["#6fe3f5", "#5b8cff", "#b48bff"];
 const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
 
-/**
- * Whether this machine should be asked to run a fluid solve at
- * all.
- *
- * Two questions, both answered once and neither of them a
- * benchmark. A coarse pointer means there is no cursor to push
- * the fluid with, so the interaction the effect exists for cannot
- * happen - and it is a phone, which is where a full-screen shader
- * behind a first screen is least affordable and most likely to be
- * read on a battery. Four cores or fewer is the same judgement
- * made about a laptop.
- *
- * Deliberately crude. The alternative is measuring frame times
- * and tearing the canvas down mid-visit, and a background that
- * disappears while somebody is looking at it is worse than one
- * that was never there.
+/*
+ * The device guess, the frame-time watchdog and the `?gl=` escape
+ * hatch all live in `./webgl` now, because Projects wants the
+ * same three and two copies of a budget is no budget at all.
  */
-/**
- * `?fluid=1` to insist, `?fluid=0` to refuse. The first is how
- * this gets photographed at all - the render harness runs a
- * headless browser with no GPU, where the watchdog is quite right
- * to pull the canvas and the screenshot comes back without it.
- * The second is for anyone who simply does not want it.
- */
-const forced = () => {
-  if (typeof window === "undefined") return null;
-  const v = new URLSearchParams(window.location.search).get("fluid");
-  return v === null ? null : v !== "0";
-};
-
-function worthIt() {
-  if (typeof window === "undefined") return false;
-  const said = forced();
-  if (said !== null) return said;
-  if (window.matchMedia("(pointer: coarse)").matches) return false;
-  // Two cores or fewer only. This used to be four, which rules
-  // out a great many perfectly capable laptops; the watchdog
-  // below is the real test, and this is just for the machines
-  // where even finding that out is not worth a WebGL context.
-  const cores = navigator.hardwareConcurrency;
-  return !cores || cores > 2;
-}
-
-/** How long the watchdog waits, samples for, and will tolerate. */
-const SETTLE = 2800;
-const SAMPLE = 70;
-const BUDGET = 30;
-
-/**
- * The watchdog.
- *
- * `worthIt` is a guess made from two numbers the browser hands
- * over, and a guess is not a measurement. This is the measurement:
- * once the fluid has been up long enough for its own two-second
- * intro to finish, count seventy frames. If the middle one took
- * longer than thirty milliseconds the page is not holding sixty,
- * and on this page the only thing that could be responsible is the
- * fluid - everything else was measured at seventeen.
- *
- * It fades rather than vanishes, and it never comes back. A
- * background that blinks out while somebody is reading is worse
- * than one that was never there; a background that leaves over
- * half a second is a thing that finished.
- */
-function useHoldsUp() {
-  const [state, setState] = useState("on");
-
-  useEffect(() => {
-    if (forced() !== null) return;
-    let raf = 0;
-    let gone = false;
-    const start = setTimeout(() => {
-      const gaps = [];
-      let last = performance.now();
-      const tick = (now) => {
-        gaps.push(now - last);
-        last = now;
-        if (gaps.length < SAMPLE) {
-          raf = requestAnimationFrame(tick);
-          return;
-        }
-        gaps.sort((a, b) => a - b);
-        if (!gone && gaps[Math.floor(SAMPLE / 2)] > BUDGET) setState("going");
-      };
-      raf = requestAnimationFrame(tick);
-    }, SETTLE);
-
-    return () => {
-      gone = true;
-      clearTimeout(start);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (state !== "going") return;
-    const t = setTimeout(() => setState("off"), 600);
-    return () => clearTimeout(t);
-  }, [state]);
-
-  return state;
-}
 
 export default function Ether() {
   const theme = useTheme();
