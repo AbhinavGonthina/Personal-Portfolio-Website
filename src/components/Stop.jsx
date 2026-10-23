@@ -107,8 +107,16 @@ export default function Stop({
         //
         // 104 = the bar's 64, plus half of the 112, less the 16 the
         // section already carries on top.
+        // `relative`, which is not decoration. Everything the rich
+        // read puts behind a section - the dot field, the grid, the
+        // rings under Contact - is `absolute inset-0`, and without
+        // a positioned ancestor here they were all sizing
+        // themselves against the whole document instead. The dots
+        // tile, so that went unnoticed; the rings are centred on
+        // their box, and theirs was a seven-thousand pixel page, so
+        // they were drawn a long way off screen.
         className={cn(
-          "pointer-events-auto scroll-mt-26 pt-4",
+          "pointer-events-auto relative scroll-mt-26 pt-4",
           foot ? "pb-0" : "pb-24",
         )}
       >

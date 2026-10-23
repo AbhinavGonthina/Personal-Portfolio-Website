@@ -50,11 +50,30 @@ const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
  * disappears while somebody is looking at it is worse than one
  * that was never there.
  */
+/**
+ * `?fluid=1` to insist, `?fluid=0` to refuse. The first is how
+ * this gets photographed at all - the render harness runs a
+ * headless browser with no GPU, where the watchdog is quite right
+ * to pull the canvas and the screenshot comes back without it.
+ * The second is for anyone who simply does not want it.
+ */
+const forced = () => {
+  if (typeof window === "undefined") return null;
+  const v = new URLSearchParams(window.location.search).get("fluid");
+  return v === null ? null : v !== "0";
+};
+
 function worthIt() {
   if (typeof window === "undefined") return false;
+  const said = forced();
+  if (said !== null) return said;
   if (window.matchMedia("(pointer: coarse)").matches) return false;
+  // Two cores or fewer only. This used to be four, which rules
+  // out a great many perfectly capable laptops; the watchdog
+  // below is the real test, and this is just for the machines
+  // where even finding that out is not worth a WebGL context.
   const cores = navigator.hardwareConcurrency;
-  return !cores || cores > 4;
+  return !cores || cores > 2;
 }
 
 /** How long the watchdog waits, samples for, and will tolerate. */
@@ -82,6 +101,7 @@ function useHoldsUp() {
   const [state, setState] = useState("on");
 
   useEffect(() => {
+    if (forced() !== null) return;
     let raf = 0;
     let gone = false;
     const start = setTimeout(() => {
