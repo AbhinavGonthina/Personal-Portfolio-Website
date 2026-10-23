@@ -49,11 +49,15 @@ export default function Grain() {
         // it goes: on black it has to add light to be seen at all,
         // and on white it has to take light away.
         mixBlendMode: light ? "multiply" : "screen",
-        // Low enough that it is never a thing you notice, only a
-        // thing whose absence you would. Daylight takes less: dark
-        // specks on white are far more visible than light specks
-        // on black at the same strength.
-        opacity: light ? 0.06 : 0.09,
+        // Measured rather than guessed. At 0.09 this lifted flat
+        // black from 0 to a median of 9 out of 255, which is
+        // real - it is there in a screenshot - and under what a
+        // person sees on a normal display in a normally lit room.
+        // At 0.2 the same patch sits around 20, which is a tooth
+        // you can see without it ever becoming a thing you look
+        // at. Daylight takes less, because dark specks on white
+        // carry much further than light specks on black.
+        opacity: light ? 0.12 : 0.2,
       }}
     />
   );
