@@ -3,7 +3,7 @@ import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
-import Reveal from "../components/rich/Reveal";
+import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
 import { Dots, Wash } from "../components/rich/Backdrop";
 import { projects } from "../data/projects";
@@ -94,15 +94,34 @@ function Shot({ p }) {
 function Card({ p, lead, rich }) {
   return (
     <Glow
+      on={rich}
       as="article"
       // A slide, so every card is cut to the same size: the rail
       // only reads as a gallery if the cards line up, and a card
       // sized to its own blurb puts the links at a different height
       // on every one of them.
       className={`group flex h-[460px] w-[332px] shrink-0 flex-col rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 ${
-        lead ? "shimmer" : ""
-      } ${rich ? "hover:-translate-y-1 duration-300" : ""}`}
+        lead && !rich ? "shimmer" : ""
+      } ${rich ? "duration-300 hover:-translate-y-1" : ""}`}
     >
+      {/* The featured card, and only that one, carries a light
+          round its edge. In the bare read it is the `.shimmer`
+          conic gradient this site already had; in the rich read it
+          is Magic UI's BorderBeam, which is an object travelling
+          the outline rather than the whole edge brightening at a
+          turning angle - a card with one thing moving on it is the
+          card the eye goes to, which is the entire job of marking
+          one card as the featured one. */}
+      {lead && rich && (
+        <BorderBeam
+          size={90}
+          duration={9}
+          colorFrom="var(--color-accent)"
+          colorTo="transparent"
+          borderWidth={1.5}
+        />
+      )}
+
       <Shot p={p} />
 
       <div className="flex flex-1 flex-col p-5">
@@ -267,11 +286,9 @@ export default function Projects({ ref }) {
         </div>
       }
     >
-      <Reveal>
         <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
           Things I have built outside the roles above over the years.
         </p>
-      </Reveal>
 
       <div className="relative">
         {rich && (

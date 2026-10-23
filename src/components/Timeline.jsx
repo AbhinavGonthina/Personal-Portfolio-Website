@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { motion, useScroll, useSpring, useTransform } from "motion/react";
+import { useEffect, useId, useRef, useState } from "react";
 
 /**
  * Aceternity UI's Timeline, adapted.
@@ -22,12 +22,29 @@ import { useEffect, useRef, useState } from "react";
  *   that is only a timeline and far too much for a section inside
  *   one.
  *
- * The beam is the point of it: a line down the left that fills as
- * the section passes the middle of the screen. It is two motion
- * values driven by scroll progress, so there is no loop running -
- * the work happens only while the page is moving.
+ * - The rail is no longer Aceternity's Timeline beam. That one
+ *   grows from the top as you scroll, which is a progress bar,
+ *   and the scroll bar had already said it. It is now drawn the
+ *   way their TracingBeam draws one: a gradient window travelling
+ *   down the line, sprung at both ends so it overshoots and
+ *   settles when you stop. See the comment on the `<svg>`.
+ *
+ * Either way there is no loop running - the motion values are
+ * driven by scroll progress, so the work happens only while the
+ * page is moving.
  */
 export default function Timeline({ data, tight = false }) {
+  // Experience renders one of these per group, so the gradient
+  // cannot be called "rail". Three elements in a document with the
+  // same id is not an error anyone reports - `url(#rail)` simply
+  // resolves to the first of them, and the other two rails were
+  // being painted with the first one's scroll position.
+  //
+  // Stripped of punctuation, because React 19 hands back ids like
+  // `«r0»` and those two characters are not valid in a fragment
+  // reference - `url(#«r0»)` resolves to nothing at all, silently,
+  // and the rail simply does not paint.
+  const railId = `rail${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const ref = useRef(null);
   const containerRef = useRef(null);
   const [height, setHeight] = useState(0);
@@ -41,7 +58,22 @@ export default function Timeline({ data, tight = false }) {
     offset: ["start 20%", "end 60%"],
   });
 
-  const fill = useTransform(scrollYProgress, [0, 1], [0, height]);
+  // The two ends of the lit window, as pixels down the rail. They
+  // run at different rates and over different ranges, so the band
+  // stretches on the way in and gathers at the bottom rather than
+  // sliding down as a fixed block.
+  //
+  // Sprung, which is the whole character of it: stop scrolling and
+  // the light carries on a little and settles.
+  const SPRING = { stiffness: 420, damping: 80 };
+  const lead = useSpring(
+    useTransform(scrollYProgress, [0, 1], [-180, height - 40]),
+    SPRING,
+  );
+  const tail = useSpring(
+    useTransform(scrollYProgress, [0, 1], [120, height + 140]),
+    SPRING,
+  );
   const fade = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
 
   return (
@@ -90,15 +122,68 @@ export default function Timeline({ data, tight = false }) {
           </div>
         ))}
 
-        <div
-          style={{ height: height + "px" }}
-          className="absolute left-5 top-0 w-px overflow-hidden bg-[linear-gradient(to_bottom,transparent_0%,var(--color-ink-700)_10%,var(--color-ink-700)_90%,transparent_100%)]"
+        {/* The rail, drawn the way Aceternity's TracingBeam draws
+            one rather than as a div that grows.
+
+              https://ui.aceternity.com/components/tracing-beam
+
+            A growing bar says how much of the section is behind
+            you, which is a progress bar and the scroll bar already
+            said it. A gradient window travelling down a line says
+            where you are, which is the thing worth saying - and
+            because the window is a `linearGradient` whose two ends
+            are springs, it overshoots and settles when you stop
+            instead of halting dead.
+
+            Two paths over each other: the track, which is always
+            there, and the lit one, stroked with the gradient. Both
+            are the same straight line - upstream's has a kink at
+            the top where it steps in from the margin, and there is
+            no margin to step in from here. */}
+        <svg
+          aria-hidden
+          width="2"
+          height={height}
+          viewBox={`0 0 2 ${height}`}
+          className="pointer-events-none absolute left-5 top-0 overflow-visible"
         >
-          <motion.div
-            style={{ height: fill, opacity: fade }}
-            className="absolute inset-x-0 top-0 w-px rounded-full bg-gradient-to-t from-accent via-accent/40 to-transparent"
+          <line
+            x1="1"
+            y1="0"
+            x2="1"
+            y2={height}
+            stroke="var(--color-ink-700)"
+            strokeWidth="1"
           />
-        </div>
+          <motion.line
+            x1="1"
+            y1="0"
+            x2="1"
+            y2={height}
+            stroke={`url(#${railId})`}
+            strokeWidth="2"
+            strokeLinecap="round"
+            style={{ opacity: fade }}
+            className="motion-reduce:hidden"
+          />
+          <defs>
+            {/* Painted in user space, so the two offsets are
+                pixels down the rail and not fractions of it. */}
+            <motion.linearGradient
+              id={railId}
+              gradientUnits="userSpaceOnUse"
+              x1="0"
+              x2="0"
+              y1={lead}
+              y2={tail}
+            >
+              <stop stopColor="var(--color-accent)" stopOpacity="0" />
+              <stop offset="0.25" stopColor="var(--color-accent)" />
+              <stop offset="0.72" stopColor="#8b7bff" />
+              <stop offset="1" stopColor="#8b7bff" stopOpacity="0" />
+            </motion.linearGradient>
+          </defs>
+        </svg>
       </div>
     </div>
   );
