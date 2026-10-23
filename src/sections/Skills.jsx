@@ -4,7 +4,6 @@ import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import { VelocityRow, VelocityRows } from "../components/rich/Velocity";
 import Glow from "../components/rich/Glow";
-import { Dots } from "../components/rich/Backdrop";
 import Glitch from "../components/rich/Glitch";
 import { skillGroups, skillDetail } from "../data/skills";
 
@@ -180,7 +179,6 @@ export default function Skills({ ref }) {
           nothing behind them at all. Exactly the mistake Projects
           had, in a different section. */}
       <Glitch />
-      <Dots />
 
       <p className="relative -mt-6 max-w-2xl text-fg-muted">
         The technologies I have used across my projects and the roles above.

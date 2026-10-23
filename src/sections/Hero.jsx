@@ -7,7 +7,6 @@ import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import AuroraText from "../components/rich/AuroraText";
 import Ether from "../components/rich/Ether";
-import { Dots } from "../components/rich/Backdrop";
 import { profile, RESUME_URL, socials } from "../data/profile";
 import { education } from "../data/about";
 
@@ -181,7 +180,6 @@ export default function Hero({ ref }) {
             stacked on each other is how a landing turns to fog. */}
         {rich && (
           <>
-            <Dots className="opacity-40" />
             {/* The fluid, over the two washes and under everything
                 that is read.
 

@@ -5,7 +5,6 @@ import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
-import { Dots } from "../components/rich/Backdrop";
 import Weave from "../components/rich/Weave";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
@@ -299,7 +298,6 @@ export default function Experience({ ref }) {
             {/* Squares. A dated list of roles against a rail is
                 already a blueprint; this is the paper it is on. */}
             <Weave kind="grid" size={44} opacity={0.5} />
-            <Dots />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">

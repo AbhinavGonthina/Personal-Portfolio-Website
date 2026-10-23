@@ -6,7 +6,6 @@ import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
-import { Dots } from "../components/rich/Backdrop";
 import Topo from "../components/rich/Topo";
 import { projects } from "../data/projects";
 
@@ -342,7 +341,6 @@ export default function Projects({ ref }) {
       {rich && (
         <>
           <Topo />
-          <Dots />
         </>
       )}
 

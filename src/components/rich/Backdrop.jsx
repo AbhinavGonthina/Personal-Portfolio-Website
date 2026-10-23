@@ -1,18 +1,23 @@
 /**
  * What goes behind a section so it is not sitting on a flat sheet.
  *
- * One piece now: a dot field, which is one repeating radial
- * gradient rather than Magic UI's SVG full of <circle> elements,
- * drawn twice so the second copy can light up under the cursor.
+ * Nothing is left in here but the edge fade, which every
+ * backdrop on the page needs and which is the only thing they
+ * all share.
  *
- * There used to be a `Wash` beside it - a big soft bloom of the
- * accent thrown in from a corner. It is gone. A blurred blob is
- * the one thing on this site that is neither line nor type, it
- * read as a smudge on the screen rather than as light, and at the
- * size it had to be to register it was visibly a shape with no
- * edges sitting behind the text. What replaced it is structure:
- * Magic UI's GridPattern under Experience and its Ripple under
- * Contact, both of them outlines.
+ * Two things used to live here. A `Wash` - a soft bloom of the
+ * accent thrown in from a corner - which was the one thing on
+ * this site that was neither line nor type, and read as a smudge
+ * on the screen rather than as light. And a dot field, which
+ * survived longer and went for a different reason: it is what
+ * OnTrack's interface is drawn on, and a portfolio whose
+ * background is one of its own projects' backgrounds is a
+ * portfolio that looks like it only owns one idea.
+ *
+ * What replaced them is a different texture per section, each
+ * one about that section: contour lines under the projects, a
+ * character field under the technologies, field lines under the
+ * invitation.
  *
  * Both are feathered to nothing at the edges of the section they
  * sit in. This is the whole reason either of them is bearable: a
@@ -53,31 +58,3 @@ export const edges = (feather = FEATHER) => {
     WebkitMaskComposite: "source-in",
   };
 };
-
-const GRID = {
-  backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
-  backgroundSize: "22px 22px",
-};
-
-/**
- * The dot field. One layer, grey, sitting still.
- *
- * It was two: this one, and a copy in the accent shown through a
- * circle that followed the cursor, so the page appeared to notice
- * you. It is gone, and the reason is the same one that took the
- * cursor off the character field in Skills - a patch of the
- * background lighting up under the pointer is movement exactly
- * where the reader is already looking, which is the one place a
- * background must not move. Nothing is left here that reacts to
- * anything: no listener on the section, no custom properties, no
- * second layer to composite.
- */
-export function Dots({ className = "" }) {
-  return (
-    <div
-      aria-hidden
-      className={`pointer-events-none absolute inset-0 -z-10 opacity-[0.55] ${className}`}
-      style={{ ...GRID, color: "var(--color-ink-700)", ...edges() }}
-    />
-  );
-}
