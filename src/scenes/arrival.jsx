@@ -11,7 +11,7 @@ import {
   headrestScreen,
 } from "../lib/carGeometry";
 import { HEADREST_BAR, paintHeadrest } from "../lib/paint";
-import { ACCENT } from "../lib/townMaterials";
+import { ACCENT, MAT } from "../lib/townMaterials";
 import { ARRIVED_AT, CAR_PARK, DOOR_AT, ride } from "../lib/arrivalPath";
 
 /**
@@ -114,7 +114,7 @@ export default function Car({ clock }) {
 
   const paint = (
     <meshStandardMaterial
-      color="#2a2d3c"
+      color={MAT.carShell}
       roughness={0.5}
       metalness={0.45}
       side={THREE.DoubleSide}
@@ -122,7 +122,7 @@ export default function Car({ clock }) {
   );
   const cloth = (
     <meshStandardMaterial
-      color="#15161d"
+      color={MAT.carTrim}
       roughness={0.98}
       metalness={0}
       side={THREE.DoubleSide}
@@ -154,7 +154,7 @@ export default function Car({ clock }) {
           which is where it used to be visible. */}
         <mesh geometry={built.tint}>
           <meshStandardMaterial
-            color="#05070c"
+            color={MAT.carSeat}
             roughness={0.18}
             metalness={0.55}
             transparent
@@ -168,7 +168,7 @@ export default function Car({ clock }) {
           <mesh geometry={door.trim}>{cloth}</mesh>
           <mesh geometry={door.glass}>
             <meshStandardMaterial
-              color="#05070c"
+              color={MAT.carSeat}
               roughness={0.18}
               metalness={0.55}
               transparent
@@ -183,7 +183,7 @@ export default function Car({ clock }) {
         <group position={SCREEN_AT}>
           <mesh geometry={bezel}>
             <meshStandardMaterial
-              color="#0b0d16"
+              color={MAT.carDash}
               roughness={0.6}
               metalness={0.2}
               side={THREE.DoubleSide}

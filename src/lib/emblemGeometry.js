@@ -44,8 +44,13 @@ function plane() {
   const lit = [];
 
   base.push(cyl(0.11, 0.115, 0.6, 14, [0, 0, 0], [HALF, 0, 0]));
-  base.push(cone(0.115, 0.26, 14, [0, 0, 0.42], [-HALF, 0, 0]));
-  base.push(cone(0.11, 0.3, 14, [0, 0.055, -0.42], [HALF, 0, 0]));
+  // Both cones used to have their apex pointing inward, which left
+  // the plane flared at both ends - a nose that widens toward the
+  // front reads as a funnel pointing the wrong way. A cone's apex
+  // is at +Y, so +90 about X aims it at +Z and -90 at -Z: the nose
+  // takes the first and the tail the second.
+  base.push(cone(0.115, 0.26, 14, [0, 0, 0.42], [HALF, 0, 0]));
+  base.push(cone(0.11, 0.3, 14, [0, 0.055, -0.42], [-HALF, 0, 0]));
 
   // One slab per side, wide in chord and only lightly swept. A narrow
   // wing disappears at this distance; a broad one reads instantly.

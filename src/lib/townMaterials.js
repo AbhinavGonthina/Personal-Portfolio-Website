@@ -110,6 +110,19 @@ const MAT_NIGHT = {
   tower: "#09090b",
   towerTop: "#000000",
   towerSign: "#0a0a0d",
+  // Lettering: the extruded words on the ground, the sign over the
+  // mailboxes, and the name on each tower. White at night.
+  letterInk: "#ffffff",
+  // The sides of an extruded letter, as a multiplier on the face.
+  letterSide: "#2b2b33",
+  // The foliage, lightened toward this. Night leaves it alone.
+  leafLift: 0,
+  // The cabin you arrive in. Unlit on purpose at night, so the one
+  // screen in it is the only thing with any light on it.
+  carShell: "#2a2d3c",
+  carTrim: "#15161d",
+  carSeat: "#05070c",
+  carDash: "#0b0d16",
   // The four slabs that close in around the town during a switch.
   bezel: "#04050a",
 };
@@ -146,6 +159,25 @@ const MAT_DAY = {
   tower: "#b0b7c7",
   towerTop: "#9ca3b5",
   towerSign: "#bac1d0",
+  // Blue rather than black. Black lettering on a pale sky is a
+  // harder edge than anything else in the frame and reads as a
+  // hole; this is the same hue the accents carry, dark enough to
+  // hold up over a light tower as well as over the sky.
+  letterInk: "#2f49ab",
+  letterSide: "#7f88b4",
+  // Foliage at night is nearly black, which is right under a black
+  // sky and wrong under a pale one. The leaf and bark colours are
+  // mixed this far toward white rather than replaced, so the wood
+  // keeps the six greens it was given.
+  leafLift: 0.56,
+  // Daylight through the windows, so the inside is a car rather
+  // than a cave with a tablet in it. Still the darkest thing on
+  // screen while it is up, because the windows behind it are the
+  // sky.
+  carShell: "#b9bcc8",
+  carTrim: "#9a9ead",
+  carSeat: "#8a8e9c",
+  carDash: "#7f8392",
   bezel: "#e9ecf3",
 };
 

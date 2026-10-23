@@ -409,7 +409,7 @@ export default function Experience({ ref }) {
               className="pointer-events-none absolute inset-y-0 -left-56 right-0"
               style={{
                 background:
-                  "linear-gradient(to right, transparent, rgba(6,9,18,0.94) 26%, rgba(6,9,18,0.97))",
+                  "linear-gradient(to right, transparent, var(--scrim-in) 26%, var(--scrim-out))",
               }}
             />
 

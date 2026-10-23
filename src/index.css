@@ -118,6 +118,11 @@
   --lift-edge: rgb(255 255 255 / 0.25);
   --lift-edge-strong: rgb(255 255 255 / 0.4);
   --plate: rgb(0 0 0 / 0.25);
+  /* The sheet the focused role's write-up is read off, laid over
+     the scene. Near-opaque, because what is behind it is a lit
+     city and the copy has to win. */
+  --scrim-in: rgb(6 9 18 / 0.94);
+  --scrim-out: rgb(6 9 18 / 0.97);
 }
 
 :root[data-theme="light"] {
@@ -130,6 +135,8 @@
   --lift-edge: rgb(0 0 0 / 0.22);
   --lift-edge-strong: rgb(0 0 0 / 0.35);
   --plate: rgb(255 255 255 / 0.55);
+  --scrim-in: rgb(247 248 251 / 0.94);
+  --scrim-out: rgb(247 248 251 / 0.97);
 }
 
 /* The theme is swapped on a click, so the surfaces move together
