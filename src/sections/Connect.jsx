@@ -218,9 +218,22 @@ export default function Connect({ ref }) {
         ))}
       </ul>
 
-      <p className="mt-10 border-t border-ink-800 pt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
-        &copy; {new Date().getFullYear()} {profile.name}
-      </p>
+      {/* The copyright, and the one other place worth going.
+          Opposite ends of the same rule: the line under the page is
+          where a site keeps the things that are true of it rather
+          than part of it, and the version this one replaced is
+          exactly that. */}
+      <div className="mt-10 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-ink-800 pt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-fg-subtle">
+        <p>
+          &copy; {new Date().getFullYear()} {profile.name}
+        </p>
+        <a
+          href="/legacy/"
+          className="transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Legacy website &rarr;
+        </a>
+      </div>
     </Stop>
   );
 }

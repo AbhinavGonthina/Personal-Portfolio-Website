@@ -936,6 +936,159 @@ function Mailbox({ x, link, mats, label, live, visible = true }) {
   );
 }
 
+/**
+ * A line painted flat on the pavement, which is a link.
+ *
+ * The wall the mailboxes stand on runs a long way past the last of
+ * them, and that stretch of it has nothing in front of it. This is
+ * the one other place on the site worth going, so it goes there:
+ * stencilled on the ground like a parking bay's lettering, lying in
+ * the plane it is painted on rather than standing up out of it.
+ * Nothing else in the town is written on the floor, which is why it
+ * reads as a marking rather than as a fifth mailbox.
+ *
+ * Quiet until you point at it. A sign on the ground that is as loud
+ * as the boxes competes with them for the one thing the stop is
+ * actually for.
+ */
+const DIM = 0.72;
+const LIT = 1;
+
+/**
+ * How far the letters are stretched away from the camera.
+ *
+ * The ground is read at a shallow angle, so anything lying on it is
+ * foreshortened - a square painted on the pavement arrives at the
+ * eye as a letterbox. Drawn at its true proportions the lettering
+ * comes out squashed and unreadable, so it is stretched along the
+ * depth axis by roughly the amount the angle takes back out.
+ */
+const LEAN = 1.9;
+
+/**
+ * How much bigger the thing you can point at is than the thing you
+ * can read.
+ *
+ * Lying almost edge on, the lettering is about twenty pixels tall
+ * on screen however large it is in the world, and twenty pixels is
+ * not a target. So the handlers hang on a plane of their own, with
+ * room around the words - invisible, but not `visible={false}`,
+ * which the raycaster skips.
+ */
+const PAD_X = 0.5;
+const PAD_Z = 3.4;
+
+function GroundLink({ text, href, at, width, live }) {
+  const theme = useTheme();
+  // Tracked tighter than the signage. The stretch below buys the
+  // height back, and spacing wide enough to read square on turns
+  // into a line too long to fit in frame once it is laid down.
+  const made = useMemo(
+    () => {
+      const t = makeTextTexture(text, { theme, tracking: 16, weight: 800 });
+      // The plane is almost edge on, so every row of pixels in the
+      // texture is squeezed into a fraction of one on screen and
+      // the sampler reaches for a mip level coarse enough to turn
+      // the strokes into a grey smear - measured at five per cent
+      // contrast against the daylight pavement, which is invisible.
+      //
+      // Anisotropic filtering is the usual answer and it is asked
+      // for, but how much of it a machine will actually give is up
+      // to the machine. Dropping the mips is the answer that does
+      // not depend on that: there is no coarse level to fall back
+      // to, so the strokes stay strokes. The cost of no mips is
+      // shimmer when the surface moves, and this one is read from
+      // a stop, where nothing is moving.
+      t.tex.anisotropy = 16;
+      t.tex.generateMipmaps = false;
+      t.tex.minFilter = THREE.LinearFilter;
+      t.tex.needsUpdate = true;
+      return t;
+    },
+    [text, theme],
+  );
+  useEffect(() => () => made.tex.dispose(), [made]);
+
+  const matRef = useRef();
+  const [over, setOver] = useState(false);
+  const on = over && live;
+
+  useFrame((_, delta) => {
+    const k = 1 - Math.exp(-9 * delta);
+    if (matRef.current) {
+      const want = on ? LIT : DIM;
+      matRef.current.opacity += (want - matRef.current.opacity) * k;
+    }
+  });
+
+  useEffect(() => {
+    if (!live && over) setOver(false);
+  }, [live, over]);
+  // The cursor is set on the body, so it has to be put back by hand
+  // if this ever leaves while it is being pointed at.
+  useEffect(() => () => void (document.body.style.cursor = ""), []);
+
+  const deep = width / made.aspect;
+
+  return (
+    <group position={at} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* What you point at. */}
+      <mesh
+        scale={[1, LEAN, 1]}
+        onPointerOver={(e) => {
+          if (!live) return;
+          e.stopPropagation();
+          setOver(true);
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          setOver(false);
+          document.body.style.cursor = "";
+        }}
+        onClick={(e) => {
+          if (!live) return;
+          e.stopPropagation();
+          // The same tab. It is not somewhere else on the internet,
+          // it is the previous draft of here, and it carries its own
+          // way back.
+          window.location.href = href;
+        }}
+      >
+        <planeGeometry args={[width + PAD_X, deep * PAD_Z]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
+
+      {/* What you read. */}
+      <mesh
+        scale={[1, LEAN, 1]}
+        // Last of the transparent passes, which is the whole reason
+        // this is legible. The pavement is itself a translucent
+        // sheet at 0.88, and with nothing to order them by it was
+        // being drawn after this and painting 88 per cent of itself
+        // back over the lettering - measured at five per cent
+        // contrast in daylight, which is a sign nobody can see.
+        // Writing depth would also fix it, and would put the glyph
+        // edges into the depth buffer to occlude whatever came
+        // next; an order is the cheaper half of that.
+        renderOrder={2}
+      >
+        <planeGeometry args={[width, deep]} />
+        {/* No depth write: paint on a floor, so nothing behind it
+            should be sorted against it. */}
+        <meshBasicMaterial
+          ref={matRef}
+          map={made.tex}
+          transparent
+          opacity={DIM}
+          depthWrite={false}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 /** Module scope, so the memo below has a stable builder to key on. */
 const railOf = (theme) => mailrail(socials.length, theme);
 
@@ -979,6 +1132,17 @@ export function Mailboxes({ mats, visible, labels, live, greet }) {
           layers={8}
         />
       </group>
+      {/* Centred on the empty stretch of wall past the last box,
+          a step out from its foot. A hair off the ground rather
+          than on it, which is the whole of what keeps it from
+          flickering against the pavement. */}
+      <GroundLink
+        text="LEGACY WEBSITE"
+        href="/legacy/"
+        at={[span / 2 - 0.4, 0.03, 1.15]}
+        width={2.3}
+        live={live}
+      />
       {socials.map((s, i) => (
         <Mailbox
           key={s.name}

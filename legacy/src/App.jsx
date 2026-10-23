@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./components/utilities/Navbar";
+import BackToCurrent from "./components/utilities/BackToCurrent";
 import Layout from "./components/layout/Layout";
 
 function App() {
@@ -14,6 +15,9 @@ function App() {
             {" "}
           </Route>
         </Routes>
+        {/* Outside the routes: there is only one page, but the way
+            out should not depend on that staying true. */}
+        <BackToCurrent />
       </div>
     </Router>
   );
