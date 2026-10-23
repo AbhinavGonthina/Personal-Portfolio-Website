@@ -296,7 +296,7 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
-            <Grid />
+            <Grid cells={9} seed="experience" />
             <Dots />
           </>
         )}
@@ -343,18 +343,16 @@ export default function Experience({ ref }) {
                             ? "bg-ink-900/50 hover:border-ink-600"
                             : "bg-ink-900/40"
                         }`}
-                        style={
-                          rich
-                            ? {
-                                "--tint": r.accent,
-                                // A breath of the role's colour in
-                                // the corner, so a card is its own
-                                // place before you have read a word
-                                // of it.
-                                backgroundImage: `radial-gradient(70% 120% at 0% 0%, color-mix(in oklab, ${r.accent} 13%, transparent), transparent 60%)`,
-                              }
-                            : undefined
-                        }
+                        // There was a breath of the role's colour
+                        // thrown into the top corner of each card
+                        // here. It was the same blurred shape as
+                        // the section washes and it went the same
+                        // way. The card already says whose it is
+                        // with the bar down its left edge, the
+                        // logo and the ring that lights under the
+                        // cursor, and all three of those are
+                        // drawn rather than smudged.
+                        style={rich ? { "--tint": r.accent } : undefined}
                       >
                         <span
                           aria-hidden
