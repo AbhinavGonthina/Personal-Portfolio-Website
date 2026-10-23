@@ -5,6 +5,7 @@ import { useTheme } from "../lib/theme";
 import { VelocityRow, VelocityRows } from "../components/rich/Velocity";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
+import Glitch from "../components/rich/Glitch";
 import { skillGroups, skillDetail } from "../data/skills";
 
 /**
@@ -196,6 +197,9 @@ export default function Skills({ ref }) {
       </VelocityRows>
 
       <div className="relative mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* A wall of characters, kept quiet. Every setting
+            on it is under the stock one; see `rich/Glitch`. */}
+        <Glitch />
         <Dots />
         {BENTO.map(([id, span]) => {
           const group = skillGroups.find((g) => g.id === id);

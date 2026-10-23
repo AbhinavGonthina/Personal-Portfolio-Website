@@ -20,6 +20,13 @@ import { useArrived, useHoldsUp, worthIt } from "./webgl";
  */
 const Map = lazy(() => import("./Topography"));
 
+/** The display's own resolution, capped. Contours are thin. */
+const sharp = () =>
+  Math.min(
+    typeof window === "undefined" ? 1 : window.devicePixelRatio || 1,
+    1.5,
+  );
+
 export default function Topo() {
   const box = useRef(null);
   const seen = useArrived(box);
@@ -82,19 +89,24 @@ export default function Topo() {
               // meant for a card.
               clickEffect="none"
               markers="none"
-              // Two thirds of a device pixel, which is the only
-              // setting here that matters.
+              // The display's own resolution, capped at 1.5.
               //
               // This shader is fill-rate bound and almost nothing
-              // else about it is: measured on a software
-              // rasteriser, turning the bloom off saved 15 per
-              // cent, turning the pointer and the detail octaves
-              // off saved nothing much, and going from 1.0 to 0.6
-              // device pixels took it from 733 ms a frame to 283.
-              // The subject is soft contour lines well out of
-              // focus behind content, so two thirds of the pixels
-              // is a cost cut and not a compromise.
-              dpr={0.65}
+              // else about it is, so `dpr` is the only dial worth
+              // turning - which is why it was set to 0.65, and
+              // why that was wrong. A contour is a one-pixel
+              // line. Rendered at a third of the screen's
+              // resolution it does not come out softer, it comes
+              // out as a staircase, and the whole section read as
+              // a low-quality image. Thin lines are the one
+              // subject that cannot be under-sampled.
+              //
+              // 1.5 rather than the component's own cap of 2,
+              // because cost goes with the square of this and 2
+              // is four times the work of 1 for something that is
+              // still a background. The watchdog takes it away if
+              // the page cannot hold sixty.
+              dpr={sharp()}
               className="size-full"
             />
           </div>
