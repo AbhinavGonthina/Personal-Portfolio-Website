@@ -65,7 +65,7 @@ export default function Glitch() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      className="pointer-events-none absolute inset-x-0 -top-24 bottom-0 -z-10 overflow-hidden"
       // Faded at the edges, like the dot field has always been.
       // Without this the character field stopped dead on the section
       // boundary - a ruled horizontal line with one background
@@ -86,6 +86,16 @@ export default function Glitch() {
             }}
           >
             <Field
+              // No intro.
+              //
+              // Each of these pauses itself while it is off
+              // screen, so its two-second reveal does not run at
+              // load - it runs the moment the section arrives,
+              // which is indistinguishable from the background
+              // still loading. Preloading the shader fixed the
+              // download and not this. Below the fold a backdrop
+              // should simply be there when you get to it.
+              intro={false}
               glitchColors={light ? DAY : NIGHT}
               lightMode={light}
               // Big, widely spaced, and half of the cells empty.
