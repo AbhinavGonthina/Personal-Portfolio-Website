@@ -6,7 +6,6 @@ import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
-import Scan from "../components/rich/Scan";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -296,12 +295,13 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
+            {/* Only the dot field here for the moment. The
+                scanning grid that was here is gone: stuck to the
+                window so it could cover a four-thousand pixel
+                section without costing four thousand pixels of
+                shader, it also hung above the section's own top
+                and showed through on the landing. */}
             <Dots />
-            {/* The blueprint this section was already drawn on,
-                with a sweep moving down it. See `rich/Scan` for
-                why it is stuck to the top of the section rather
-                than sized to it. */}
-            <Scan />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
