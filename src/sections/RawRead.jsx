@@ -55,7 +55,7 @@ export default function RawRead() {
   return (
     <div>
       <p>
-        <em>This is what you asked for :)</em>
+        <em>Simple enough? :)</em>
       </p>
       <p>
         <button onClick={() => setLevel("rich")}>Put the design back</button>

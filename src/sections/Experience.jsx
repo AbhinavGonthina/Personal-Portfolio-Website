@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
-import Reveal from "../components/rich/Reveal";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { Dots, Wash } from "../components/rich/Backdrop";
@@ -323,7 +322,7 @@ export default function Experience({ ref }) {
             const roles = experience.filter((r) => r.category === group.id);
             if (!roles.length) return null;
             return (
-              <Reveal key={group.id} as="section" className="mb-16 last:mb-0">
+              <section key={group.id} className="mb-16 last:mb-0">
                 <h3 className="mb-8 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.24em] text-fg-subtle">
                   {group.label}
                   <span className="h-px flex-1 bg-ink-700" />
@@ -336,7 +335,8 @@ export default function Experience({ ref }) {
                     title: span(r),
                     content: (
                       <Glow
-                        tint={rich ? r.accent : undefined}
+                        on={rich}
+                        tint={r.accent}
                         className={`relative rounded-xl border border-ink-700 p-6 transition-colors ${
                           rich
                             ? "bg-ink-900/50 hover:border-ink-600"
@@ -383,7 +383,7 @@ export default function Experience({ ref }) {
                     ),
                   }))}
                 />
-              </Reveal>
+              </section>
             );
           })}
         </div>

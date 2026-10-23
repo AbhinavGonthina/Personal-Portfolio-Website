@@ -2,8 +2,7 @@ import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
-import Reveal from "../components/rich/Reveal";
-import Marquee from "../components/rich/Marquee";
+import { VelocityRow, VelocityRows } from "../components/rich/Velocity";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
 import { skillGroups, skillDetail } from "../data/skills";
@@ -171,36 +170,38 @@ export default function Skills({ ref }) {
 
   return (
     <Stop id="skills" title="Skills" n={2} plain refEl={ref}>
-      <Reveal>
-        <p className="-mt-6 max-w-2xl text-fg-muted">
-          The technologies I have used across my projects and the roles above.
-        </p>
-      </Reveal>
+      <p className="-mt-6 max-w-2xl text-fg-muted">
+        The technologies I have used across my projects and the roles above.
+      </p>
 
       {/* The whole list, twice, drifting. It is the same thirty-two
           tags the cards below hold - said once as movement and once
           as a reference, because the first is what the section looks
           like and the second is what it is for. */}
-      <Reveal delay={0.08} className="relative mt-9 space-y-3">
-        <Marquee speed={64}>
-          {top.map((item) => (
-            <Tag key={item} item={item} tint={tints[groupOf[item]]} big />
-          ))}
-        </Marquee>
-        <Marquee speed={78} reverse>
-          {bottom.map((item) => (
-            <Tag key={item} item={item} tint={tints[groupOf[item]]} big />
-          ))}
-        </Marquee>
-      </Reveal>
+      <VelocityRows className="mt-9 space-y-3">
+        <VelocityRow baseVelocity={2.2}>
+          <div className="flex items-center gap-3 pr-3">
+            {top.map((item) => (
+              <Tag key={item} item={item} tint={tints[groupOf[item]]} big />
+            ))}
+          </div>
+        </VelocityRow>
+        <VelocityRow baseVelocity={2.8} direction={-1}>
+          <div className="flex items-center gap-3 pr-3">
+            {bottom.map((item) => (
+              <Tag key={item} item={item} tint={tints[groupOf[item]]} big />
+            ))}
+          </div>
+        </VelocityRow>
+      </VelocityRows>
 
       <div className="relative mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Dots />
-        {BENTO.map(([id, span], i) => {
+        {BENTO.map(([id, span]) => {
           const group = skillGroups.find((g) => g.id === id);
           const tint = tints[id];
           return (
-            <Reveal key={id} delay={0.05 * i} className={span}>
+            <div key={id} className={span}>
               <Glow
                 tint={tint}
                 className="h-full rounded-2xl border border-ink-700 bg-ink-900/40 p-5 transition-colors hover:border-ink-600"
@@ -223,7 +224,7 @@ export default function Skills({ ref }) {
                   ))}
                 </ul>
               </Glow>
-            </Reveal>
+            </div>
           );
         })}
       </div>

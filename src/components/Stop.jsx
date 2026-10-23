@@ -1,4 +1,8 @@
 import { cn } from "../lib/cn";
+import { usePlain } from "../lib/plain";
+import { useLevel } from "../lib/readLevel";
+import { useTheme } from "../lib/theme";
+import HoverText from "./rich/HoverText";
 
 /**
  * A section that is a stop on the walk.
@@ -18,8 +22,21 @@ import { cn } from "../lib/cn";
  * so. It is the same plate the 3D read puts in the top left corner -
  * mono index, two slashes, the name - so switching between the two
  * does not feel like arriving at a different site.
+ *
+ * In the rich read the words also take colour under the cursor,
+ * which is the one bit of play the headings get. It is off
+ * everywhere else, and the heading underneath it is the same solid
+ * type either way - see `rich/HoverText`.
  */
+const SWEEP = {
+  dark: ["#6fe3f5", "#8fa8ff", "#b48bff"],
+  light: ["#0e7f94", "#3b55b8", "#6a3fbd"],
+};
+
 export function Heading({ n, aside, children }) {
+  const rich = usePlain() && useLevel() !== "bare";
+  const sweep = SWEEP[useTheme()] ?? SWEEP.dark;
+
   return (
     <div className="mb-10">
       {/* `aside` rides on the heading's own line. A control that
@@ -35,7 +52,7 @@ export function Heading({ n, aside, children }) {
             </span>
           ) : null}
           <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {children}
+            {rich ? <HoverText colors={sweep}>{children}</HoverText> : children}
           </h2>
         </div>
         {aside}

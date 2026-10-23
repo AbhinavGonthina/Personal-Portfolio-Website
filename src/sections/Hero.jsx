@@ -4,7 +4,8 @@ import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
-import Reveal from "../components/rich/Reveal";
+import { useTheme } from "../lib/theme";
+import AuroraText from "../components/rich/AuroraText";
 import Ether from "../components/rich/Ether";
 import { Dots } from "../components/rich/Backdrop";
 import { profile, RESUME_URL, socials } from "../data/profile";
@@ -117,6 +118,16 @@ function Actions() {
   );
 }
 
+/**
+ * The gradient in the first name. Four stops rather than three,
+ * because this one runs rather than sits and a loop of three
+ * comes back round too obviously.
+ */
+const NAME = {
+  dark: ["#6fe3f5", "#8fa8ff", "#b48bff", "#6fe3f5"],
+  light: ["#0e7f94", "#3b55b8", "#6a3fbd", "#0e7f94"],
+};
+
 export default function Hero({ ref }) {
   // One question, asked once. This used to keep its own listener on
   // the width alongside `lib/plain`'s, which is how a narrow window
@@ -124,6 +135,7 @@ export default function Hero({ ref }) {
   // behind it - the store said one thing and this said another.
   const plain = usePlain();
   const rich = useLevel() !== "bare";
+  const NAME_FOR = NAME[useTheme()] ?? NAME.dark;
 
   // --- phones, and anyone who asked for the plain read ------------------
   if (plain) {
@@ -201,8 +213,21 @@ export default function Hero({ ref }) {
                 <span className="text-fg-subtle">{profile.location}</span>
               </p>
 
+              {/* The one piece of colour on the page that is not
+                  behind something. The surname keeps the page's own
+                  ink, so the gradient reads as an accent on a name
+                  rather than as a name made of gradient. */}
               <h1 className="mt-5 text-5xl font-semibold tracking-tight sm:text-7xl">
-                {profile.name}
+                {rich ? (
+                  <>
+                    <AuroraText colors={NAME_FOR} speed={0.8}>
+                      {profile.name.split(" ")[0]}
+                    </AuroraText>{" "}
+                    {profile.name.split(" ").slice(1).join(" ")}
+                  </>
+                ) : (
+                  profile.name
+                )}
               </h1>
 
               <p className="mt-7 max-w-xl text-lg leading-relaxed text-fg-muted">
