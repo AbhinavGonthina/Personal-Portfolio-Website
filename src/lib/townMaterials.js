@@ -105,6 +105,13 @@ const MAT_NIGHT = {
   groundRough: 0.16,
   gridA: "#343438",
   gridB: "#1e1e22",
+  // The role towers. Near black at night, because the city they
+  // stand in is near black and the hairline is what draws them.
+  tower: "#09090b",
+  towerTop: "#000000",
+  towerSign: "#0a0a0d",
+  // The four slabs that close in around the town during a switch.
+  bezel: "#04050a",
 };
 
 const MAT_DAY = {
@@ -133,6 +140,13 @@ const MAT_DAY = {
   groundRough: 0.9,
   gridA: "#949aa8",
   gridB: "#a7adb9",
+  // Lighter than the sky behind them is dark, so they read as
+  // buildings rather than as holes. Still the darkest things in
+  // the frame, which is what keeps the arc legible.
+  tower: "#b0b7c7",
+  towerTop: "#9ca3b5",
+  towerSign: "#bac1d0",
+  bezel: "#e9ecf3",
 };
 
 export const MAT = { ...MAT_NIGHT };

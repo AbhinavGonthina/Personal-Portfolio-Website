@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { getPlain } from "./plain";
 
 /**
  * Which of the two palettes is up, as one answer the whole site asks.
@@ -74,6 +75,41 @@ if (typeof window !== "undefined") {
     });
 }
 
+/**
+ * Whether a change of palette is still being applied.
+ *
+ * In the plain read there is nothing to apply - the tokens swap
+ * and the browser repaints. In the town there is: four geometries
+ * carry the palette in their vertices and have to be rebuilt, six
+ * canvas textures have to be repainted, and all of it has to go
+ * back to the GPU. That is about a tenth of a second of blocked
+ * main thread on a fast machine and noticeably more on a slow one,
+ * and a page that stops dead for that long with no explanation
+ * reads as a bug.
+ *
+ * So the work is held back by a frame. The flag goes up, the
+ * browser gets one frame to paint something that says so, and the
+ * palette lands on the frame after that. It costs one frame and
+ * turns a freeze into a wait.
+ */
+let busy = false;
+const busySubs = new Set();
+export const useThemeBusy = () =>
+  useSyncExternalStore(
+    (fn) => {
+      busySubs.add(fn);
+      return () => busySubs.delete(fn);
+    },
+    () => busy,
+    () => false,
+  );
+
+function setBusy(v) {
+  if (v === busy) return;
+  busy = v;
+  busySubs.forEach((fn) => fn());
+}
+
 export function setTheme(next) {
   chosen = next;
   try {
@@ -81,7 +117,21 @@ export function setTheme(next) {
   } catch {
     /* see fromStorage() */
   }
-  settle(next);
+  if (next === theme) return;
+
+  // Nothing heavy behind the plain read, so it swaps on the click.
+  if (getPlain() || typeof requestAnimationFrame !== "function") {
+    settle(next);
+    return;
+  }
+
+  setBusy(true);
+  requestAnimationFrame(() => {
+    // One frame later: the flag has been painted, so the stall
+    // that follows has something on screen to explain it.
+    settle(next);
+    requestAnimationFrame(() => setBusy(false));
+  });
 }
 
 export const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");

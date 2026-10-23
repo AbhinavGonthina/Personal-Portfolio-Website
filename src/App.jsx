@@ -12,6 +12,7 @@ import Connect from "./sections/Connect";
 import { useSwitching } from "./lib/switchView";
 import { usePlain } from "./lib/plain";
 import { useReady } from "./lib/ready";
+import { useThemeBusy } from "./lib/theme";
 
 /**
  * The page is a walk through one town, and these are its stops in
@@ -40,7 +41,12 @@ export default function App() {
   // sitting there looking like nothing was clicked.
   const plain = usePlain();
   const drawn = useReady();
-  const waiting = !drawn && (!plain || switching);
+  // Changing the palette rebuilds the town's geometry and repaints
+  // every texture in it, which blocks the main thread for long
+  // enough to look broken. The store holds that work back by one
+  // frame so this can be on screen before it starts.
+  const repainting = useThemeBusy();
+  const waiting = repainting || (!drawn && (!plain || switching));
 
   const hero = useRef(null);
   const about = useRef(null);
@@ -80,7 +86,9 @@ export default function App() {
           aria-live="polite"
           className="pointer-events-none fixed inset-0 z-30 grid place-items-center"
         >
-          <span className="sr-only">Loading</span>
+          <span className="sr-only">
+            {repainting ? "Changing theme" : "Loading"}
+          </span>
           <span className="size-9 animate-spin rounded-full border-2 border-ink-700 border-t-fg-muted" />
         </div>
       )}

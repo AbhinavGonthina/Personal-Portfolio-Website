@@ -526,7 +526,7 @@ export function interior() {
   };
 }
 
-export function mailrail(count) {
+export function mailrail(count, theme) {
   const base = [];
   const span = (count - 1) * MAIL_GAP;
   // A low garden wall rather than a pair of legs, because that is
@@ -552,13 +552,14 @@ export function mailrail(count) {
       ]),
     );
   }
-  tint(base, 0, MAIL_RAIL_C);
+  const paint = mail(theme);
+  tint(base, 0, paint.rail);
   // The capping course the boxes sit on, proud of the wall either
   // side, and a shade lighter so the wall reads as courses rather
   // than as one slab.
   const cap = base.length;
   base.push(box(wall + 0.14, 0.1, 0.58, [(x0 + x1) / 2, 1.05, 0]));
-  tint(base, cap, MAIL_CAP_C);
+  tint(base, cap, paint.cap);
   return { base: merge(base) };
 }
 
@@ -586,10 +587,28 @@ const ARCH_SEG = 9;
 //
 // A shade between each piece is all it takes to keep a door
 // reading as a door and a capping course as a course.
-const MAIL_BODY_C = "#0c0d13";
-const MAIL_DOOR_C = "#11121b";
-const MAIL_RAIL_C = "#08090e";
-const MAIL_CAP_C = "#0f1017";
+/**
+ * Baked into the vertices, like the house, and for the same
+ * reason: one draw call for the whole row. Which means light does
+ * not reach them either - at night they are near-black boxes the
+ * blue hairline draws, and in daylight that reads as four holes
+ * cut in the pavement.
+ */
+const MAIL_PAINT = {
+  dark: {
+    body: "#0c0d13",
+    door: "#11121b",
+    rail: "#08090e",
+    cap: "#0f1017",
+  },
+  light: {
+    body: "#c3c8d4",
+    door: "#ccd1dc",
+    rail: "#aeb4c2",
+    cap: "#bcc2ce",
+  },
+};
+const mail = (theme) => MAIL_PAINT[theme] ?? MAIL_PAINT.dark;
 
 /**
  * The outline of a mailbox, and nothing else.
@@ -632,7 +651,7 @@ export function mailshell() {
   return prism(hoodProfile(w / 2, h * 0.55), d - 0.04, [0, 0, -d / 2]);
 }
 
-export function mailbox() {
+export function mailbox(theme) {
   const { w, h, d } = MAIL_BODY;
   const hw = w / 2;
   const hs = h * 0.55;
@@ -668,7 +687,7 @@ export function mailbox() {
       ),
     );
   }
-  tint(parts, 0, MAIL_BODY_C);
+  tint(parts, 0, mail(theme).body);
   return merge(parts);
 }
 
@@ -685,7 +704,7 @@ export function mailbox() {
  * Built around its own hinge rather than around the box, so the
  * caller can rotate it without first having to move it.
  */
-export function maildoor() {
+export function maildoor(theme) {
   const { w, h } = MAIL_BODY;
   const t = 0.05;
   // The same profile the hairline is traced from, so the panel and
@@ -705,7 +724,7 @@ export function maildoor() {
   // was shut over. Only the panel thickness sits forward of the
   // hinge, so the caller puts the pivot on the front edge.
   const parts = [prism(hoodProfile(w / 2 + 0.022, h * 0.55), t, [0, 0, 0])];
-  tint(parts, 0, MAIL_DOOR_C);
+  tint(parts, 0, mail(theme).door);
   return merge(parts);
 }
 
