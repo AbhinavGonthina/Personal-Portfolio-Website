@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
-import { useHoldsUp, worthIt } from "./webgl";
+import { useBudget, worthIt } from "./webgl";
 
 /**
  * The fluid behind the first screen, and everything that decides
@@ -43,7 +43,7 @@ const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
 export default function Ether() {
   const theme = useTheme();
   const still = useReducedMotion();
-  const holds = useHoldsUp();
+  const holds = useBudget();
   const light = theme === "light";
 
   // The component honours the setting on its own, by drawing one

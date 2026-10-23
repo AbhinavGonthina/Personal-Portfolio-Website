@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 /**
  * What the written read is allowed to spend on a GPU, shared by
- * the two backgrounds that want one.
+ * the four backgrounds that want one.
  *
  * The plain read was deliberately built with no WebGL in it at
  * all - that is where the entry bundle went from 1.3 MB to 430 KB
@@ -52,103 +52,89 @@ export function worthIt() {
   return !cores || cores > 2;
 }
 
-/** How long the watchdog waits, samples for, and will tolerate. */
-const SETTLE = 2800;
-const SAMPLE = 70;
-const BUDGET = 30;
-
 /**
- * The measurement.
+ * The measurement, and there is exactly one of it for the page.
  *
- * Once the thing has been running long enough for its own intro
- * to finish, count seventy frames. If the middle one took longer
- * than thirty milliseconds the page is not holding sixty, and on
- * this page the only thing that could be responsible is the
- * shader - everything else was measured at seventeen.
+ * This used to be a hook with its own timer per background, and
+ * that was a bug rather than a design. Each copy started counting
+ * 2.8 seconds after its own component woke up, so the landing's
+ * sampled while the page was still loading fonts and compiling
+ * the other three shaders, and Contact's sampled while the
+ * contour map directly above it was at full tilt. Both read a
+ * slow page, both concluded they were the cause, and both
+ * switched themselves off for good. The reported symptom was
+ * exactly that: the landing and the contact backgrounds
+ * disappearing after a while.
  *
- * It fades rather than vanishes, and it never comes back. A
- * background that blinks out while somebody is reading is worse
- * than one that was never there; a background that leaves over
- * half a second is a thing that finished.
- *
- * `ready` is when to start counting. For the landing that is
- * straight away, because it is the first thing on the page. For
- * anything further down it is the moment the section arrives on
- * screen, because a shader that is paused off screen will of
- * course pass a test taken while it is paused.
+ * So: one timer, started the first time anything asks, long
+ * enough after load that every shader has compiled and finished
+ * its intro, sampling longer and tolerating more. If the page
+ * cannot hold a frame by then, it is the page and not whichever
+ * component happened to look at the clock.
  */
-export function useHoldsUp(ready = true) {
-  const [state, setState] = useState("on");
-  const done = useRef(false);
+const SETTLE = 7000;
+const SAMPLE = 120;
+const BUDGET = 42;
 
-  useEffect(() => {
-    if (!ready || done.current || forced() !== null) return;
-    let raf = 0;
-    const start = setTimeout(() => {
-      const gaps = [];
-      let last = performance.now();
-      const tick = (now) => {
-        gaps.push(now - last);
+let state = "on";
+const watching = new Set();
+let started = false;
+
+const tell = () => watching.forEach((fn) => fn());
+
+function measure() {
+  if (started || forced() !== null) return;
+  started = true;
+
+  setTimeout(() => {
+    const gaps = [];
+    let last = performance.now();
+    const tick = (now) => {
+      // A frame nobody saw is not evidence. Tabs in the
+      // background are throttled to one frame a second, which
+      // would fail any budget ever written.
+      if (document.visibilityState !== "visible") {
         last = now;
-        if (gaps.length < SAMPLE) {
-          raf = requestAnimationFrame(tick);
-          return;
-        }
-        done.current = true;
-        gaps.sort((a, b) => a - b);
-        if (gaps[Math.floor(SAMPLE / 2)] > BUDGET) setState("going");
-      };
-      raf = requestAnimationFrame(tick);
-    }, SETTLE);
-
-    return () => {
-      clearTimeout(start);
-      cancelAnimationFrame(raf);
+        requestAnimationFrame(tick);
+        return;
+      }
+      gaps.push(now - last);
+      last = now;
+      if (gaps.length < SAMPLE) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      gaps.sort((a, b) => a - b);
+      if (gaps[Math.floor(SAMPLE / 2)] > BUDGET) {
+        state = "going";
+        tell();
+        // Faded rather than vanished, and never back. A
+        // background that blinks out while somebody is reading is
+        // worse than one that was never there; one that leaves
+        // over half a second is a thing that finished.
+        setTimeout(() => {
+          state = "off";
+          tell();
+        }, 600);
+      }
     };
-  }, [ready]);
-
-  useEffect(() => {
-    if (state !== "going") return;
-    const t = setTimeout(() => setState("off"), 600);
-    return () => clearTimeout(t);
-  }, [state]);
-
-  return state;
+    requestAnimationFrame(tick);
+  }, SETTLE);
 }
 
 /**
- * True once the element has been on screen, and true for good
- * afterwards.
- *
- * Both of these backgrounds stop their own loop when they leave
- * the viewport, so this is not about pausing - it is about not
- * downloading or compiling a shader for a section the reader may
- * never reach, and about not starting the watchdog's clock
- * against a canvas that is not drawing.
+ * Every WebGL background subscribes to the same answer, so they
+ * go together or not at all. Three of four surviving a test the
+ * fourth failed was never a state worth having.
  */
-export function useArrived(ref, margin = "400px") {
-  const [seen, setSeen] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || seen) return;
-    if (typeof IntersectionObserver !== "function") {
-      setSeen(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        setSeen(true);
-        io.disconnect();
-      },
-      // A screenful of warning, so the shader is compiled and the
-      // intro under way by the time the section is actually read.
-      { rootMargin: margin },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [ref, seen, margin]);
-
-  return seen;
+export function useBudget() {
+  measure();
+  return useSyncExternalStore(
+    (fn) => {
+      watching.add(fn);
+      return () => watching.delete(fn);
+    },
+    () => state,
+    () => "on",
+  );
 }

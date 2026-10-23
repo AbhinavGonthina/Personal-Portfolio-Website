@@ -1,7 +1,7 @@
-import { Suspense, lazy, useRef } from "react";
+import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
-import { useArrived, useHoldsUp, worthIt } from "./webgl";
+import { useBudget, worthIt } from "./webgl";
 import { edges } from "./Backdrop";
 
 /**
@@ -46,9 +46,17 @@ const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
 const DPR = 1;
 
 export default function Glitch() {
-  const box = useRef(null);
-  const seen = useArrived(box);
-  const holds = useHoldsUp(seen);
+  // Mounted with the page, not when the section arrives.
+  //
+  // It used to wait for an IntersectionObserver, which saved the
+  // download for a reader who never scrolled this far and cost
+  // everybody else a shader compiling under them mid-scroll. The
+  // compile is the expensive part and it is much better spent at
+  // load, with everything else that happens at load, than as a
+  // hitch while somebody is reading. The component stops its own
+  // loop while it is off screen either way, so nothing is
+  // running down here until it is looked at.
+  const holds = useBudget();
   const light = useTheme() === "light";
   const still = useReducedMotion();
 
@@ -56,7 +64,6 @@ export default function Glitch() {
 
   return (
     <div
-      ref={box}
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       // Faded at the edges, like the dot field has always been.
@@ -66,7 +73,7 @@ export default function Glitch() {
       // place a background announces itself.
       style={edges()}
     >
-      {seen && !off && (
+      {!off && (
         <Suspense fallback={null}>
           <div
             className="size-full transition-opacity duration-500"

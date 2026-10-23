@@ -1,8 +1,8 @@
-import { Suspense, lazy, useRef } from "react";
+import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
 import { edges } from "./Backdrop";
-import { useArrived, useHoldsUp, worthIt } from "./webgl";
+import { useBudget, worthIt } from "./webgl";
 
 /**
  * The field lines behind Contact.
@@ -21,9 +21,17 @@ const NIGHT = ["#6fe3f5", "#8fa8ff", "#b48bff"];
 const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
 
 export default function Flux() {
-  const box = useRef(null);
-  const seen = useArrived(box);
-  const holds = useHoldsUp(seen);
+  // Mounted with the page, not when the section arrives.
+  //
+  // It used to wait for an IntersectionObserver, which saved the
+  // download for a reader who never scrolled this far and cost
+  // everybody else a shader compiling under them mid-scroll. The
+  // compile is the expensive part and it is much better spent at
+  // load, with everything else that happens at load, than as a
+  // hitch while somebody is reading. The component stops its own
+  // loop while it is off screen either way, so nothing is
+  // running down here until it is looked at.
+  const holds = useBudget();
   const light = useTheme() === "light";
   const still = useReducedMotion();
 
@@ -31,14 +39,13 @@ export default function Flux() {
 
   return (
     <div
-      ref={box}
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       // Faded at the edges, so the section below the contour map
       // begins without a line ruled between the two.
       style={edges()}
     >
-      {seen && !off && (
+      {!off && (
         <Suspense fallback={null}>
           <div
             className="size-full transition-opacity duration-500"
