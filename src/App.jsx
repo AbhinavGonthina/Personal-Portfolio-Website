@@ -29,8 +29,6 @@ import RawRead from "./sections/RawRead";
  *
  * This order has to match `lib/stops.js`.
  */
-let askedDeeper = false;
-
 export default function App() {
   // The switch's transform and clip live on the page itself, and a
   // transform on a document-tall element costs something even at
@@ -53,19 +51,22 @@ export default function App() {
   const repainting = useThemeBusy();
   const level = useLevel();
 
-  // The second offer, and the last one.
+  // The second offer, every time rather than once.
   //
-  // It arrives only after somebody has already chosen the bare
-  // read, because the joke only lands on a reader who has shown
-  // they want less rather than one who stumbled into it. Five
-  // seconds, like the first, and then it is gone for the visit.
+  // It only appears to somebody already in the bare read, because
+  // the joke does not land on a reader who stumbled in - but it is
+  // an easter egg, and an easter egg that fires once and never
+  // again is one most people never find. So it comes back on every
+  // arrival in `bare`, for five seconds, and then goes.
   const [deeper, setDeeper] = useState(false);
   useEffect(() => {
-    if (level !== "bare" || !plain || askedDeeper) return;
-    askedDeeper = true;
+    if (level !== "bare" || !plain) return;
     setDeeper(true);
     const t = setTimeout(() => setDeeper(false), 5000);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      setDeeper(false);
+    };
   }, [level, plain]);
   const waiting = repainting || (!drawn && (!plain || switching));
 
@@ -87,7 +88,6 @@ export default function App() {
       <Nudge
         show={deeper}
         at="corner"
-        label="go on"
         onAct={() => {
           setDeeper(false);
           setLevel("raw");

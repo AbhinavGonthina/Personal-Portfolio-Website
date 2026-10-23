@@ -292,7 +292,6 @@ export default function Navbar() {
               <Nudge
                 show={offer}
                 at="under"
-                label="here"
                 onAct={() => {
                   setOffer(false);
                   toggleLevel();
