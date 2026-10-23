@@ -10,7 +10,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
  * arrived, because a thing that offers something and then stays is
  * a thing somebody has to dismiss.
  */
-export default function Nudge({ show, at, onAct, children, label }) {
+export default function Nudge({ show, at, onAct, children }) {
   const still = useReducedMotion();
   const corner = at === "corner";
 
@@ -44,7 +44,11 @@ export default function Nudge({ show, at, onAct, children, label }) {
             {!corner && (
               <span
                 aria-hidden
-                className="absolute -top-1 right-9 size-2.5 rotate-45 border-l border-t border-accent/40 bg-ink-900"
+                // 11px from the right edge, because the control it
+                // points at is 32 wide and the spike is 10: half of
+                // each puts its centre under the middle of the
+                // button rather than off to one side of it.
+                className="absolute -top-[5px] right-[11px] size-2.5 rotate-45 border-l border-t border-accent/40 bg-ink-900"
               />
             )}
             <button
@@ -55,11 +59,6 @@ export default function Nudge({ show, at, onAct, children, label }) {
               <span className="whitespace-nowrap text-sm tracking-tight text-fg">
                 {children}
               </span>
-              {label && (
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
-                  {label}
-                </span>
-              )}
             </button>
           </div>
         </motion.div>

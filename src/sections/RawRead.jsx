@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import { runSwitch } from "../lib/switchView";
-import { setLevel, suspendRaw } from "../lib/readLevel";
+import { setLevel } from "../lib/readLevel";
 import { profile, socials } from "../data/profile";
 import { bio, education } from "../data/about";
 import { experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -53,24 +52,13 @@ export default function RawRead() {
     };
   }, []);
 
-  const toTown = () => {
-    // The stylesheets go back on first and the rich read stands in
-    // for the length of the run, because a page with no styles has
-    // nothing for the switch to shrink into its frame.
-    suspendRaw(true);
-    requestAnimationFrame(() => runSwitch(false));
-  };
-
   return (
     <div>
       <p>
-        <em>
-          You asked for it. This is the page with every stylesheet switched off.
-        </em>
+        <em>This is what you asked for :)</em>
       </p>
       <p>
-        <button onClick={() => setLevel("rich")}>Put the design back</button>{" "}
-        <button onClick={toTown}>Go to the 3D version</button>
+        <button onClick={() => setLevel("rich")}>Put the design back</button>
       </p>
 
       <hr />
@@ -191,8 +179,7 @@ export default function RawRead() {
 
       <hr />
       <p>
-        <button onClick={() => setLevel("rich")}>Put the design back</button>{" "}
-        <button onClick={toTown}>Go to the 3D version</button>
+        <button onClick={() => setLevel("rich")}>Put the design back</button>
       </p>
       <p>
         <small>
