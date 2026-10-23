@@ -33,6 +33,24 @@ import { useEffect, useId, useRef, useState } from "react";
  * driven by scroll progress, so the work happens only while the
  * page is moving.
  */
+/**
+ * How wide the date column is in the rich read.
+ *
+ * It was 170, which was chosen to pull the cards left and was
+ * never checked against the dates. The label is `whitespace-
+ * nowrap` with four rem of padding to clear the dot, and the
+ * longest of them - "Mar 2025 - Jan 2026" - measures 237: it
+ * overran the column by 67 pixels and printed itself over the
+ * card's own left edge. Every one of them overran; the short
+ * ones only by 22, which is why it took a screenshot to notice.
+ *
+ * 244, which is the longest label plus a hair, and still short
+ * of the 260 the bare read uses. There is no narrowing to be had
+ * here beyond that without setting the dates smaller or breaking
+ * them over two lines, and neither is worth sixteen pixels.
+ */
+const TIGHT = 244;
+
 export default function Timeline({ data, tight = false }) {
   // Experience renders one of these per group, so the gradient
   // cannot be called "rail". Three elements in a document with the
@@ -103,7 +121,7 @@ export default function Timeline({ data, tight = false }) {
                 costs a line instead of a column. */}
             <div
               className="sticky top-28 z-40 flex max-w-xs flex-col items-start self-start lg:w-full lg:flex-row lg:items-center"
-              style={{ maxWidth: tight ? 170 : 260 }}
+              style={{ maxWidth: tight ? TIGHT : 260 }}
             >
               <div className="absolute left-0 flex size-10 items-center justify-center rounded-full bg-ink-950">
                 <div className="size-3 rounded-full border border-ink-600 bg-ink-800" />
