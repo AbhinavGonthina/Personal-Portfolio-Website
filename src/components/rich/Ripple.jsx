@@ -15,10 +15,18 @@ import { memo } from "react";
  * of answering it. It replaced a soft bloom of accent which meant
  * nothing and looked like a thumbprint on the screen.
  *
- * Eight divs with a border and one CSS keyframe between them, so
- * it is eight composited layers and no main-thread work at all.
+ * Eight divs with a border, and nothing moving.
  *
- * Changed from upstream: TypeScript stripped, the filled
+ * They did pulse, a two per cent swell running out through them
+ * on a stagger, and it was lovely and it cost thirty milliseconds
+ * a frame. Eight animated layers up to seven hundred pixels
+ * across is five million pixels to blend every frame for a thing
+ * nobody was going to look directly at. The rings are structure
+ * now and the four travelling lights on the buttons are the
+ * motion; the section has plenty without this one as well.
+ *
+ * Changed from upstream: the animation dropped as above,
+ * TypeScript stripped, the filled
  * `bg-foreground/25` dropped so the rings are outlines and
  * nothing else - a disc behind text is the blur all over again -
  * the colour moved onto the accent, and the mask changed from a
@@ -45,7 +53,7 @@ const Ripple = memo(function Ripple({
         return (
           <div
             key={i}
-            className="absolute left-1/2 top-1/2 rounded-full border border-accent/55 motion-safe:animate-[swell_5s_ease-in-out_infinite]"
+            className="absolute left-1/2 top-1/2 rounded-full border border-accent/55"
             style={{
               width: size,
               height: size,
@@ -53,9 +61,6 @@ const Ripple = memo(function Ripple({
               // so the set reads as one thing going out rather
               // than as eight circles.
               opacity: 0.8 - i * 0.07,
-              // And a little later, which is what turns a set of
-              // static rings into a pulse travelling through them.
-              animationDelay: `${i * 0.22}s`,
               transform: "translate(-50%, -50%)",
             }}
           />
