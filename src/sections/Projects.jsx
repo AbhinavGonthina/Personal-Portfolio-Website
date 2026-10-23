@@ -7,6 +7,7 @@ import { useTheme } from "../lib/theme";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
+import Topo from "../components/rich/Topo";
 import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
@@ -340,6 +341,7 @@ export default function Projects({ ref }) {
           the black the section was complained about for. */}
       {rich && (
         <>
+          <Topo />
           <Dots />
         </>
       )}
