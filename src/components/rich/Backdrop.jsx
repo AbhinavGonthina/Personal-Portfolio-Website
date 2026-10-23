@@ -44,18 +44,16 @@
 const FEATHER = "7rem";
 
 export const edges = (feather = FEATHER) => {
-  const band = (dir) =>
-    `linear-gradient(to ${dir}, transparent, black ${feather}, black calc(100% - ${feather}), transparent)`;
-  const image = `${band("right")}, ${band("bottom")}`;
-  return {
-    maskImage: image,
-    WebkitMaskImage: image,
-    // Both layers have to agree for a pixel to survive, so the
-    // four edges come off rather than the mask simply being the
-    // brighter of the two bands everywhere.
-    maskComposite: "intersect",
-    WebkitMaskComposite: "source-in",
-  };
+  // Down the page only. It used to fade all four sides, and the
+  // two it should never have touched are the left and the right:
+  // the window has its own edge there, and a texture that stops
+  // short of it reads as a panel floating in the middle of the
+  // page rather than as the surface the page is on. Top and
+  // bottom still fade, because those edges are section
+  // boundaries - invisible lines in the middle of a document
+  // that a texture would otherwise draw for you.
+  const image = `linear-gradient(to bottom, transparent, black ${feather}, black calc(100% - ${feather}), transparent)`;
+  return { maskImage: image, WebkitMaskImage: image };
 };
 
 const GRID = {
