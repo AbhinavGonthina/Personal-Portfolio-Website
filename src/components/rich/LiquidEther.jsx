@@ -10,9 +10,21 @@
  *
  * Vendored rather than installed, because React Bits is a
  * copy-paste registry and not a package. Taken as published, with
- * two edits: the Next.js "use client" directive is gone, because
+ * three edits: the Next.js "use client" directive is gone, because
  * this is a Vite app and there is no server to mark a boundary
- * against, and this comment is on the front of it.
+ * against; this comment is on the front of it; and the three
+ * constants below the imports are halved.
+ *
+ * Those constants are the whole cost of the thing. `PRESSURE_STEPS`
+ * is how many times the solver sweeps the field to make it
+ * divergence free, and at the stock 32 it was by far the most
+ * expensive line on the page - measured at 133 ms a frame with the
+ * landing on screen, against 17 everywhere else. At 16 the fluid
+ * is slightly less crisp at the edges of a swirl and nothing else
+ * about it changes, which for something running at 45 per cent
+ * opacity behind a paragraph is not a trade at all. `MAX_CELLS`
+ * and `PIXEL_BUDGET` cap the grid on a large display for the same
+ * reason.
  *
  * It is worth being clear about what this costs, because the plain
  * read was deliberately built with no WebGL in it at all. What
@@ -27,9 +39,9 @@
  */
 import { useEffect, useRef, useState } from 'react';
 
-const PIXEL_BUDGET = 2.4e6;
-const MAX_CELLS = 140000;
-const PRESSURE_STEPS = 32;
+const PIXEL_BUDGET = 1.2e6;
+const MAX_CELLS = 70000;
+const PRESSURE_STEPS = 16;
 const PALETTE_SIZE = 256;
 
 const VERTEX = `#version 300 es

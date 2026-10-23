@@ -6,7 +6,10 @@ import fileMark from "bootstrap-icons/icons/file-earmark-text.svg?raw";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
+import { useTheme } from "../lib/theme";
 import { Dots, Wash } from "../components/rich/Backdrop";
+import Glow from "../components/rich/Glow";
+import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
 
 /**
@@ -26,6 +29,28 @@ const MARKS = {
   linkedin: linkedinMark,
   email: envelopeMark,
   resume: fileMark,
+};
+
+/**
+ * A colour per button, so the last thing on the page is a row of
+ * four things rather than one thing four times.
+ *
+ * They are the same five hues the skill cards use, which is what
+ * stops this reading as a new idea introduced in the last section.
+ */
+const TINT = {
+  dark: {
+    github: "#8fa8ff",
+    linkedin: "#6fe3f5",
+    email: "#b48bff",
+    resume: "#6bd99a",
+  },
+  light: {
+    github: "#3b55b8",
+    linkedin: "#0e7f94",
+    email: "#6a3fbd",
+    resume: "#1d7a4c",
+  },
 };
 
 /**
@@ -131,6 +156,7 @@ function Chevron() {
 export default function Connect({ ref }) {
   const plain = usePlain();
   const rich = useLevel() !== "bare";
+  const tints = TINT[useTheme()] ?? TINT.dark;
 
   if (!plain) {
     return (
@@ -195,9 +221,15 @@ export default function Connect({ ref }) {
           email address and a GitHub username are what happens after
           the click, not what makes somebody click. */}
       <ul className="mt-11 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {socials.map((s) => (
+        {socials.map((s, i) => (
           <li key={s.name}>
-            <a
+            {/* The same ring the cards wear. A page whose last four
+                controls behave differently from everything above
+                them reads as two pages. */}
+            <Glow
+              on={rich}
+              as="a"
+              tint={tints[s.icon]}
               href={s.href}
               {...(s.icon === "email"
                 ? {}
@@ -207,13 +239,36 @@ export default function Connect({ ref }) {
             >
               <span
                 aria-hidden
-                className="size-5 shrink-0 text-fg-subtle transition-colors group-hover:text-accent [&>svg]:size-full"
+                // The mark takes the button's own colour on hover
+                // rather than the one accent, so the four of them
+                // answer differently.
+                className={`size-5 shrink-0 text-fg-subtle transition-colors [&>svg]:size-full ${
+                  rich ? "group-hover:text-(--hue)" : "group-hover:text-accent"
+                }`}
+                style={rich ? { "--hue": tints[s.icon] } : undefined}
                 dangerouslySetInnerHTML={{ __html: MARKS[s.icon] }}
               />
               <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-fg-muted transition-colors group-hover:text-fg">
                 {s.name}
               </span>
-            </a>
+
+              {/* A light going round each one, started a beat
+                  apart. This is the last thing on the page and it
+                  was the stillest: four identical outlines under a
+                  sentence asking somebody to get in touch. Four
+                  lights running at different points on the same
+                  loop is the row saying it is live without anything
+                  being added to it. */}
+              {rich && (
+                <BorderBeam
+                  size={70}
+                  duration={11}
+                  delay={i * 2.75}
+                  colorFrom={tints[s.icon]}
+                  colorTo="transparent"
+                />
+              )}
+            </Glow>
           </li>
         ))}
       </ul>

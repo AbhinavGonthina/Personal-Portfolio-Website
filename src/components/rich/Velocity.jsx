@@ -104,9 +104,12 @@ function Row({
     const measure = () => {
       const bw = block.scrollWidth || 0;
       unit.set(bw);
-      // Enough copies to cover the box twice over, so the row is
-      // never short of content at either end of the wrap.
-      const want = bw > 0 ? Math.max(3, Math.ceil(box.offsetWidth / bw) + 2) : 1;
+      // Enough copies to cover the box and have one more waiting
+      // at the edge, which is all the wrap needs. Upstream's floor
+      // is three; at these widths that was a third more tags in
+      // the layer for nothing, and the layer is wide enough that
+      // the extra showed in the frame time.
+      const want = bw > 0 ? Math.max(2, Math.ceil(box.offsetWidth / bw) + 1) : 1;
       setCopies((was) => (was === want ? was : want));
     };
     measure();
