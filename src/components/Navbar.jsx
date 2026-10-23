@@ -289,14 +289,10 @@ export default function Navbar() {
                   }}
                 />
               </button>
-              <Nudge
-                show={offer}
-                at="under"
-                onAct={() => {
-                  setOffer(false);
-                  toggleLevel();
-                }}
-              >
+              {/* A label, not a second button. It points at the
+                  control above it and that control is the only way
+                  to act on it. */}
+              <Nudge show={offer} at="under">
                 Want it even simpler?
               </Nudge>
             </div>
