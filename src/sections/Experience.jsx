@@ -5,7 +5,8 @@ import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
-import { Dots, Wash } from "../components/rich/Backdrop";
+import { Dots } from "../components/rich/Backdrop";
+import Grid from "../components/rich/Grid";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -295,8 +296,8 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
+            <Grid />
             <Dots />
-            <Wash tint="var(--color-accent)" at="88% 8%" size="46% 52%" />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">

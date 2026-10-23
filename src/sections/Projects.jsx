@@ -5,7 +5,8 @@ import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
-import { Dots, Wash } from "../components/rich/Backdrop";
+import { Dots } from "../components/rich/Backdrop";
+import Grid from "../components/rich/Grid";
 import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
@@ -293,8 +294,8 @@ export default function Projects({ ref }) {
       <div className="relative">
         {rich && (
           <>
+            <Grid size={64} opacity={0.38} />
             <Dots />
-            <Wash tint="var(--color-accent)" at="12% 100%" size="50% 60%" />
           </>
         )}
         <div ref={railRef} className="overflow-hidden">

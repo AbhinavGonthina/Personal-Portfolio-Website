@@ -166,6 +166,21 @@
   }
 }
 
+/* The breath in Magic UI's Ripple. Upstream scales each ring to
+   a fixed 110 per cent and fades it; a ring that grows a long way
+   leaves its neighbours behind and the set stops reading as one
+   object. Two per cent, with the opacity carried by the element,
+   is a pulse passing through a fixed set of rings. */
+@keyframes swell {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
 /* Magic UI's AuroraText: a wide gradient slid across letters that
    are clipped out of it. The element is sized 200% and the
    position walks the whole way, so the colours pass through the

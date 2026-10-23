@@ -3,12 +3,18 @@ import { useEffect, useRef } from "react";
 /**
  * What goes behind a section so it is not sitting on a flat sheet.
  *
- * Two pieces, both of them paint-only: a dot field, which is one
- * repeating radial gradient rather than Magic UI's SVG full of
- * <circle> elements, and a wash of the section's own colour coming
- * in from one corner. Neither animates and neither is an element
- * the reader can hit, so the cost is one extra layer to composite
- * and nothing per frame.
+ * One piece now: a dot field, which is one repeating radial
+ * gradient rather than Magic UI's SVG full of <circle> elements,
+ * drawn twice so the second copy can light up under the cursor.
+ *
+ * There used to be a `Wash` beside it - a big soft bloom of the
+ * accent thrown in from a corner. It is gone. A blurred blob is
+ * the one thing on this site that is neither line nor type, it
+ * read as a smudge on the screen rather than as light, and at the
+ * size it had to be to register it was visibly a shape with no
+ * edges sitting behind the text. What replaced it is structure:
+ * Magic UI's GridPattern under Experience and its Ripple under
+ * Contact, both of them outlines.
  *
  * Both are feathered to nothing at the edges of the section they
  * sit in. This is the whole reason either of them is bearable: a
@@ -120,36 +126,5 @@ export function Dots({ className = "", tint = "var(--color-accent)" }) {
         }}
       />
     </div>
-  );
-}
-
-/** A soft bloom of one colour, thrown in from a corner. */
-export function Wash({
-  tint = "var(--color-accent)",
-  at = "18% 0%",
-  size = "62% 70%",
-}) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10"
-      style={{
-        background: `radial-gradient(${size} at ${at}, color-mix(in oklab, ${tint} 26%, transparent), transparent 70%)`,
-        ...edges(),
-      }}
-    />
-  );
-}
-
-/**
- * The pair, as one thing, for a section that just wants a floor.
- * `relative` is the caller's job, because the caller owns the box.
- */
-export default function Backdrop({ tint, at, size }) {
-  return (
-    <>
-      <Dots />
-      <Wash tint={tint} at={at} size={size} />
-    </>
   );
 }

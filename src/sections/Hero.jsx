@@ -119,6 +119,20 @@ function Actions() {
 }
 
 /**
+ * Where the fluid is allowed to be at full strength.
+ *
+ * `black` is full, and the grey in the middle of the second stop
+ * is how much of it survives behind the reading matter. 0.3 was
+ * arrived at by looking: at 0.5 the tagline was still competing
+ * with a swirl, and below 0.2 there is a visible hole in the
+ * colour in the shape of the text block.
+ */
+const HOLD = [
+  "linear-gradient(to bottom, transparent, black 10%, black 66%, transparent)",
+  "radial-gradient(52% 46% at 30% 52%, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 35%, black 78%)",
+].join(", ");
+
+/**
  * The gradient in the first name. Four stops rather than three,
  * because this one runs rather than sits and a loop of three
  * comes back round too obviously.
@@ -145,32 +159,14 @@ export default function Hero({ ref }) {
         id="about"
         className="pointer-events-auto relative w-full scroll-mt-20"
       >
-        {/* A single soft wash behind the first screen, so the page does
-            not open on flat black.
-
-            It starts above this section, not at the top of it. The
-            bar is sticky, so it takes the first four rem of the page
-            and the section begins underneath - and a gradient that
-            begins where the section begins gets cut off square along
-            that line, which drew the outline of the bar in light. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-20 h-[620px] bg-[radial-gradient(58%_78%_at_18%_12%,rgba(111,227,245,0.11),transparent_70%)]"
-        />
-        {/* A second, warmer one from the far side, and the dot
-            field under both. One wash on its own leaves the right
-            half of the first screen as flat as it ever was. */}
+        {/* There were two soft radial washes here, one cyan from
+            the left and one violet from the right, to keep the page
+            from opening on flat black. They are gone. The fluid is
+            the colour on this screen now, and three blurred things
+            stacked on each other is how a landing turns to fog. */}
         {rich && (
           <>
             <Dots className="opacity-40" />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 -top-20 h-[620px]"
-              style={{
-                background:
-                  "radial-gradient(44% 64% at 86% 24%, color-mix(in oklab, #b48bff 16%, transparent), transparent 70%)",
-              }}
-            />
             {/* The fluid, over the two washes and under everything
                 that is read.
 
@@ -183,17 +179,31 @@ export default function Hero({ ref }) {
                 the landing is sitting on top of a canvas that
                 wants the same events.
 
-                Masked out at the bottom. A fluid that simply ends
-                at a line draws the line, and this one ends in the
-                middle of a page. */}
+                Two masks, intersected.
+
+                The first fades it out at the bottom, because a
+                fluid that simply ends at a line draws the line and
+                this one ends in the middle of a page.
+
+                The second is the one that matters. It holds the
+                fluid down to a third of itself over an ellipse
+                covering the left-hand column, and lets it up to
+                full everywhere else. The whole screen was at a flat
+                45 per cent before, which is the blunt way to keep a
+                paragraph readable: it costs the colour everywhere,
+                including the two thirds of the screen with nothing
+                written on it. Dimming it only where there are words
+                means the name, the tagline and the buttons sit
+                clear of it and the rest of the frame can be as
+                strong as it likes. */}
             <div
               aria-hidden
-              className="pointer-events-auto absolute inset-x-0 -top-20 -z-10 h-[760px] opacity-45"
+              className="pointer-events-auto absolute inset-x-0 -top-20 -z-10 h-[760px] opacity-80"
               style={{
-                maskImage:
-                  "linear-gradient(to bottom, transparent, black 10%, black 66%, transparent)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, transparent, black 10%, black 66%, transparent)",
+                maskImage: HOLD,
+                WebkitMaskImage: HOLD,
+                maskComposite: "intersect",
+                WebkitMaskComposite: "source-in",
               }}
             >
               <Ether />

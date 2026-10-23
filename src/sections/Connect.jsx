@@ -7,7 +7,8 @@ import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
-import { Dots, Wash } from "../components/rich/Backdrop";
+import { Dots } from "../components/rich/Backdrop";
+import Ripple from "../components/rich/Ripple";
 import Glow from "../components/rich/Glow";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
@@ -185,7 +186,7 @@ export default function Connect({ ref }) {
       {rich && (
         <>
           <Dots className="opacity-40" />
-          <Wash tint="var(--color-accent)" at="50% 100%" size="60% 70%" />
+          <Ripple />
         </>
       )}
       {/* No `max-w-2xl` on this one. Every other section is held to
