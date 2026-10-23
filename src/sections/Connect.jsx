@@ -8,7 +8,6 @@ import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
-import Meteors from "../components/rich/Meteors";
 import Glow from "../components/rich/Glow";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
@@ -185,13 +184,7 @@ export default function Connect({ ref }) {
     <Stop id="connect" title="Contact" n={4} plain foot refEl={ref}>
       {rich && (
         <>
-          {/* No texture here. Three sections above it are
-              drawn on something; the last one is the sky the
-              streaks cross, and a pattern behind them would be
-              one layer too many on the quietest part of the
-              page. */}
           <Dots className="opacity-40" />
-          <Meteors count={16} seed="contact" />
         </>
       )}
       {/* No `max-w-2xl` on this one. Every other section is held to

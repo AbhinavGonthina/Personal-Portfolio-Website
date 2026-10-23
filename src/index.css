@@ -166,39 +166,6 @@
   }
 }
 
-/* The contact-sheet rules under Projects, creeping upward. One
-   cell's worth of travel, so the loop has no seam: at -44px the
-   pattern is exactly where it started. */
-@keyframes creep {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-44px);
-  }
-}
-
-/* A meteor crossing its section. Travel and fade in one
-   keyframe: it comes up out of nothing, crosses, and is gone
-   before it reaches the far edge, so no streak is ever seen to
-   stop. */
-@keyframes fall {
-  0% {
-    transform: rotate(218deg) translateX(0);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(218deg) translateX(-440px);
-    opacity: 0;
-  }
-}
-
 /* Magic UI's AuroraText: a wide gradient slid across letters that
    are clipped out of it. The element is sized 200% and the
    position walks the whole way, so the colours pass through the

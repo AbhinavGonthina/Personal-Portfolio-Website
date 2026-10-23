@@ -7,7 +7,6 @@ import { useTheme } from "../lib/theme";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
-import Weave from "../components/rich/Weave";
 import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
@@ -338,17 +337,6 @@ export default function Projects({ ref }) {
       <div className="relative">
         {rich && (
           <>
-            {/* Horizontal rules creeping upward: a contact sheet,
-            under a rail of screenshots. The one moving backdrop
-            on the page, and it moves at one cell every twenty-two
-            seconds. */}
-            <Weave
-              kind="rules"
-              size={44}
-              opacity={0.42}
-              drift
-              tint="color-mix(in oklab, #b48bff 38%, transparent)"
-            />
             <Dots />
           </>
         )}
