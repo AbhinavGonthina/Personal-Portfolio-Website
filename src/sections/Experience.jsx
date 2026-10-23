@@ -4,7 +4,6 @@ import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
-import Flicker from "../components/rich/Flicker";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { setFocused, useFocused } from "../lib/stage";
@@ -296,12 +295,12 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
+            {/* The dot field only, for now. Three things have
+                been behind this section and come back out: a
+                plain ruled grid (too quiet), a scanning
+                perspective grid (bled onto the landing), and a
+                flickering one. */}
             <Dots />
-            {/* Squares fading in and out at random. Canvas 2D,
-                not a shader, which is the only reason a backdrop
-                can be the full height of this section - see
-                `rich/Flicker`. */}
-            <Flicker />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
