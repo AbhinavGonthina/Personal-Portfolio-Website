@@ -171,7 +171,18 @@ export default function Skills({ ref }) {
 
   return (
     <Stop id="skills" title="Skills" n={2} plain refEl={ref}>
-      <p className="-mt-6 max-w-2xl text-fg-muted">
+      {/* Both of these are `absolute inset-0`, and the nearest
+          positioned ancestor is the section, so here they cover
+          the whole of Skills. They were inside the wrapper around
+          the bento below, which is `relative` - so the backdrop
+          was the height of the cards and the heading, the
+          lead-in and the two drifting bands above them had
+          nothing behind them at all. Exactly the mistake Projects
+          had, in a different section. */}
+      <Glitch />
+      <Dots />
+
+      <p className="relative -mt-6 max-w-2xl text-fg-muted">
         The technologies I have used across my projects and the roles above.
       </p>
 
@@ -197,10 +208,6 @@ export default function Skills({ ref }) {
       </VelocityRows>
 
       <div className="relative mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* A wall of characters, kept quiet. Every setting
-            on it is under the stock one; see `rich/Glitch`. */}
-        <Glitch />
-        <Dots />
         {BENTO.map(([id, span]) => {
           const group = skillGroups.find((g) => g.id === id);
           const tint = tints[id];

@@ -90,17 +90,29 @@ export default function Glitch() {
               glitchAmount={0.4}
               speed={0.55}
               flow={0.25}
-              // Faded at the edges and thinned through the middle,
-              // where the heading and the cards are. What is left
-              // is strongest down the margins, which is the only
-              // part of this section that was ever empty.
-              edgeFade={0.28}
-              centerFade={0.22}
-              // The cursor disturbs it, because a background that
-              // answers you is worth having and this one costs
-              // nothing extra to ask for.
-              interactive
-              cursorRadius={150}
+              // Neither fade. Both were on, and between them they
+              // squeezed the field into a band across the middle
+              // of the section - which is precisely where the
+              // cards are, so the one part of Skills that was
+              // already full was the only part with anything
+              // behind it, and the empty top and bottom stayed
+              // empty. A background covers its section or it is
+              // not a background. What keeps it off the content
+              // is the opacity, which is a flat amount
+              // everywhere, not a shape.
+              edgeFade={0}
+              centerFade={0}
+              // The cursor does not disturb it.
+              //
+              // It did, and a background that answers you is
+              // usually worth having - but this one answers in
+              // the one way that pulls the eye off the thing in
+              // front of it. A patch of characters lighting up
+              // and scrambling under the pointer is movement
+              // exactly where the reader is already looking,
+              // which is the opposite of what a background is
+              // for. It is a surface now and nothing else.
+              interactive={false}
               // Nothing on click. Every click in this section is
               // meant for a tag or a card.
               clickEffect="none"

@@ -8,8 +8,8 @@ import { toggleTheme, useTheme } from "../lib/theme";
 import { toggleLevel, useLevel } from "../lib/readLevel";
 import { useState as useLocal, useEffect as useOnce } from "react";
 import Nudge from "./Nudge";
-import listMark from "bootstrap-icons/icons/list.svg?raw";
-import starsMark from "bootstrap-icons/icons/stars.svg?raw";
+import downMark from "bootstrap-icons/icons/arrow-down.svg?raw";
+import upMark from "bootstrap-icons/icons/arrow-up.svg?raw";
 import sunMark from "bootstrap-icons/icons/sun.svg?raw";
 import moonMark from "bootstrap-icons/icons/moon.svg?raw";
 import { runSwitch, useSwitching } from "../lib/switchView";
@@ -296,7 +296,15 @@ export default function Navbar() {
           {/* Between the two readable settings. Not shown in the
               town, where there is no written read to simplify, and
               never offering `raw` - that one is only ever arrived
-              at by being asked twice. */}
+              at by being asked twice.
+
+              Arrows rather than the list and stars glyphs that
+              were here. Those said what each reading *is*, which
+              is a thing you only understand once you have been to
+              both; an arrow says which way the control takes you,
+              which is the thing worth knowing before you press
+              it. Down to strip it back, up to put it all on
+              again. */}
           {plain && (
             <div className="relative">
               <button
@@ -317,7 +325,7 @@ export default function Navbar() {
                   aria-hidden
                   className="size-3.5 [&>svg]:size-full"
                   dangerouslySetInnerHTML={{
-                    __html: level === "bare" ? starsMark : listMark,
+                    __html: level === "bare" ? upMark : downMark,
                   }}
                 />
               </button>
