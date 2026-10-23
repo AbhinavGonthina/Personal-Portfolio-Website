@@ -76,15 +76,28 @@ export default function Navbar() {
   const theme = useTheme();
   const level = useLevel();
 
+  const switching = useSwitching();
+
   // Offered once a visit, the first time the written read is up,
   // and only there - in the town it would be pointing at a control
   // that is not on screen.
+  //
+  // `!switching` is the whole of why this works. The store flips to
+  // plain half way through the run out of the town, not at the end
+  // of it, so hanging the prompt off `plain` alone put it up while
+  // the crane was still lifting and the five seconds were spent
+  // behind a town nobody had left yet. By the time the written read
+  // was on screen the prompt had already been and gone.
+  //
+  // `seenOffer` is a module variable rather than storage, which is
+  // exactly the lifetime wanted: once per load of the page, and a
+  // refresh offers it again.
   const [offer, setOffer] = useLocal(false);
   useOnce(() => {
-    if (!plain || seenOffer) return;
+    if (!plain || switching || seenOffer) return;
     seenOffer = true;
     setOffer(true);
-  }, [plain]);
+  }, [plain, switching]);
 
   // And taken away again five seconds later, whatever put it up.
   //
@@ -103,7 +116,7 @@ export default function Navbar() {
     const t = setTimeout(() => setOffer(false), OFFER_FOR);
     return () => clearTimeout(t);
   }, [offer]);
-  const switching = useSwitching();
+
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
 
