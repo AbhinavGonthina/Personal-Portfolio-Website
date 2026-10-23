@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
-import { MAT } from "../lib/townMaterials";
+import { MAT, tintTown } from "../lib/townMaterials";
+import { useTheme } from "../lib/theme";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /**
@@ -8,8 +9,14 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
  * stands on it.
  */
 
-const FACE = new THREE.Color("#ffffff");
-const SIDE = new THREE.Color("#2b2b33");
+/**
+ * The face of an extruded letter and the far end of its stack, as
+ * multipliers on the glyph the texture carries. Night darkens the
+ * back nearly to black; day cannot, because the glyph is already a
+ * mid blue and black sides would make it a smudge.
+ */
+const FACE = new THREE.Color();
+const SIDE = new THREE.Color();
 
 /**
  * Lettering with real depth, made by stacking the same glyphs back
@@ -46,7 +53,13 @@ export function ExtrudedText({
   // merged into one buffer instead, with the darkening carried as a
   // vertex colour rather than as a material per copy - which also
   // leaves one opacity to fade rather than fourteen.
+  const theme = useTheme();
   const geo = useMemo(() => {
+    // Written from the palette the theme names, so the dependency
+    // below is the real reason this rebuilds.
+    tintTown(theme);
+    FACE.set(MAT.letterFace ?? "#ffffff");
+    SIDE.set(MAT.letterSide);
     const parts = [];
     // Farthest first. With depth writing off, the order inside the
     // buffer is the order they paint in, and the near face has to
@@ -67,7 +80,7 @@ export function ExtrudedText({
       parts.push(g);
     }
     return mergeGeometries(parts, false);
-  }, [aspect, height, depth, layers]);
+  }, [aspect, height, depth, layers, theme]);
 
   useEffect(() => () => geo?.dispose(), [geo]);
   if (!geo) return null;

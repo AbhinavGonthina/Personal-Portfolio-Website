@@ -5,7 +5,13 @@ import * as THREE from "three";
 import { ARC_GROUPS, experience } from "../data/experience";
 import { getSeen, setSeen, getJourney } from "../lib/stage";
 import { STOP, STOPS } from "../lib/stops";
-import { ACCENT, MAT, SCENE, useTownMaterials } from "../lib/townMaterials";
+import {
+  ACCENT,
+  MAT,
+  SCENE,
+  tintTown,
+  useTownMaterials,
+} from "../lib/townMaterials";
 import { useTheme } from "../lib/theme";
 import { Billboard, Dressing, House, Interior, Mailboxes } from "./town";
 import { box, cyl } from "../lib/geo";
@@ -336,7 +342,8 @@ function makeNamePlate(text, faceW, theme) {
   // White on a near-black tower at night; on a daylight tower the
   // same white is a name you cannot read.
   const day = theme === "light";
-  g.fillStyle = day ? "#1a1f2b" : "#ffffff";
+  tintTown(theme);
+  g.fillStyle = MAT.letterInk;
   // The wall behind is lit windows, not flat black. Three passes build the
   // shadow into a dark pad under the glyphs so they stay legible over one.
   g.shadowColor = day ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.92)";
@@ -1750,7 +1757,14 @@ function Lamps() {
   return (
     <group>
       <mesh geometry={made.base}>
-        <meshStandardMaterial color="#3c3c48" roughness={0.7} metalness={0.2} />
+        {/* The columns, which are the same tone as the town's
+            structure and were the one lit thing still written as a
+            literal - dark poles against a pale sky. */}
+        <meshStandardMaterial
+          color={MAT.post}
+          roughness={0.7}
+          metalness={0.2}
+        />
       </mesh>
       <mesh geometry={made.lit}>
         <meshBasicMaterial color={ACCENT.amber} toneMapped={false} />

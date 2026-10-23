@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { MAT, tintTown } from "./townMaterials";
 
 /**
  * Text drawn into a canvas, to be hung on a plane in a 3D scene.
@@ -31,7 +32,8 @@ export function makeTextTexture(
   // Lettering, so it is whatever reads against the sky behind it.
   // The sign is unlit geometry with this texture on it; white on a
   // pale sky is a sign nobody can read.
-  g.fillStyle = theme === "light" ? "#1a1f2b" : "#ffffff";
+  tintTown(theme);
+  g.fillStyle = MAT.letterInk;
   g.fillText(text, c.width / 2, c.height / 2);
 
   const tex = new THREE.CanvasTexture(c);

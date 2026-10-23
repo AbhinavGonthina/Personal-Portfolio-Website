@@ -28,7 +28,7 @@ import {
   mailrail,
 } from "../lib/townGeometry";
 import { profile, socials } from "../data/profile";
-import { ACCENT } from "../lib/townMaterials";
+import { ACCENT, MAT } from "../lib/townMaterials";
 import { makeTextTexture } from "../lib/canvasText";
 import { makeSkillScreen, SCREEN_VIEW, SKILL_PANE } from "../lib/paint";
 import { skillHover } from "../lib/skillHover";
@@ -759,6 +759,36 @@ export function Interior({
 
 export function Dressing({ mats, visible, wide }) {
   const built = useBuilt(dressing);
+  const theme = useTheme();
+
+  // The woods, lightened in place.
+  //
+  // Bark and leaf are tinted into the vertices, so the obvious fix
+  // is to rebuild `dressing` with a second set of colours - and
+  // `dressing` is 114ms, every tree and bench in the town remerged
+  // to change the colour of the leaves. The positions do not move,
+  // only the colour buffer, so the night colours are kept and the
+  // day ones are mixed out of them on the spot. One pass over an
+  // array that already exists, against a rebuild of the whole
+  // wood.
+  useEffect(() => {
+    const lift = MAT.leafLift ?? 0;
+    for (const g of [...(built.woods ?? []), ...(built.far ?? [])]) {
+      const attr = g?.attributes?.color;
+      if (!attr) continue;
+      if (!g.userData.night) g.userData.night = attr.array.slice();
+      const night = g.userData.night;
+      if (lift > 0) {
+        for (let i = 0; i < night.length; i++) {
+          attr.array[i] = night[i] + (1 - night[i]) * lift;
+        }
+      } else {
+        attr.array.set(night);
+      }
+      attr.needsUpdate = true;
+    }
+  }, [built, theme]);
+
   return (
     <group visible={visible}>
       <Shell geo={built.road} mat={mats.road} />
