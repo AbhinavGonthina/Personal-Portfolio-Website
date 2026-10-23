@@ -64,6 +64,9 @@ const NAV_FOR = {
 
 let seenOffer = false;
 
+/** How long either prompt stays up. */
+const OFFER_FOR = 5000;
+
 const LINK =
   "relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
 
@@ -81,9 +84,25 @@ export default function Navbar() {
     if (!plain || seenOffer) return;
     seenOffer = true;
     setOffer(true);
-    const t = setTimeout(() => setOffer(false), 5000);
-    return () => clearTimeout(t);
   }, [plain]);
+
+  // And taken away again five seconds later, whatever put it up.
+  //
+  // This is a second effect rather than a timer inside the first
+  // one, and the reason is the `seenOffer` guard above. React runs
+  // an effect, tears it down and runs it again during development,
+  // and the once-a-visit guard is deliberately not React state, so
+  // it survives that: the teardown cleared the only timer and the
+  // second run returned early before reaching the line that would
+  // have made another. The prompt went up and stayed up. Hanging
+  // the timer off the thing it is hiding cannot be orphaned that
+  // way, because the second run sees the state already true and
+  // schedules against it.
+  useOnce(() => {
+    if (!offer) return;
+    const t = setTimeout(() => setOffer(false), OFFER_FOR);
+    return () => clearTimeout(t);
+  }, [offer]);
   const switching = useSwitching();
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
