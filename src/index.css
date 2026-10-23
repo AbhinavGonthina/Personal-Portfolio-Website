@@ -166,16 +166,15 @@
   }
 }
 
-/* A lit cell in the grid, coming up and going down again. The
-   floor is not zero: a cell that disappears entirely leaves a
-   hole in the pattern where its own grid lines used to be. */
-@keyframes cell {
-  0%,
-  100% {
-    opacity: 0.08;
+/* The contact-sheet rules under Projects, creeping upward. One
+   cell's worth of travel, so the loop has no seam: at -44px the
+   pattern is exactly where it started. */
+@keyframes creep {
+  from {
+    transform: translateY(0);
   }
-  50% {
-    opacity: 0.42;
+  to {
+    transform: translateY(-44px);
   }
 }
 
@@ -195,7 +194,7 @@
     opacity: 1;
   }
   100% {
-    transform: rotate(218deg) translateX(-760px);
+    transform: rotate(218deg) translateX(-440px);
     opacity: 0;
   }
 }

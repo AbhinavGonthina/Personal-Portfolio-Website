@@ -56,8 +56,14 @@ export default function Meteors({
       tint: hues[i % hues.length],
       // Started off the left as well as across the top, so the
       // left-hand third of the section is not permanently empty.
-      left: `${rand() * 118 - 18}%`,
-      top: `${rand() * 40 - 30}%`,
+      //
+      // They begin barely above the box and not well above it.
+      // Contact is about four hundred pixels tall and the travel
+      // is three hundred, so a streak starting thirty per cent
+      // above the top spent its whole run behind the clip and
+      // arrived just as it was fading out.
+      left: `${rand() * 118 - 16}%`,
+      top: `${rand() * 62 - 8}%`,
       run: 4.5 + rand() * 6,
       // Short enough that a few are always crossing. At nine
       // seconds the section was empty more often than not.
