@@ -2,6 +2,7 @@ import { Suspense, lazy, useRef } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
 import { useArrived, useHoldsUp, worthIt } from "./webgl";
+import { edges } from "./Backdrop";
 
 /**
  * The contour map behind Projects, and everything that decides
@@ -44,6 +45,12 @@ export default function Topo() {
       ref={box}
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      // Faded at the edges, like the dot field has always been.
+      // Without this the contour map stopped dead on the section
+      // boundary - a ruled horizontal line with one background
+      // above it and a different one below, which is the one
+      // place a background announces itself.
+      style={edges()}
     >
       {seen && !off && (
         <Suspense fallback={null}>

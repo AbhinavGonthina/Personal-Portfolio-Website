@@ -1,5 +1,3 @@
-import { useEffect, useRef } from "react";
-
 /**
  * What goes behind a section so it is not sitting on a flat sheet.
  *
@@ -30,10 +28,18 @@ import { useEffect, useRef } from "react";
  * a percentage of a tall section is a 300px smear and a percentage
  * of a short one is nothing - the softness wants to be the same
  * handful of centimetres everywhere.
+ *
+ * Exported, because every backdrop on the page needs it and the
+ * two that did not have it were the two that showed. A section
+ * boundary is an invisible line in the middle of a document: a
+ * background clipped by one draws it, and two different
+ * backgrounds clipped by the same one draw it twice and meet
+ * along it. Faded, they dissolve into the page a hand's width
+ * before they get there and never meet at all.
  */
 const FEATHER = "7rem";
 
-const edges = (feather = FEATHER) => {
+export const edges = (feather = FEATHER) => {
   const band = (dir) =>
     `linear-gradient(to ${dir}, transparent, black ${feather}, black calc(100% - ${feather}), transparent)`;
   const image = `${band("right")}, ${band("bottom")}`;
@@ -54,77 +60,24 @@ const GRID = {
 };
 
 /**
- * The dot field, twice: once as the floor, and once in the accent
- * through a circle that follows the cursor.
+ * The dot field. One layer, grey, sitting still.
  *
- * The second copy is the reason the page has somewhere for the eye
- * to rest while it reads. A field of grey dots is scenery; the same
- * field lighting up around the pointer is the page noticing you,
- * and it does it in every section at once so the whole written read
- * behaves the same way rather than having one clever section.
- *
- * It costs a `pointermove` handler on the section and two custom
- * properties written on a div. No state, so React never renders;
- * no frame loop, so nothing runs when the pointer is still; and the
- * browser only dispatches the event to the section the cursor is
- * actually over, so a page with five of these has one of them
- * working at a time.
- *
- * The listener goes on the parent rather than here, because this
- * layer takes no pointer events - it sits behind the text and
- * taking them would mean nothing on top of it could be clicked.
+ * It was two: this one, and a copy in the accent shown through a
+ * circle that followed the cursor, so the page appeared to notice
+ * you. It is gone, and the reason is the same one that took the
+ * cursor off the character field in Skills - a patch of the
+ * background lighting up under the pointer is movement exactly
+ * where the reader is already looking, which is the one place a
+ * background must not move. Nothing is left here that reacts to
+ * anything: no listener on the section, no custom properties, no
+ * second layer to composite.
  */
-export function Dots({ className = "", tint = "var(--color-accent)" }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    const host = el?.parentElement;
-    if (!host) return;
-
-    const move = (e) => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty("--dx", `${e.clientX - r.left}px`);
-      el.style.setProperty("--dy", `${e.clientY - r.top}px`);
-      el.style.setProperty("--lit", "1");
-    };
-    const out = () => el.style.setProperty("--lit", "0");
-
-    host.addEventListener("pointermove", move, { passive: true });
-    host.addEventListener("pointerleave", out, { passive: true });
-    return () => {
-      host.removeEventListener("pointermove", move);
-      host.removeEventListener("pointerleave", out);
-    };
-  }, []);
-
+export function Dots({ className = "" }) {
   return (
     <div
-      ref={ref}
       aria-hidden
-      className={`pointer-events-none absolute inset-0 -z-10 ${className}`}
-      style={edges()}
-    >
-      <div
-        className="absolute inset-0 opacity-[0.55]"
-        style={{ ...GRID, color: "var(--color-ink-700)" }}
-      />
-      {/* The same grid, in the accent, shown only through a circle
-          at the pointer. Three hundred pixels across, which is wide
-          enough to read as the page lighting up and not as a torch
-          being shone at it. */}
-      <div
-        className="absolute inset-0 transition-opacity duration-500"
-        style={{
-          ...GRID,
-          color: tint,
-          opacity: "calc(var(--lit, 0) * 0.85)",
-          maskImage:
-            "radial-gradient(150px circle at var(--dx, -999px) var(--dy, -999px), black, transparent 70%)",
-          WebkitMaskImage:
-            "radial-gradient(150px circle at var(--dx, -999px) var(--dy, -999px), black, transparent 70%)",
-        }}
-      />
-    </div>
+      className={`pointer-events-none absolute inset-0 -z-10 opacity-[0.55] ${className}`}
+      style={{ ...GRID, color: "var(--color-ink-700)", ...edges() }}
+    />
   );
 }

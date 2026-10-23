@@ -8,8 +8,8 @@ import { toggleTheme, useTheme } from "../lib/theme";
 import { toggleLevel, useLevel } from "../lib/readLevel";
 import { useState as useLocal, useEffect as useOnce } from "react";
 import Nudge from "./Nudge";
-import downMark from "bootstrap-icons/icons/arrow-down.svg?raw";
-import upMark from "bootstrap-icons/icons/arrow-up.svg?raw";
+import starsMark from "bootstrap-icons/icons/stars.svg?raw";
+import StarsOff from "./StarsOff";
 import sunMark from "bootstrap-icons/icons/sun.svg?raw";
 import moonMark from "bootstrap-icons/icons/moon.svg?raw";
 import { runSwitch, useSwitching } from "../lib/switchView";
@@ -298,13 +298,12 @@ export default function Navbar() {
               never offering `raw` - that one is only ever arrived
               at by being asked twice.
 
-              Arrows rather than the list and stars glyphs that
-              were here. Those said what each reading *is*, which
-              is a thing you only understand once you have been to
-              both; an arrow says which way the control takes you,
-              which is the thing worth knowing before you press
-              it. Down to strip it back, up to put it all on
-              again. */}
+              The sparkle, and the sparkle struck through. One
+              mark in two states, because the two readings are
+              one page with the decoration on or off and the
+              control should say exactly that. Arrows were here
+              briefly and were right about direction and silent
+              about what is at either end of them. */}
           {plain && (
             <div className="relative">
               <button
@@ -321,13 +320,15 @@ export default function Navbar() {
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 )}
               >
-                <span
-                  aria-hidden
-                  className="size-3.5 [&>svg]:size-full"
-                  dangerouslySetInnerHTML={{
-                    __html: level === "bare" ? upMark : downMark,
-                  }}
-                />
+                {level === "bare" ? (
+                  <span
+                    aria-hidden
+                    className="size-3.5 [&>svg]:size-full"
+                    dangerouslySetInnerHTML={{ __html: starsMark }}
+                  />
+                ) : (
+                  <StarsOff className="size-3.5" />
+                )}
               </button>
               {/* A label, not a second button. It points at the
                   control above it and that control is the only way
