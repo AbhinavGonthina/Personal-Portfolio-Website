@@ -50,14 +50,21 @@ import { ExtrudedText } from "./street";
  * have to say is painted on a surface in the world.
  */
 
-function useBuilt(build) {
-  // Keyed on the palette as well as the builder. Most of these
-  // geometries carry no colour at all and rebuild for nothing when
-  // the theme changes, which is a handful of merges on a click -
-  // the alternative is remembering which ones bake a colour in,
-  // and being wrong about one of them is a cave in daylight.
+function useBuilt(build, themed = false) {
+  // Only the shapes that bake a colour into their vertices follow
+  // the palette.
+  //
+  // Everything here used to rebuild on a theme change, on the
+  // argument that being wrong about one of them is a cave in
+  // daylight. It cost 143ms a click and 114 of that was
+  // `dressing` - every tree, bench and lamp in the town remerged
+  // to produce exactly the buffer it had before, because a tree is
+  // the same colour at noon as at midnight. Four builders tint
+  // their own vertices and those four opt in; the rest are built
+  // once. 143ms becomes about 11.
   const theme = useTheme();
-  const made = useMemo(() => build(theme), [build, theme]);
+  const key = themed ? theme : null;
+  const made = useMemo(() => build(key), [build, key]);
   useEffect(
     () => () => {
       if (!made) return;
@@ -174,7 +181,7 @@ export function Billboard({ mats, visible, board, face }) {
  * opening are the same motion rather than two that have to agree.
  */
 export function House({ mats, visible, open }) {
-  const built = useBuilt(house);
+  const built = useBuilt(house, true);
   const leaf = useBuilt(doorLeaf);
   const hinge = useRef();
 
@@ -808,8 +815,8 @@ const MARK_Y = Math.min(MAIL_TOP * 0.44, MARK_TOP - MARK_H / 2);
  * around its own centre makes it sink through the box.
  */
 function Mailbox({ x, link, mats, label, live, visible = true }) {
-  const body = useBuilt(mailbox);
-  const door = useBuilt(maildoor);
+  const body = useBuilt(mailbox, true);
+  const door = useBuilt(maildoor, true);
   const shell = useBuilt(mailshell);
   const flag = useBuilt(mailflag);
   const lidRef = useRef();
@@ -899,8 +906,11 @@ function Mailbox({ x, link, mats, label, live, visible = true }) {
   );
 }
 
+/** Module scope, so the memo below has a stable builder to key on. */
+const railOf = (theme) => mailrail(socials.length, theme);
+
 export function Mailboxes({ mats, visible, labels, live, greet }) {
-  const rail = useBuilt(() => mailrail(socials.length));
+  const rail = useBuilt(railOf, true);
   const span = (socials.length - 1) * MAIL_GAP;
   // The last thing in the town, standing in front of the wall the
   // boxes are on. Extruded rather than painted, like the word that

@@ -302,7 +302,7 @@ function wrapEvenly(words, measure) {
   return best;
 }
 
-function makeNamePlate(text, faceW) {
+function makeNamePlate(text, faceW, theme) {
   const c = document.createElement("canvas");
   const g = c.getContext("2d");
   const REF = 100;
@@ -332,10 +332,14 @@ function makeNamePlate(text, faceW) {
   plateFont(g, size);
   g.textAlign = "center";
   g.textBaseline = "middle";
-  g.fillStyle = "#ffffff";
+  // The name takes whichever of the two the wall behind it is not.
+  // White on a near-black tower at night; on a daylight tower the
+  // same white is a name you cannot read.
+  const day = theme === "light";
+  g.fillStyle = day ? "#1a1f2b" : "#ffffff";
   // The wall behind is lit windows, not flat black. Three passes build the
   // shadow into a dark pad under the glyphs so they stay legible over one.
-  g.shadowColor = "rgba(0,0,0,0.92)";
+  g.shadowColor = day ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.92)";
   g.shadowBlur = size * 0.42;
   lines.forEach((l, i) => {
     const y = PLATE_PAD + lead * (i + 0.5);
@@ -486,9 +490,10 @@ function Building({
     () => lit.color.clone().lerp(new THREE.Color("#ffffff"), 0.6),
     [lit],
   );
+  const theme = useTheme();
   const plate = useMemo(
-    () => makeNamePlate(role.company, w),
-    [role.company, w],
+    () => makeNamePlate(role.company, w, theme),
+    [role.company, w, theme],
   );
   useEffect(() => () => plate.tex.dispose(), [plate]);
 
@@ -630,7 +635,7 @@ function Building({
       <mesh ref={body} position={[0, body_h / 2, 0]}>
         <ShaftGeo form={form} w={w} d={d} h={body_h} />
         <meshStandardMaterial
-          color="#09090b"
+          color={MAT.tower}
           emissive={role.accent}
           emissiveMap={map}
           emissiveIntensity={IDLE * 0.5}
@@ -657,7 +662,7 @@ function Building({
         <mesh ref={stage} position={[0, body_h + (height - body_h) / 2, 0]}>
           <ShaftGeo form={form} w={w * 0.62} d={d * 0.62} h={height - body_h} />
           <meshStandardMaterial
-            color="#09090b"
+            color={MAT.tower}
             emissive={role.accent}
             emissiveMap={map}
             emissiveIntensity={IDLE * 0.5}
@@ -672,7 +677,7 @@ function Building({
       <mesh ref={crown} position={[0, height - 0.18, 0]}>
         <ShaftGeo form={form} w={crownW + 0.11} d={crownD + 0.11} h={0.26} />
         <meshStandardMaterial
-          color="#000000"
+          color={MAT.towerTop}
           emissive={lit.color}
           emissiveIntensity={IDLE * 3.4 * lit.gain}
           toneMapped={false}
@@ -686,7 +691,7 @@ function Building({
         <mesh position={[0, height + 0.36, 0]} rotation={[0, Math.PI / 4, 0]}>
           <coneGeometry args={[w * 0.78, 0.76, 4]} />
           <meshStandardMaterial
-            color="#09090b"
+            color={MAT.tower}
             emissive={lit.color}
             emissiveIntensity={IDLE * 0.5}
             roughness={0.42}
@@ -701,7 +706,7 @@ function Building({
             args={[w * 0.5, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2]}
           />
           <meshStandardMaterial
-            color="#09090b"
+            color={MAT.tower}
             emissive={lit.color}
             emissiveIntensity={IDLE * 0.5}
             roughness={0.3}
@@ -723,7 +728,7 @@ function Building({
           >
             <boxGeometry args={[0.08, 0.5, 0.08]} />
             <meshStandardMaterial
-              color="#000000"
+              color={MAT.towerTop}
               emissive={lit.color}
               emissiveIntensity={0.9 * lit.gain}
               toneMapped={false}
@@ -749,7 +754,7 @@ function Building({
           <mesh position={[0, 0, -0.014]} ref={sign(0)}>
             <planeGeometry args={[BADGE * 0.98, BADGE * 0.98]} />
             <meshStandardMaterial
-              color="#0a0a0d"
+              color={MAT.towerSign}
               roughness={0.55}
               metalness={0.35}
               transparent
@@ -1639,7 +1644,7 @@ function Frames() {
         {[0, 1, 2, 3].map((i) => (
           <mesh key={i} ref={grab(i)}>
             <planeGeometry args={[1, 1]} />
-            <meshBasicMaterial color="#04050a" toneMapped={false} />
+            <meshBasicMaterial color={MAT.bezel} toneMapped={false} />
           </mesh>
         ))}
         {[4, 5, 6, 7, 8, 9, 10, 11].map((i) => (
@@ -2119,10 +2124,15 @@ export default function TownScene({
       // The stage owns where this sits on the page.
     >
       <color attach="background" args={["#000000"]} />
-      {/* Exponential rather than linear: distance falls off smoothly into
-          the background instead of everything past a hard plane vanishing
-          at once. Matched to the page background so there is no seam. */}
-      <fogExp2 attach="fog" args={["#000000", 0.019]} />
+      {/* No fog.
+          It was exponential, matched to the background, and it did
+          two jobs: it hid the far edge of the ground and it put
+          distance between the camera and the city. The second one
+          costs more than it pays - the far half of the town was
+          being read through a haze, and in daylight a pale haze
+          over a pale sky left everything at the same value. The
+          ground is 150 across and the road runs to 92, so there is
+          nothing within sight of the walk for a fog to hide. */}
       {/* Sky and ground fill. One directional light leaves whichever
           side of a building the camera happens to be on in the dark,
           and the camera visits all of them.
