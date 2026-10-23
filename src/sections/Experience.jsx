@@ -6,7 +6,7 @@ import { useLevel } from "../lib/readLevel";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
-import Grid from "../components/rich/Grid";
+import Weave from "../components/rich/Weave";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -296,7 +296,9 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
-            <Grid cells={9} seed="experience" />
+            {/* Squares. A dated list of roles against a rail is
+                already a blueprint; this is the paper it is on. */}
+            <Weave kind="grid" size={44} opacity={0.5} />
             <Dots />
           </>
         )}
