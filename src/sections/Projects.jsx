@@ -2,6 +2,10 @@ import useEmblaCarousel from "embla-carousel-react";
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
+import { useLevel } from "../lib/readLevel";
+import Reveal from "../components/rich/Reveal";
+import Glow from "../components/rich/Glow";
+import { Dots, Wash } from "../components/rich/Backdrop";
 import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
@@ -87,16 +91,17 @@ function Shot({ p }) {
   );
 }
 
-function Card({ p, lead }) {
+function Card({ p, lead, rich }) {
   return (
-    <article
+    <Glow
+      as="article"
       // A slide, so every card is cut to the same size: the rail
       // only reads as a gallery if the cards line up, and a card
       // sized to its own blurb puts the links at a different height
       // on every one of them.
-      className={`group flex h-[460px] w-[332px] shrink-0 flex-col overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 ${
+      className={`group flex h-[460px] w-[332px] shrink-0 flex-col rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 ${
         lead ? "shimmer" : ""
-      }`}
+      } ${rich ? "hover:-translate-y-1 duration-300" : ""}`}
     >
       <Shot p={p} />
 
@@ -167,12 +172,14 @@ function Card({ p, lead }) {
           )}
         </div>
       </div>
-    </article>
+    </Glow>
   );
 }
 
 export default function Projects({ ref }) {
   const plain = usePlain();
+  const level = useLevel();
+  const rich = level !== "bare";
   // Embla is the engine shadcn's Carousel is built on: drag, wheel,
   // snapping, bounds and keyboard, in about five kilobytes, and
   // nothing running when the rail is still. Rolling this by hand
@@ -260,15 +267,23 @@ export default function Projects({ ref }) {
         </div>
       }
     >
-      <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
-        Things I have built outside the roles above over the years.
-      </p>
+      <Reveal>
+        <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
+          Things I have built outside the roles above over the years.
+        </p>
+      </Reveal>
 
       <div className="relative">
+        {rich && (
+          <>
+            <Dots />
+            <Wash tint="var(--color-accent)" at="12% 100%" size="50% 60%" />
+          </>
+        )}
         <div ref={railRef} className="overflow-hidden">
           <div className="flex gap-5">
             {projects.map((p, i) => (
-              <Card key={p.id} p={p} lead={i === 0} />
+              <Card key={p.id} p={p} lead={i === 0} rich={rich} />
             ))}
           </div>
         </div>

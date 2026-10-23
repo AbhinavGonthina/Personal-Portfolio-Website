@@ -154,6 +154,18 @@
     color 0.25s ease;
 }
 
+/* The marquee's travel. Half of its own width, because the row is
+   rendered twice - at -50% the second copy is exactly where the
+   first one started and the loop has no seam in it. */
+@keyframes drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @keyframes grid {
   0% {
     transform: translateY(-50%);

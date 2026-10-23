@@ -2,6 +2,11 @@ import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
+import { useLevel } from "../lib/readLevel";
+import Reveal from "../components/rich/Reveal";
+import Ticker from "../components/rich/Ticker";
+import Glow from "../components/rich/Glow";
+import { Dots, Wash } from "../components/rich/Backdrop";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -116,7 +121,7 @@ const Label = ({ children }) => (
  * nothing written yet shows its blurb and stops - an empty heading
  * over nothing reads as broken rather than as unfinished.
  */
-function Detail({ role, onBack, onStep, inScene, hideDates }) {
+function Detail({ role, onBack, onStep, inScene, hideDates, rich }) {
   const hasStats = role.stats?.length > 0;
   const hasTech = role.tech.length > 0;
 
@@ -203,7 +208,11 @@ function Detail({ role, onBack, onStep, inScene, hideDates }) {
                       className="text-lg font-semibold leading-none tracking-tight"
                       style={{ color: role.accent }}
                     >
-                      {s.value}
+                      {/* The figure arrives at itself. Most of these
+                          are not numbers - "$140K", "10 -> 4",
+                          "~722M" - so only the digits move and the
+                          rest is left where it is. */}
+                      {rich ? <Ticker value={s.value} /> : s.value}
                     </p>
                     <p className="mt-1.5 text-[11px] leading-snug text-fg-subtle">
                       {s.label}
@@ -272,6 +281,9 @@ export default function Experience({ ref }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [focused]);
 
+  const level = useLevel();
+  const rich = plain && level !== "bare";
+
   const current = experience.find((e) => e.id === focused) ?? null;
 
   // --- phones, and anyone who asked for the plain read -------------------
@@ -280,9 +292,15 @@ export default function Experience({ ref }) {
       <section
         ref={ref}
         id="experience"
-        className="pointer-events-auto scroll-mt-26 pb-24 pt-4"
+        className="pointer-events-auto relative scroll-mt-26 pb-24 pt-4"
       >
-        <div className="mx-auto w-full max-w-6xl px-6">
+        {rich && (
+          <>
+            <Dots />
+            <Wash tint="var(--color-accent)" at="88% 8%" size="46% 52%" />
+          </>
+        )}
+        <div className="relative mx-auto w-full max-w-6xl px-6">
           <Heading n={1}>Experience</Heading>
 
           <p className="-mt-6 mb-10 max-w-2xl text-fg-muted">
@@ -305,7 +323,7 @@ export default function Experience({ ref }) {
             const roles = experience.filter((r) => r.category === group.id);
             if (!roles.length) return null;
             return (
-              <section key={group.id} className="mb-16 last:mb-0">
+              <Reveal key={group.id} as="section" className="mb-16 last:mb-0">
                 <h3 className="mb-8 flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.24em] text-fg-subtle">
                   {group.label}
                   <span className="h-px flex-1 bg-ink-700" />
@@ -313,16 +331,36 @@ export default function Experience({ ref }) {
                 </h3>
 
                 <Timeline
+                  tight={rich}
                   data={roles.map((r) => ({
                     title: span(r),
                     content: (
-                      <article className="relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900/40 p-6">
+                      <Glow
+                        tint={rich ? r.accent : undefined}
+                        className={`relative rounded-xl border border-ink-700 p-6 transition-colors ${
+                          rich
+                            ? "bg-ink-900/50 hover:border-ink-600"
+                            : "bg-ink-900/40"
+                        }`}
+                        style={
+                          rich
+                            ? {
+                                "--tint": r.accent,
+                                // A breath of the role's colour in
+                                // the corner, so a card is its own
+                                // place before you have read a word
+                                // of it.
+                                backgroundImage: `radial-gradient(70% 120% at 0% 0%, color-mix(in oklab, ${r.accent} 13%, transparent), transparent 60%)`,
+                              }
+                            : undefined
+                        }
+                      >
                         <span
                           aria-hidden
                           className="absolute inset-y-0 left-0 w-[3px]"
                           style={{ background: r.accent }}
                         />
-                        <div className="flex items-start gap-5">
+                        <div className="relative flex items-start gap-5">
                           <img
                             src={r.logo}
                             alt=""
@@ -333,14 +371,19 @@ export default function Experience({ ref }) {
                             style={{ background: r.brand }}
                           />
                           <div className="min-w-0 flex-1">
-                            <Detail role={r} inScene={false} hideDates />
+                            <Detail
+                              role={r}
+                              inScene={false}
+                              hideDates
+                              rich={rich}
+                            />
                           </div>
                         </div>
-                      </article>
+                      </Glow>
                     ),
                   }))}
                 />
-              </section>
+              </Reveal>
             );
           })}
         </div>

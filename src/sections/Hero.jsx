@@ -3,6 +3,9 @@ import linkedinMark from "bootstrap-icons/icons/linkedin.svg?raw";
 import envelopeMark from "bootstrap-icons/icons/envelope.svg?raw";
 import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
+import { useLevel } from "../lib/readLevel";
+import Reveal from "../components/rich/Reveal";
+import { Dots } from "../components/rich/Backdrop";
 import { profile, RESUME_URL, socials } from "../data/profile";
 import { education } from "../data/about";
 
@@ -119,6 +122,7 @@ export default function Hero({ ref }) {
   // ended up showing this section plain with the town still drawn
   // behind it - the store said one thing and this said another.
   const plain = usePlain();
+  const rich = useLevel() !== "bare";
 
   // --- phones, and anyone who asked for the plain read ------------------
   if (plain) {
@@ -140,6 +144,22 @@ export default function Hero({ ref }) {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 -top-20 h-[620px] bg-[radial-gradient(58%_78%_at_18%_12%,rgba(111,227,245,0.11),transparent_70%)]"
         />
+        {/* A second, warmer one from the far side, and the dot
+            field under both. One wash on its own leaves the right
+            half of the first screen as flat as it ever was. */}
+        {rich && (
+          <>
+            <Dots className="opacity-40" />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 -top-20 h-[620px]"
+              style={{
+                background:
+                  "radial-gradient(44% 64% at 86% 24%, color-mix(in oklab, #b48bff 16%, transparent), transparent 70%)",
+              }}
+            />
+          </>
+        )}
 
         {/* The same gap above the content as below it. It was 112
             over and 80 under, which is close enough to look like a
