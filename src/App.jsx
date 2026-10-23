@@ -15,7 +15,6 @@ import { useReady } from "./lib/ready";
 import { useThemeBusy } from "./lib/theme";
 import { setLevel, useLevel } from "./lib/readLevel";
 import Nudge from "./components/Nudge";
-import Grain from "./components/rich/Grain";
 import RawRead from "./sections/RawRead";
 
 /**
@@ -85,12 +84,6 @@ export default function App() {
 
   return (
     <>
-      {/* Grain over the whole window, under everything.
-          Only in the rich written read: the town has its own
-          surfaces and the bare read is meant to be plain. It is
-          one fixed element for the entire site, so there is
-          nothing per section and no seam between them. */}
-      {plain && level !== "bare" && <Grain />}
       <Navbar />
       <Nudge
         show={deeper}
