@@ -6,7 +6,7 @@ import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
-import Weave from "../components/rich/Weave";
+import Scan from "../components/rich/Scan";
 import { setFocused, useFocused } from "../lib/stage";
 import { useScrollLock } from "../lib/scrollLock";
 import { arcOrder, experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -296,10 +296,12 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
-            {/* Squares. A dated list of roles against a rail is
-                already a blueprint; this is the paper it is on. */}
             <Dots />
-            <Weave kind="grid" size={44} opacity={0.5} />
+            {/* The blueprint this section was already drawn on,
+                with a sweep moving down it. See `rich/Scan` for
+                why it is stuck to the top of the section rather
+                than sized to it. */}
+            <Scan />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
