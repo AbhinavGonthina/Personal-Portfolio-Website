@@ -5,6 +5,11 @@ import { NAV_ITEMS } from "../data/nav";
 import { profile } from "../data/profile";
 import { useNarrow, usePlain } from "../lib/plain";
 import { toggleTheme, useTheme } from "../lib/theme";
+import { toggleLevel, useLevel } from "../lib/readLevel";
+import { useState as useLocal, useEffect as useOnce } from "react";
+import Nudge from "./Nudge";
+import listMark from "bootstrap-icons/icons/list.svg?raw";
+import starsMark from "bootstrap-icons/icons/stars.svg?raw";
 import sunMark from "bootstrap-icons/icons/sun.svg?raw";
 import moonMark from "bootstrap-icons/icons/moon.svg?raw";
 import { runSwitch, useSwitching } from "../lib/switchView";
@@ -57,6 +62,8 @@ const NAV_FOR = {
   contact: "connect",
 };
 
+let seenOffer = false;
+
 const LINK =
   "relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
 
@@ -64,6 +71,19 @@ export default function Navbar() {
   const plain = usePlain();
   const narrow = useNarrow();
   const theme = useTheme();
+  const level = useLevel();
+
+  // Offered once a visit, the first time the written read is up,
+  // and only there - in the town it would be pointing at a control
+  // that is not on screen.
+  const [offer, setOffer] = useLocal(false);
+  useOnce(() => {
+    if (!plain || seenOffer) return;
+    seenOffer = true;
+    setOffer(true);
+    const t = setTimeout(() => setOffer(false), 5000);
+    return () => clearTimeout(t);
+  }, [plain]);
   const switching = useSwitching();
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState(null);
@@ -241,6 +261,47 @@ export default function Navbar() {
           {/* Day or night, in both readings. The icon is the one you
               are going to rather than the one you are in, which is
               how every other switch on a phone reads. */}
+          {/* Between the two readable settings. Not shown in the
+              town, where there is no written read to simplify, and
+              never offering `raw` - that one is only ever arrived
+              at by being asked twice. */}
+          {plain && (
+            <div className="relative">
+              <button
+                onClick={toggleLevel}
+                aria-pressed={level === "bare"}
+                aria-label={
+                  level === "bare"
+                    ? "Back to the full simpler read"
+                    : "Strip it down to the bare minimum"
+                }
+                className={cn(
+                  "grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+                  "hover:border-(--lift-line-strong) hover:text-fg",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                )}
+              >
+                <span
+                  aria-hidden
+                  className="size-3.5 [&>svg]:size-full"
+                  dangerouslySetInnerHTML={{
+                    __html: level === "bare" ? starsMark : listMark,
+                  }}
+                />
+              </button>
+              <Nudge
+                show={offer}
+                at="under"
+                label="here"
+                onAct={() => {
+                  setOffer(false);
+                  toggleLevel();
+                }}
+              >
+                Want it even simpler?
+              </Nudge>
+            </div>
+          )}
           <button
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}

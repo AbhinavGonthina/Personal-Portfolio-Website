@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "./components/Navbar";
 import ScrollHint from "./components/ScrollHint";
 import SectionTitle from "./components/SectionTitle";
@@ -13,6 +13,9 @@ import { useSwitching } from "./lib/switchView";
 import { usePlain } from "./lib/plain";
 import { useReady } from "./lib/ready";
 import { useThemeBusy } from "./lib/theme";
+import { setLevel, useLevel } from "./lib/readLevel";
+import Nudge from "./components/Nudge";
+import RawRead from "./sections/RawRead";
 
 /**
  * The page is a walk through one town, and these are its stops in
@@ -26,6 +29,8 @@ import { useThemeBusy } from "./lib/theme";
  *
  * This order has to match `lib/stops.js`.
  */
+let askedDeeper = false;
+
 export default function App() {
   // The switch's transform and clip live on the page itself, and a
   // transform on a document-tall element costs something even at
@@ -46,6 +51,22 @@ export default function App() {
   // enough to look broken. The store holds that work back by one
   // frame so this can be on screen before it starts.
   const repainting = useThemeBusy();
+  const level = useLevel();
+
+  // The second offer, and the last one.
+  //
+  // It arrives only after somebody has already chosen the bare
+  // read, because the joke only lands on a reader who has shown
+  // they want less rather than one who stumbled into it. Five
+  // seconds, like the first, and then it is gone for the visit.
+  const [deeper, setDeeper] = useState(false);
+  useEffect(() => {
+    if (level !== "bare" || !plain || askedDeeper) return;
+    askedDeeper = true;
+    setDeeper(true);
+    const t = setTimeout(() => setDeeper(false), 5000);
+    return () => clearTimeout(t);
+  }, [level, plain]);
   const waiting = repainting || (!drawn && (!plain || switching));
 
   const hero = useRef(null);
@@ -56,9 +77,24 @@ export default function App() {
   const connect = useRef(null);
   const refs = [hero, about, experience, skills, projects, connect];
 
+  // With the stylesheets off there is nothing for the bar, the
+  // canvas or the switch to do, so none of them is mounted.
+  if (plain && level === "raw") return <RawRead />;
+
   return (
     <>
       <Navbar />
+      <Nudge
+        show={deeper}
+        at="corner"
+        label="go on"
+        onAct={() => {
+          setDeeper(false);
+          setLevel("raw");
+        }}
+      >
+        Want to go even simpler?
+      </Nudge>
       <TownStage refs={refs} />
       <SectionTitle />
       <ScrollHint />
