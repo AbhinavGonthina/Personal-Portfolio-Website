@@ -1,8 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useTheme } from "../../lib/theme";
 import { edges } from "./Backdrop";
-import { useBudget, worthIt } from "./webgl";
+import { useBudget, useSwap, worthIt } from "./webgl";
 
 /**
  * The field lines behind Contact.
@@ -32,7 +31,8 @@ export default function Flux() {
   // loop while it is off screen either way, so nothing is
   // running down here until it is looked at.
   const holds = useBudget();
-  const light = useTheme() === "light";
+  const { theme, hidden } = useSwap();
+  const light = theme === "light";
   const still = useReducedMotion();
 
   const off = still || holds === "off" || !worthIt();
@@ -48,8 +48,10 @@ export default function Flux() {
       {!off && (
         <Suspense fallback={null}>
           <div
-            className="size-full transition-opacity duration-500"
-            style={{ opacity: holds === "going" ? 0 : light ? 0.5 : 0.62 }}
+            className="size-full transition-opacity duration-200"
+            style={{
+              opacity: holds === "going" || hidden ? 0 : light ? 0.5 : 0.62,
+            }}
           >
             <Field
               colors={light ? DAY : NIGHT}

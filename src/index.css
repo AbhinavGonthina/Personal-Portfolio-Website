@@ -143,15 +143,10 @@
    rather than each one snapping on its own schedule. Not on
    everything - a transition on `*` catches the switch's own
    transforms and the scene's custom properties. */
-:root[data-theme] body,
-:root[data-theme] header,
-:root[data-theme] section,
-:root[data-theme] article,
-:root[data-theme] aside {
+:root[data-theme] body {
   transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease;
+    background-color 0.22s ease,
+    color 0.22s ease;
 }
 
 /* The marquee's travel. Half of its own width, because the row is

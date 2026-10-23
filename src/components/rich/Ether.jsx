@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useTheme } from "../../lib/theme";
-import { useBudget, worthIt } from "./webgl";
+import { useBudget, useSwap, worthIt } from "./webgl";
 
 /**
  * The fluid behind the first screen, and everything that decides
@@ -41,9 +40,9 @@ const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
  */
 
 export default function Ether() {
-  const theme = useTheme();
   const still = useReducedMotion();
   const holds = useBudget();
+  const { theme, hidden } = useSwap();
   const light = theme === "light";
 
   // The component honours the setting on its own, by drawing one
@@ -55,8 +54,10 @@ export default function Ether() {
   return (
     <Suspense fallback={null}>
       <div
-        className="size-full transition-opacity duration-500"
-        style={{ opacity: holds === "going" ? 0 : 1 }}
+        className="size-full transition-opacity duration-200"
+        style={{
+          opacity: holds === "going" || hidden ? 0 : 1,
+        }}
       >
         <Fluid
           colors={light ? DAY : NIGHT}

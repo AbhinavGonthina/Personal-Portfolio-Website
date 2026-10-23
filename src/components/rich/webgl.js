@@ -1,4 +1,5 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useTheme } from "../../lib/theme";
 
 /**
  * What the written read is allowed to spend on a GPU, shared by
@@ -137,4 +138,56 @@ export function useBudget() {
     () => state,
     () => "on",
   );
+}
+
+/**
+ * The theme, handed over late and behind a curtain.
+ *
+ * Every one of these backgrounds takes a `lightMode` flag and a
+ * set of colours, and changing either tears the shader down and
+ * builds it again. Four of them doing that in the same frame is
+ * what made the day/night toggle lurch: measured at 400 to 1170
+ * milliseconds for the worst frame of a switch, against 150 to
+ * 220 with the backgrounds turned off.
+ *
+ * None of that can be made free - the shaders genuinely have to
+ * be rebuilt - but it can be moved out from under the one
+ * moment somebody is watching. The layer fades out first, the
+ * colours change while it is invisible and the page's own
+ * transition is doing the work the eye is following, and it
+ * comes back when the rebuild is over.
+ *
+ * `hidden` is the opacity to apply; `theme` is the one to build
+ * with. The wait is a little longer than the 250ms the page's
+ * own colour transition takes, so the rebuild lands after it
+ * rather than during it.
+ */
+const BLIND = 260;
+
+export function useSwap() {
+  const live = useTheme();
+  const [theme, setTheme] = useState(live);
+  const [hidden, setHidden] = useState(false);
+  const first = useRef(true);
+
+  useEffect(() => {
+    if (theme === live) return;
+    if (first.current) {
+      first.current = false;
+      setTheme(live);
+      return;
+    }
+    setHidden(true);
+    const swap = setTimeout(() => setTheme(live), BLIND);
+    // Long enough after the swap for the rebuild to have
+    // finished; coming back while it is still compiling would
+    // show the hitch it is there to hide.
+    const show = setTimeout(() => setHidden(false), BLIND + 420);
+    return () => {
+      clearTimeout(swap);
+      clearTimeout(show);
+    };
+  }, [live, theme]);
+
+  return { theme, hidden };
 }

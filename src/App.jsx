@@ -15,7 +15,6 @@ import { useReady } from "./lib/ready";
 import { useThemeBusy } from "./lib/theme";
 import { setLevel, useLevel } from "./lib/readLevel";
 import Nudge from "./components/Nudge";
-import Ticks from "./components/rich/Ticks";
 import RawRead from "./sections/RawRead";
 
 /**
@@ -85,11 +84,6 @@ export default function App() {
 
   return (
     <>
-      {/* The field under everything. One fixed element for the
-          whole site, so there is nothing per section and no seam
-          between them. Rich read only: the town has its own
-          surfaces and the bare read is meant to be plain. */}
-      {plain && level !== "bare" && <Ticks />}
       <Navbar />
       <Nudge
         show={deeper}

@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useTheme } from "../../lib/theme";
-import { useBudget, worthIt } from "./webgl";
+import { useBudget, useSwap, worthIt } from "./webgl";
 import { edges } from "./Backdrop";
 
 /**
@@ -40,7 +39,8 @@ export default function Topo() {
   // loop while it is off screen either way, so nothing is
   // running down here until it is looked at.
   const holds = useBudget();
-  const light = useTheme() === "light";
+  const { theme, hidden } = useSwap();
+  const light = theme === "light";
   const still = useReducedMotion();
 
   const off = still || holds === "off" || !worthIt();
@@ -62,8 +62,10 @@ export default function Topo() {
       {!off && (
         <Suspense fallback={null}>
           <div
-            className="size-full transition-opacity duration-500"
-            style={{ opacity: holds === "going" ? 0 : light ? 0.5 : 0.65 }}
+            className="size-full transition-opacity duration-200"
+            style={{
+              opacity: holds === "going" || hidden ? 0 : light ? 0.5 : 0.65,
+            }}
           >
             <Map
               // The violet the project cards already use for
