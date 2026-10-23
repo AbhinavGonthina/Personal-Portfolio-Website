@@ -25,7 +25,19 @@ export default function Scan() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+      // No `overflow-hidden` here, unlike every other backdrop
+      // on the page, and it is load-bearing: a box with hidden
+      // overflow is a scroll container, and a `sticky` child
+      // sticks to *that* box rather than to the window. With it
+      // on, the grid pinned itself to the top of the section and
+      // stayed there while the rest of Experience scrolled past
+      // underneath it.
+      //
+      // Nothing escapes without it. A sticky element cannot
+      // leave its own containing block, so the canvas is held
+      // inside the section at both ends, and the mask below
+      // feathers it at the edges anyway.
+      className="pointer-events-none absolute inset-0 -z-10"
       style={edges()}
     >
       {!off && (
