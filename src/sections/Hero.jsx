@@ -5,6 +5,7 @@ import TiltCard from "../components/TiltCard";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import Reveal from "../components/rich/Reveal";
+import Ether from "../components/rich/Ether";
 import { Dots } from "../components/rich/Backdrop";
 import { profile, RESUME_URL, socials } from "../data/profile";
 import { education } from "../data/about";
@@ -158,6 +159,33 @@ export default function Hero({ ref }) {
                   "radial-gradient(44% 64% at 86% 24%, color-mix(in oklab, #b48bff 16%, transparent), transparent 70%)",
               }}
             />
+            {/* The fluid, over the two washes and under everything
+                that is read.
+
+                It takes the pointer, because being pushed around is
+                the whole of what it is - but only here. The layer
+                stops where the first screen stops, so the rest of
+                the page is nobody's but the reader's, and the
+                content above it is a sibling with its own stacking
+                context rather than a child, so no link or button on
+                the landing is sitting on top of a canvas that
+                wants the same events.
+
+                Masked out at the bottom. A fluid that simply ends
+                at a line draws the line, and this one ends in the
+                middle of a page. */}
+            <div
+              aria-hidden
+              className="pointer-events-auto absolute inset-x-0 -top-20 -z-10 h-[760px] opacity-45"
+              style={{
+                maskImage:
+                  "linear-gradient(to bottom, transparent, black 10%, black 66%, transparent)",
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, transparent, black 10%, black 66%, transparent)",
+              }}
+            >
+              <Ether />
+            </div>
           </>
         )}
 
