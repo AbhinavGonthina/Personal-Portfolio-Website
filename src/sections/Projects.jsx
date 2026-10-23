@@ -3,6 +3,7 @@ import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures";
 import Stop from "../components/Stop";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
+import { useTheme } from "../lib/theme";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
 import { Dots } from "../components/rich/Backdrop";
@@ -92,7 +93,22 @@ function Shot({ p }) {
   );
 }
 
-function Card({ p, lead, rich }) {
+/**
+ * A colour per project, by the kind of thing it is.
+ *
+ * The cards were a row of identical grey rectangles on a black
+ * page: the same border, the same translucent fill, the same
+ * everything, so the only thing telling one from another was the
+ * screenshot. Giving each a hue puts the three kinds of work on
+ * the page at a glance, and gives the card something to be made
+ * of other than the absence of background.
+ */
+const KIND = {
+  dark: { startup: "#ffb86b", personal: "#6fe3f5", class: "#b48bff" },
+  light: { startup: "#a0621a", personal: "#0e7f94", class: "#6a3fbd" },
+};
+
+function Card({ p, lead, rich, hue }) {
   return (
     <Glow
       on={rich}
@@ -101,10 +117,29 @@ function Card({ p, lead, rich }) {
       // only reads as a gallery if the cards line up, and a card
       // sized to its own blurb puts the links at a different height
       // on every one of them.
-      className={`group flex h-[460px] w-[332px] shrink-0 flex-col rounded-xl border border-ink-700 bg-ink-900/40 transition-colors hover:border-ink-600 ${
-        lead && !rich ? "shimmer" : ""
-      } ${rich ? "duration-300 hover:-translate-y-1" : ""}`}
+      tint={rich ? hue : undefined}
+      // Opaque, not a wash over whatever is behind. At 40 per cent
+      // over a black page the card had no edge of its own, which
+      // is what made a row of them hard to read - you were looking
+      // at six screenshots floating on nothing. The rest of the
+      // colour is the rule along the top: thin, the full width of
+      // the card, and the one place a project's own hue appears
+      // before you have read its name.
+      className={`group flex h-[460px] w-[332px] shrink-0 flex-col overflow-hidden rounded-xl border bg-ink-900 transition-colors ${
+        rich
+          ? "border-ink-700/90 duration-300 hover:-translate-y-1 hover:border-ink-600"
+          : "border-ink-700 hover:border-ink-600"
+      } ${lead && !rich ? "shimmer" : ""}`}
     >
+      {rich && (
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 z-10 h-[2px]"
+          style={{
+            background: `linear-gradient(to right, ${hue}, color-mix(in oklab, ${hue} 24%, transparent) 72%, transparent)`,
+          }}
+        />
+      )}
       {/* The featured card, and only that one, carries a light
           round its edge. In the bare read it is the `.shimmer`
           conic gradient this site already had; in the rich read it
@@ -142,7 +177,15 @@ function Card({ p, lead, rich }) {
             {p.tech.slice(0, 4).map((t) => (
               <li
                 key={t}
-                className="rounded border border-ink-700 px-1.5 py-0.5 font-mono text-[10px] text-fg-subtle"
+                className="rounded border px-1.5 py-0.5 font-mono text-[10px]"
+                style={
+                  rich
+                    ? {
+                        borderColor: `color-mix(in oklab, ${hue} 32%, transparent)`,
+                        color: `color-mix(in oklab, ${hue} 62%, var(--color-fg))`,
+                      }
+                    : undefined
+                }
               >
                 {t}
               </li>
@@ -200,6 +243,7 @@ export default function Projects({ ref }) {
   const plain = usePlain();
   const level = useLevel();
   const rich = level !== "bare";
+  const kinds = KIND[useTheme()] ?? KIND.dark;
   // Embla is the engine shadcn's Carousel is built on: drag, wheel,
   // snapping, bounds and keyboard, in about five kilobytes, and
   // nothing running when the rail is still. Rolling this by hand
@@ -294,14 +338,20 @@ export default function Projects({ ref }) {
       <div className="relative">
         {rich && (
           <>
-            <Grid size={64} opacity={0.38} />
+            <Grid size={64} cells={8} opacity={0.5} seed="projects" />
             <Dots />
           </>
         )}
         <div ref={railRef} className="overflow-hidden">
           <div className="flex gap-5">
             {projects.map((p, i) => (
-              <Card key={p.id} p={p} lead={i === 0} rich={rich} />
+              <Card
+                key={p.id}
+                p={p}
+                lead={i === 0}
+                rich={rich}
+                hue={kinds[p.category] ?? kinds.personal}
+              />
             ))}
           </div>
         </div>

@@ -166,6 +166,40 @@
   }
 }
 
+/* A lit cell in the grid, coming up and going down again. The
+   floor is not zero: a cell that disappears entirely leaves a
+   hole in the pattern where its own grid lines used to be. */
+@keyframes cell {
+  0%,
+  100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
+/* A meteor crossing its section. Travel and fade in one
+   keyframe: it comes up out of nothing, crosses, and is gone
+   before it reaches the far edge, so no streak is ever seen to
+   stop. */
+@keyframes fall {
+  0% {
+    transform: rotate(218deg) translateX(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(218deg) translateX(-760px);
+    opacity: 0;
+  }
+}
+
 /* Magic UI's AuroraText: a wide gradient slid across letters that
    are clipped out of it. The element is sized 200% and the
    position walks the whole way, so the colours pass through the

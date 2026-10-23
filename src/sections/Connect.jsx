@@ -8,7 +8,8 @@ import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
-import Ripple from "../components/rich/Ripple";
+import Grid from "../components/rich/Grid";
+import Meteors from "../components/rich/Meteors";
 import Glow from "../components/rich/Glow";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
@@ -185,8 +186,9 @@ export default function Connect({ ref }) {
     <Stop id="connect" title="Contact" n={4} plain foot refEl={ref}>
       {rich && (
         <>
+          <Grid size={52} cells={7} opacity={0.42} seed="contact" />
           <Dots className="opacity-40" />
-          <Ripple />
+          <Meteors count={16} seed="contact" />
         </>
       )}
       {/* No `max-w-2xl` on this one. Every other section is held to
