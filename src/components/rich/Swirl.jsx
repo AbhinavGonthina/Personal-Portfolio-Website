@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
-import { edges } from "./Backdrop";
+import { edges } from "./edges";
 
 /**
  * The vortex behind Experience.

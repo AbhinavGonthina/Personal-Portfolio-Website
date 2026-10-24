@@ -48,7 +48,7 @@ export const Vortex = (props) => {
       const ctx = canvas.getContext("2d");
 
       if (ctx) {
-        resize(canvas, ctx);
+        resize(canvas);
         initParticles();
         draw(canvas, ctx);
       }
@@ -174,10 +174,10 @@ export const Vortex = (props) => {
     return x > canvas.width || x < 0 || y > canvas.height || y < 0;
   };
 
-  const resize = (
-    canvas,
-    ctx,
-  ) => {
+  // Upstream took a `ctx` it never used - a leftover from the
+  // TypeScript signature, which declared it and then resized only
+  // the canvas.
+  const resize = (canvas) => {
     const { innerWidth, innerHeight } = window;
 
     canvas.width = innerWidth;
@@ -218,10 +218,15 @@ export const Vortex = (props) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (canvas && ctx) {
-      resize(canvas, ctx);
+      resize(canvas);
     }
   };
 
+  // Mount only, deliberately. `setup` and `handleResize` are
+  // redefined on every render of this component and both of them
+  // start or restart the animation loop, so listing them would tear
+  // the field down and build it again whenever anything above
+  // re-rendered. Upstream ships it this way and it is right.
   useEffect(() => {
     setup();
     window.addEventListener("resize", handleResize);
@@ -232,6 +237,7 @@ export const Vortex = (props) => {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

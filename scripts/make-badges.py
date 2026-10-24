@@ -14,7 +14,12 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter
 
-SRC = Path("public/logos/usedlogos")
+# The sources live beside this script rather than under `public/`.
+# They were in `public/logos/usedlogos`, which meant eight logos that
+# exist only so this script can read them were being uploaded to the
+# web server and served to anybody who guessed the path. Nothing in
+# the site has ever referenced them.
+SRC = Path(__file__).parent / "badge-sources"
 OUT = Path("public/logos/badges")
 SIZE = 256
 RADIUS = 56
@@ -56,6 +61,13 @@ sources = (
 
 OUT.mkdir(parents=True, exist_ok=True)
 for p in sources:
-    out = OUT / f"{p.stem}.png"
-    badge(p).save(out)
+    # WebP, losslessly. The badges were PNGs and came to 318KB across
+    # the eight of them; the same pixels as lossless WebP are 195KB.
+    #
+    # Note that re-running this does not reproduce the committed
+    # badges byte for byte - the crop, resize and blur come out a
+    # shade different on a different Pillow - so only regenerate the
+    # one you are actually changing, and look at it afterwards.
+    out = OUT / f"{p.stem}.webp"
+    badge(p).save(out, "WEBP", lossless=True, quality=100, method=6)
     print(f"{p.name} -> {out}")

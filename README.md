@@ -1,41 +1,120 @@
-# Abhinav's Portfolio Site
+# abhinavgonthina.dev
 
-Hi, this is my personal portfolio website where I showcase my work and tell you a bit about myself. I built this to showcase my skills, experience, and projects in a fun way.
+My portfolio. It is a walk through a 3D town, and it is also an
+ordinary page you can read.
 
-https://abhinavgonthina.dev
+**[abhinavgonthina.dev](https://abhinavgonthina.dev)**
 
-## What's Inside
+## Two readings of the same site
 
-The site has a few main sections:
-- **About** - Quick intro about me, my education at Northeastern, and a short video intro
-- **Experience** - Interactive showcase of my work at various startups and organizations
-- **Projects** - Terminal-style project explorer 
-- **Skills** - The technologies I work with
-- **Connect** - Ways to reach me plus a feedback form
+The site has one set of content and two ways through it.
 
-## Tech Stack
+**The town** is the default on a wide screen. Scrolling walks a camera
+down a street rather than scrolling a page: each section of the site is
+a stop on the walk, and where the scroll sits between two section tops
+is where the camera sits between two stops. The places you arrive at
+are real objects — a hoarding you read, a skyline whose towers are the
+jobs, a desk with a monitor you can open projects on, a row of
+mailboxes you can post to.
 
-Built with:
-- React 
-- Material-UI 
-- Framer Motion 
-- React Bits
-- Various other libraries for specific features
+**The written read** is the same material as a page. Hit _Simplify_ in
+the bar, or arrive on anything narrower than 1024px, and the canvas is
+never mounted at all — the town is removed, not dimmed.
 
-## Things I Learned
+The written read has three levels, because "simpler" turned out to mean
+three different things:
 
-This project taught me a bit about:
-- FRAMER MOTION! (First time using it, definetly not the last)
-- CSS Animations in general (keyframes, especially with the connect with me animation at the end)
-- Optimizing React performance with memoization (basically just spamming useMemo haha)
-- Making things responsive across all screen sizes (or I hope at least)
-- Deployment (first time deploying using Github Pages, honestly took me too long figure out)
+|        |                                                                                                       |
+| ------ | ----------------------------------------------------------------------------------------------------- |
+| `rich` | the default. Colour, movement, sections laid out to be looked at                                      |
+| `bare` | one column, no motion, nothing but the words                                                          |
+| `raw`  | every stylesheet switched off. The markup, the way a browser drew documents before anybody styled one |
 
-## Known Issues
+`raw` is reachable only by asking twice.
 
-- Opening Profile too far down on mobile (since there is serach bar and navigation elements on phones) - FIXED (Sorta, planet is out of line but it still looks nice tbh)
-- Classes dropdown is causing a considerable amount of lag - FIXED 10/12/2025
-- Projects in the terminal dont show up on mobile (assumably just a problem on xs) - FIXED 10/12/2025
-- Video not showing up on mobile - FIXED
-- On first run through, images havent had enough time to load in yet in the welcome screen (only happens on slower machines?)
-- Right side of cards in Frameworks/libraries is slightly cut  - Trying to recreate the bug
+## Built with
+
+React 19 and Vite 7. Tailwind v4, configured in CSS rather than a
+config file. [Motion](https://motion.dev) for everything that moves on
+the page, and [React Three Fiber](https://r3f.docs.pmnd.rs) over
+three.js for the town.
+
+The components that are not mine are vendored rather than installed —
+copied out of the registries of
+[Aceternity](https://ui.aceternity.com),
+[Magic UI](https://magicui.design) and
+[React Bits](https://reactbits.dev), stripped of TypeScript, and
+annotated with what was changed and why. They live in
+`src/components/rich/`.
+
+three.js never reaches anyone who does not see the town: it is behind a
+`lazy()` boundary, which is most of the difference between a 1.3MB
+entry bundle and a 128KB one.
+
+## Running it
+
+```sh
+npm install
+npm run dev
+```
+
+|                   |                                                       |
+| ----------------- | ----------------------------------------------------- |
+| `npm run dev`     | the dev server                                        |
+| `npm run build`   | the site, plus both archives, folded into one `dist/` |
+| `npm run preview` | serve that build                                      |
+| `npm run lint`    | eslint                                                |
+| `npm run deploy`  | build, then push `dist/` to GitHub Pages              |
+
+## Poking at it
+
+A handful of query parameters exist so that states which are normally
+hard to reach can be linked to and photographed.
+
+|                           |                                                                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `?plain=1` / `?plain=0`   | force the written read, or force the town on a narrow window                                                                                                                 |
+| `?read=rich\|bare\|raw`   | pick a reading level                                                                                                                                                         |
+| `?theme=dark\|light`      | pick a palette                                                                                                                                                               |
+| `?gl=1` / `?gl=0`         | insist on the WebGL backgrounds, or refuse them. `?gl=1` is how they get rendered in a headless browser with no GPU, where the frame-rate watchdog would otherwise pull them |
+| `?arrive=0` / `?arrive=1` | skip the arrival sequence, or replay it after it has already run                                                                                                             |
+| `?arrive=1&at=5`          | hold the arrival at five seconds instead of playing it, which is the only practical way to look hard at one beat of an eight-second shot                                     |
+
+## Two older versions, still up
+
+Kept buildable and online, and linked only from one line in the
+footer.
+
+- **[/legacy](https://abhinavgonthina.dev/legacy/)** — the first
+  version, Material UI and a terminal-style project explorer.
+- **[/prototype](https://abhinavgonthina.dev/prototype/)** — an
+  unfinished botanical direction: line-art brick, falling leaves,
+  cream and camel. Abandoned part-way in favour of this one, and kept
+  because a screenshot in a commit message is not the same as being
+  able to click the thing.
+
+Each is its own Vite app under `legacy/` and `prototype/`. They are
+built separately and copied into `dist/` by
+`scripts/copy-archives.mjs`, so the whole thing deploys as one static
+bundle. In development, `vite.config.js` serves each one's `dist/` at
+its own path once it has been built at least once.
+
+## Layout
+
+```
+src/
+  sections/      one file per section of the page
+  components/    the page's own furniture
+    rich/        backdrops and effects, mostly vendored
+  scenes/        the town: the R3F tree, the arrival, the street
+  lib/           stores, geometry, and the canvas painters the town is dressed with
+  data/          the actual content — roles, projects, skills, profile
+public/          images, video, fonts' siblings
+scripts/         build helpers and the badge generator
+legacy/          archived build, served at /legacy
+prototype/       archived build, served at /prototype
+```
+
+Most of the interesting decisions are written down next to the code
+that makes them, usually with the thing that was tried first and why it
+did not work.

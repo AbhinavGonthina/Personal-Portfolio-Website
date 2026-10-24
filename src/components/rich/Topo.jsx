@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useBudget, useSwap, worthIt } from "./webgl";
-import { edges } from "./Backdrop";
+import { edges } from "./edges";
 
 /**
  * The contour map behind Projects, and everything that decides

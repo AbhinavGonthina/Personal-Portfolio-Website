@@ -34,8 +34,18 @@ const SWEEP = {
 };
 
 export function Heading({ n, aside, children }) {
-  const rich = usePlain() && useLevel() !== "bare";
-  const sweep = SWEEP[useTheme()] ?? SWEEP.dark;
+  // Both hooks called, then combined. Written as
+  // `usePlain() && useLevel() !== "bare"` this short-circuits, so
+  // `useLevel` is skipped on every render where the town is up -
+  // which means the number of hooks this component calls changes
+  // with the reading. It survives today only because the switch
+  // remounts the tree; the day it does not, React throws
+  // "rendered fewer hooks than expected" and the page goes white.
+  const plain = usePlain();
+  const level = useLevel();
+  const theme = useTheme();
+  const rich = plain && level !== "bare";
+  const sweep = SWEEP[theme] ?? SWEEP.dark;
 
   return (
     <div className="mb-10">

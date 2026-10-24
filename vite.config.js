@@ -109,11 +109,17 @@ export default defineConfig({
          * Everything else is left to Rollup. Hand-splitting
          * further is how you end up loading a chunk's chunk.
          */
+        // Forward slashes only: Rollup normalises module ids, so a
+        // path on Windows arrives here looking like a path on Linux.
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
-          if (/[\/]node_modules[\/](react|react-dom|scheduler)[\/]/.test(id))
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id))
             return "react";
-          if (/[\/]node_modules[\/](motion|motion-dom|motion-utils|framer-motion)[\/]/.test(id))
+          if (
+            /\/node_modules\/(motion|motion-dom|motion-utils|framer-motion)\//.test(
+              id,
+            )
+          )
             return "motion";
         },
       },
