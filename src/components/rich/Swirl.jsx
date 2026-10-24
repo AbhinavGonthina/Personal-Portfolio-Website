@@ -45,7 +45,22 @@ export default function Swirl() {
       // to the top of the section and lets the rest scroll past
       // underneath it. A sticky element cannot leave its own
       // containing block, so nothing escapes without it.
-      className="pointer-events-none absolute inset-0 -z-10"
+      className="pointer-events-none absolute inset-0 -z-10 [&_canvas]:!size-full"
+      // Clipped, but with `clip-path` rather than
+      // `overflow-hidden`.
+      //
+      // The component sizes its canvas to `window.innerWidth`,
+      // which counts the vertical scrollbar; the page's content
+      // box does not. So the canvas came out about fifteen
+      // pixels wider than the column it sits in, hung over both
+      // sides, and gave the whole document a horizontal scroll.
+      // The `[&_canvas]` rule above pins it back to its box,
+      // and this catches anything else that tries.
+      //
+      // Not `overflow-hidden`: hidden overflow makes a scroll
+      // container, and a `sticky` child sticks to that rather
+      // than to the window.
+      style={{ clipPath: "inset(0)" }}
     >
       <div
         className="sticky top-0 h-screen w-full"
@@ -73,6 +88,13 @@ export default function Swirl() {
             // hundred the field is still dense enough to read
             // as a current rather than as a scatter.
             particleCount={300}
+            // How far from the middle a particle may be born.
+            // The stock hundred means every one of them spawns
+            // within a hundred pixels of the centre line, so
+            // the field was a band across the middle of the
+            // window with empty space above and below it. A
+            // screen and a half covers any viewport.
+            rangeY={1400}
             baseSpeed={0.05}
             rangeSpeed={1.1}
             baseRadius={1}
