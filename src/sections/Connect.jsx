@@ -9,6 +9,7 @@ import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
 import Glow from "../components/rich/Glow";
+import Pillar from "../components/rich/Pillar";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
 
@@ -191,7 +192,12 @@ export default function Connect({ ref }) {
           have gone up to Experience: a contour map under
           Projects and curving lines under the invitation made
           the last two sections read as one. */}
-      {rich && <Dots className="opacity-40" />}
+      {rich && (
+        <>
+          <Dots className="opacity-40" />
+          <Pillar />
+        </>
+      )}
       {/* No `max-w-2xl` on this one. Every other section is held to
           the column because it is reading matter; this is the one
           thing on the page addressed to somebody, so it takes the
