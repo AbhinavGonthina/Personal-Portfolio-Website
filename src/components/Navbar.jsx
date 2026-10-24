@@ -68,7 +68,11 @@ let seenOffer = false;
 const OFFER_FOR = 5000;
 
 const LINK =
-  "relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
+  // `tap-y` only: these sit shoulder to shoulder in the pill, so a
+  // hit area wider than the link would start catching presses meant
+  // for the one next door. Tall enough for a thumb is the half that
+  // was missing - they are 29 pixels high and 70 to 112 wide.
+  "tap-y relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
 
 export default function Navbar() {
   const plain = usePlain();
@@ -261,7 +265,7 @@ export default function Navbar() {
             setFocused(null);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className="group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
+          className="tap group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
           aria-label="Back to top"
         >
           <span className="size-1.5 rounded-full bg-fg transition-transform duration-300 group-hover:scale-150" />
@@ -364,7 +368,7 @@ export default function Navbar() {
                     : "Strip it down to the bare minimum"
                 }
                 className={cn(
-                  "grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+                  "tap grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
                   "hover:border-(--lift-line-strong) hover:text-fg",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 )}
@@ -391,7 +395,7 @@ export default function Navbar() {
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
             className={cn(
-              "grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+              "tap grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
               "hover:border-(--lift-line-strong) hover:text-fg",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             )}

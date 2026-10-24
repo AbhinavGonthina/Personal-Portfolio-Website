@@ -12,7 +12,7 @@ import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
 const STEP =
-  "flex size-9 items-center justify-center rounded-full border border-ink-700 text-fg-muted transition-colors hover:border-ink-600 hover:bg-ink-800 hover:text-fg disabled:opacity-30 disabled:hover:border-ink-700 disabled:hover:bg-transparent disabled:hover:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+  "tap flex size-9 items-center justify-center rounded-full border border-ink-700 text-fg-muted transition-colors hover:border-ink-600 hover:bg-ink-800 hover:text-fg disabled:opacity-30 disabled:hover:border-ink-700 disabled:hover:bg-transparent disabled:hover:text-fg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
  * The monitor on the desk. The list is scrolled on the monitor itself
@@ -31,7 +31,11 @@ const STEP =
  */
 
 const LINK =
-  "font-mono text-[11px] uppercase tracking-[0.18em] transition-colors";
+  // `tap-y`, not `tap`: "Live site" and "Source" sit in a row four
+  // pixels apart, so a 44-pixel-wide hit area on each would overlap
+  // the other. They are 17 pixels high, which is the dimension that
+  // needed the help.
+  "tap-y font-mono text-[11px] uppercase tracking-[0.18em] transition-colors";
 
 /**
  * The card-sized copy of a still, which is what the rail wants.

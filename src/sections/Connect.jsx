@@ -294,7 +294,7 @@ export default function Connect({ ref }) {
         </p>
         <a
           href="/legacy/"
-          className="transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="tap-y transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           Legacy website &rarr;
         </a>

@@ -492,3 +492,53 @@ header.sw-pane {
     mask-image: none;
   }
 }
+
+/**
+ * A finger-sized hit area, for things drawn smaller than one.
+ *
+ * Measured on a phone, the bar's back-to-top control was six
+ * pixels square - the name beside it is hidden below `sm`, so what
+ * was left was the dot. The two icon buttons were 32, the
+ * gallery's arrows 36, the nav links 29 tall, and "Source" under a
+ * project card 17. All of them are comfortably over the 24 pixels
+ * WCAG asks for and all of them are under the 44 a thumb actually
+ * wants.
+ *
+ * Drawn nowhere. It is an empty pseudo-element centred on the
+ * control, so the thing you see is the size it was designed to be
+ * and the thing you hit is the size your hand is. Nothing moves,
+ * because an absolutely positioned child takes no space.
+ *
+ * `pointer: coarse` only. On a mouse the cursor is a pixel and the
+ * target is already big enough, and an invisible 44px box around
+ * every nav link would start swallowing hovers meant for its
+ * neighbour.
+ *
+ * `.tap` grows both ways, for controls with room around them.
+ * `.tap-y` grows only downward and upward, for the ones in a row
+ * where a wider box would overlap the next control along.
+ */
+@media (pointer: coarse) {
+  .tap,
+  .tap-y {
+    position: relative;
+  }
+
+  .tap::after,
+  .tap-y::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: max(100%, 44px);
+    translate: -50% -50%;
+  }
+
+  .tap::after {
+    width: max(100%, 44px);
+  }
+
+  .tap-y::after {
+    width: 100%;
+  }
+}
