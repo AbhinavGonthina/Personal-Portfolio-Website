@@ -4,7 +4,6 @@ import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
-import Hex from "../components/rich/Hex";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { setFocused, useFocused } from "../lib/stage";
@@ -298,9 +297,6 @@ export default function Experience({ ref }) {
         {rich && (
           <>
             <Dots />
-            {/* Honeycomb. The one tiling on offer that is not
-                a grid, and free at any height - see `rich/Hex`. */}
-            <Hex />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
