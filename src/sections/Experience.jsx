@@ -4,6 +4,7 @@ import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
+import Lines from "../components/rich/Lines";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { setFocused, useFocused } from "../lib/stage";
@@ -295,12 +296,11 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
-            {/* The dot field only, for now. Three things have
-                been behind this section and come back out: a
-                plain ruled grid (too quiet), a scanning
-                perspective grid (bled onto the landing), and a
-                flickering one. */}
             <Dots />
+            {/* Curves drawing themselves down the section, one
+                per accent. The first thing tried here that is
+                neither a grid nor a shader - see `rich/Lines`. */}
+            <Lines />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
