@@ -130,11 +130,11 @@ export default function Hex() {
           // comb came out grey.
           stroke: `url(#${RAMP})`,
           // Found by looking at the whole section rather than
-          // a crop of it. At 0.75 the comb reads over the cards
-          // and the body text is competing with it; at 0.42 the
-          // colour is still plainly there and the section is
-          // still something you read.
-          opacity: light ? 0.3 : 0.42,
+          // a crop of it. At 0.75 the comb read over the cards
+          // and the body text competed with it; at 0.26 the
+          // colour is still plainly there and nothing on top of
+          // it has to fight.
+          opacity: light ? 0.2 : 0.26,
         }}
       />
     </div>
