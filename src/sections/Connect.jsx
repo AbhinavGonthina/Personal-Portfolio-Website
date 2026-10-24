@@ -9,7 +9,6 @@ import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
 import Glow from "../components/rich/Glow";
-import Warp from "../components/rich/Warp";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
 
@@ -183,24 +182,16 @@ export default function Connect({ ref }) {
 
   return (
     <Stop id="connect" title="Contact" n={4} plain foot refEl={ref}>
-      {/* A grid folded into a vanishing point, with colour
-          coming up it.
-
-          The field lines that used to be here went up to
-          Experience, and for a while this section had the dot
-          field on its own - which was the right call at the
-          time, because a contour map under Projects and curving
-          lines under the invitation made the last two sections
-          read as one thing. This does not have that problem:
-          the map above is flat, grey and still, and this has
-          depth, colour and movement. Nobody is going to mistake
-          one for the other. */}
-      {rich && (
-        <>
-          <Dots className="opacity-40" />
-          <Warp />
-        </>
-      )}
+      {/* Field lines, the way iron filings sit around a magnet.
+          The last section is the quietest on the page and it was
+          the only one left on flat black; lines drawn between two
+          poles are the one backdrop whose subject is a connection
+          between two things. */}
+      {/* The dot field only. The field lines that were here
+          have gone up to Experience: a contour map under
+          Projects and curving lines under the invitation made
+          the last two sections read as one. */}
+      {rich && <Dots className="opacity-40" />}
       {/* No `max-w-2xl` on this one. Every other section is held to
           the column because it is reading matter; this is the one
           thing on the page addressed to somebody, so it takes the
