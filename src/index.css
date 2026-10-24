@@ -161,6 +161,18 @@
   }
 }
 
+/* A lit cell in the honeycomb coming up and going down again.
+   The floor is not zero: a cell that disappears entirely takes
+   its own outline with it and leaves a hole in the comb. */
+@keyframes comb {
+  from {
+    opacity: 0.06;
+  }
+  to {
+    opacity: 0.26;
+  }
+}
+
 /* Magic UI's AuroraText: a wide gradient slid across letters that
    are clipped out of it. The element is sized 200% and the
    position walks the whole way, so the colours pass through the
