@@ -24,7 +24,7 @@ never mounted at all — the town is removed, not dimmed.
 The written read has three levels, because "simpler" turned out to mean
 three different things:
 
-|        |                                                                                                       |
+| Level  | What it is                                                                                            |
 | ------ | ----------------------------------------------------------------------------------------------------- |
 | `rich` | the default. Colour, movement, sections laid out to be looked at                                      |
 | `bare` | one column, no motion, nothing but the words                                                          |
@@ -58,7 +58,7 @@ npm install
 npm run dev
 ```
 
-|                   |                                                       |
+| Script            | What it does                                          |
 | ----------------- | ----------------------------------------------------- |
 | `npm run dev`     | the dev server                                        |
 | `npm run build`   | the site, plus both archives, folded into one `dist/` |
@@ -71,7 +71,7 @@ npm run dev
 A handful of query parameters exist so that states which are normally
 hard to reach can be linked to and photographed.
 
-|                           |                                                                                                                                                                              |
+| Parameter                 | What it does                                                                                                                                                                 |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `?plain=1` / `?plain=0`   | force the written read, or force the town on a narrow window                                                                                                                 |
 | `?read=rich\|bare\|raw`   | pick a reading level                                                                                                                                                         |
@@ -109,7 +109,7 @@ src/
   scenes/        the town: the R3F tree, the arrival, the street
   lib/           stores, geometry, and the canvas painters the town is dressed with
   data/          the actual content — roles, projects, skills, profile
-public/          images, video, fonts' siblings
+public/          images, video, favicons, the CNAME
 scripts/         build helpers and the badge generator
 legacy/          archived build, served at /legacy
 prototype/       archived build, served at /prototype
