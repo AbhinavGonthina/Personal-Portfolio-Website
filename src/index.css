@@ -452,3 +452,43 @@ header.sw-pane {
     animation: none;
   }
 }
+
+/**
+ * The navigation row, below the width its five links fit across.
+ *
+ * It scrolls sideways there, and a scrolling row inside a rounded
+ * pill with hidden overflow guillotines whatever word is at the
+ * edge. Feathered, the row ends the way every backdrop on this
+ * site ends - by dissolving - which also happens to be the only
+ * signal a phone gets that there is more of it to push.
+ *
+ * 0.9rem, which is a little under one character of the mono the
+ * links are set in: enough to turn a cut into a fade and not
+ * enough to dim a link that is fully in view.
+ */
+.nav-rail {
+  --nav-feather: 0.9rem;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--nav-feather),
+    black calc(100% - var(--nav-feather)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--nav-feather),
+    black calc(100% - var(--nav-feather)),
+    transparent 100%
+  );
+}
+
+/* Above `md` every link fits, so there is nothing to feather and
+   no reason to make the bar its own composited layer. */
+@media (min-width: 48rem) {
+  .nav-rail {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}

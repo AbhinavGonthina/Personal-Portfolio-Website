@@ -12,8 +12,9 @@ import { motion, useReducedMotion } from "motion/react";
  * ever visible where it crosses the one-pixel edge.
  *
  * Changed from upstream: TypeScript stripped, `cn` pointed at this
- * project's helper, and it does nothing at all under reduced
- * motion rather than parking the comet at its start offset.
+ * project's helper, it does nothing at all under reduced motion
+ * rather than parking the comet at its start offset, and the
+ * wrapper clips.
  *
  * This replaces a hand-rolled `.shimmer` in `index.css` that did
  * the same job with an `@property` angle on a conic gradient. The
@@ -37,7 +38,23 @@ export default function BorderBeam({
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border-transparent"
+      // `overflow-hidden`, which upstream does not have.
+      //
+      // The comet is a 64px square riding an `offset-path`, so half
+      // of it is outside the card at every point on the way round.
+      // The mask below already hides that half - it keeps only what
+      // falls on the border ring - but a masked box is still a box,
+      // and an absolutely positioned one with nothing clipping it
+      // reaches the document's scroll area. On a phone, where the
+      // cards run to the edge of the window, that was up to three
+      // pixels of horizontal scroll on a page that has no business
+      // scrolling sideways: measured at 363 against a 360 viewport,
+      // 393 against 390.
+      //
+      // Clipping to the wrapper removes exactly the part the mask
+      // was already hiding, because `mask-clip: border-box` and
+      // this element's border box are the same box.
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] border-transparent"
       style={{
         borderWidth,
         // Keep what falls on the border, drop what falls inside

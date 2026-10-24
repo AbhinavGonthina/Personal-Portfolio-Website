@@ -177,6 +177,32 @@ export default function Navbar() {
 
   const marked = hovered ?? active;
 
+  // Keep the lit link where it can be seen.
+  //
+  // Below `md` the five links do not fit across the bar, so the row
+  // scrolls sideways. That is fine while you are driving it and
+  // wrong while the page is: scrolling into Projects lit a pill two
+  // items off the right-hand edge, so a phone showed a bar with
+  // nothing marked on it and no sign that there was more of it.
+  //
+  // `nearest` rather than `center`: the first and last items should
+  // sit against their own ends of the row rather than being dragged
+  // into the middle with empty track beside them. And only the row
+  // moves - `block: "nearest"` on an element already in view is a
+  // no-op vertically, which matters because this fires while the
+  // page is scrolling and must not fight it.
+  const rail = useRef(null);
+  useEffect(() => {
+    const row = rail.current;
+    if (!row || row.scrollWidth <= row.clientWidth) return;
+    const lit = row.querySelector('[data-nav-active="true"]');
+    lit?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "smooth",
+    });
+  }, [active]);
+
   // The bar keeps its scrolled dress through a run.
   //
   // It was taken off for the length of one, on the theory that the
@@ -253,34 +279,57 @@ export default function Navbar() {
             instead of disappearing; the scrollbar itself is taken
             away because the bar is 56 pixels tall and a scrollbar in
             it is furniture, not information. */}
+        {/* Two elements, not one.
+            The pill - border, fill, padding - holds still, and only
+            the track of links inside it scrolls. They were the same
+            element, and the feather that tells a phone there is more
+            of the row to push was then eating the pill's own rounded
+            cap along with the word at the edge, so the bar looked
+            like a box with two sides missing. */}
         <div
-          className="relative flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-full border border-(--lift-line) bg-(--lift-fill) p-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-self-center md:overflow-x-visible [&::-webkit-scrollbar]:hidden"
+          className="relative min-w-0 rounded-full border border-(--lift-line) bg-(--lift-fill) p-1 md:justify-self-center"
           onMouseLeave={() => setHovered(null)}
         >
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollTo(item.id)}
-              onMouseEnter={() => setHovered(item.id)}
-              onFocus={() => setHovered(item.id)}
-              aria-current={active === item.id ? "true" : undefined}
-              className={cn(
-                LINK,
-                "shrink-0",
-                marked === item.id ? "text-fg" : "text-fg-subtle",
-              )}
-            >
-              {marked === item.id && (
-                <motion.span
-                  layoutId="nav-pill"
-                  aria-hidden
-                  className="absolute inset-0 -z-10 rounded-full bg-(--lift-fill-strong) ring-1 ring-inset ring-(--lift-ring)"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                />
-              )}
-              {item.label}
-            </button>
-          ))}
+          <div
+            ref={rail}
+            // `nav-rail` feathers both ends below `md`, where the row
+            // scrolls sideways. Hidden overflow cuts the word at the
+            // edge clean in half, and on a 390px screen the result
+            // was a bar reading "ABOUT EXPERIENCE SKILL" with the
+            // theme button sitting on the broken letter - which looks
+            // like a layout fault rather than something you can push.
+            // The same feather every backdrop here wears says "there
+            // is more of this" instead. See index.css; the mask is
+            // dropped above `md`, where everything fits and a
+            // composited layer buys nothing.
+            className="nav-rail flex items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] md:overflow-x-visible [&::-webkit-scrollbar]:hidden"
+          >
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollTo(item.id)}
+                onMouseEnter={() => setHovered(item.id)}
+                onFocus={() => setHovered(item.id)}
+                aria-current={active === item.id ? "true" : undefined}
+                data-nav-active={active === item.id ? "true" : undefined}
+                className={cn(
+                  LINK,
+                  "shrink-0",
+                  marked === item.id ? "text-fg" : "text-fg-subtle",
+                )}
+              >
+                {marked === item.id && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    aria-hidden
+                    className="absolute inset-0 -z-10 rounded-full bg-(--lift-fill-strong) ring-1 ring-inset ring-(--lift-ring)"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
+                )}
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* The way out for anyone who would rather just read the thing.
