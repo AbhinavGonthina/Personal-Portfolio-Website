@@ -4,6 +4,7 @@ import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
+import Swirl from "../components/rich/Swirl";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { setFocused, useFocused } from "../lib/stage";
@@ -297,6 +298,10 @@ export default function Experience({ ref }) {
         {rich && (
           <>
             <Dots />
+            {/* Particles drifting on a noise field. The first
+                backdrop tried here that does not repeat - see
+                `rich/Swirl`. */}
+            <Swirl />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
