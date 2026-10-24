@@ -4,7 +4,7 @@ import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
-import Lines from "../components/rich/Lines";
+import Beams from "../components/rich/Beams";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { setFocused, useFocused } from "../lib/stage";
@@ -297,10 +297,9 @@ export default function Experience({ ref }) {
         {rich && (
           <>
             <Dots />
-            {/* Curves drawing themselves down the section, one
-                per accent. The first thing tried here that is
-                neither a grid nor a shader - see `rich/Lines`. */}
-            <Lines />
+            {/* Long curves with a light travelling along each,
+                one accent per beam. See `rich/Beams`. */}
+            <Beams />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
