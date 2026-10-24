@@ -78,7 +78,7 @@ export default function ExperienceSection() {
     },
     rainfall: {
       title: "Rainfall Learning",
-      logo: `${import.meta.env.BASE_URL}RainfallLearningLogo.png`,
+      logo: `${import.meta.env.BASE_URL}RainfallLearningLogo.webp`,
       description:
         "Rainfall Learning is a Northeastern student-led startup building an affordable, flexible e-learning platform for computer science. As Tech Lead for the Payments/Internal Tools team, I am integrating Stripe API to connect tutors with students. The platform is set to evolve into a B2B2C model, enabling businesses to create their own interactive curricula with our platform.",
       techStack: [

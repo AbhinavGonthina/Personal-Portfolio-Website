@@ -74,7 +74,7 @@ const projectsData = {
     ],
     media: {
       type: "images",
-      images: [`${import.meta.env.BASE_URL}MacroManageSneakPeek.png`],
+      images: [`${import.meta.env.BASE_URL}MacroManageSneakPeek.webp`],
     },
   },
   "portfolio.exe": {
@@ -92,7 +92,7 @@ const projectsData = {
     ],
     media: {
       type: "images",
-      images: [`${import.meta.env.BASE_URL}PortfolioLandingPage.png`],
+      images: [`${import.meta.env.BASE_URL}PortfolioLandingPage.webp`],
     },
   },
   "Class Projects": {
@@ -170,10 +170,10 @@ const projectsData = {
         media: {
           type: "images",
           images: [
-            `${import.meta.env.BASE_URL}QuakTravelOldLandingPageWebsite.png`,
-            `${import.meta.env.BASE_URL}QuakTravelOldDashboard.png`,
-            `${import.meta.env.BASE_URL}QuakTravelOldExpensesPage.png`,
-            `${import.meta.env.BASE_URL}QuakTravelOldHotelSearch.png`,
+            `${import.meta.env.BASE_URL}QuakTravelOldLandingPageWebsite.webp`,
+            `${import.meta.env.BASE_URL}QuakTravelOldDashboard.webp`,
+            `${import.meta.env.BASE_URL}QuakTravelOldExpensesPage.webp`,
+            `${import.meta.env.BASE_URL}QuakTravelOldHotelSearch.webp`,
           ],
         },
       },

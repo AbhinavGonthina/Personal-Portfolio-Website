@@ -158,7 +158,7 @@ export default function WelcomeSection() {
               position: "relative",
             }}
             alt="Opening Profile of Abhinav Gonthina (me)"
-            src={`${import.meta.env.BASE_URL}OpeningProfile1.png`}
+            src={`${import.meta.env.BASE_URL}OpeningProfile1.webp`}
           />
         </Zoom>
 

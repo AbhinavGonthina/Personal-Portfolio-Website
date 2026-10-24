@@ -415,7 +415,7 @@ function ConnectSection() {
                 position: "absolute",
                 inset: 0,
                 backgroundImage:
-                  "url(`${import.meta.env.BASE_URL}CircleStripes.png`)",
+                  "url(`${import.meta.env.BASE_URL}CircleStripes.webp`)",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
                 backgroundSize: "cover",

@@ -186,7 +186,7 @@ function Navbar() {
           {/* Logo which redirects to top of the screen */}
           <Box
             component="img"
-            src={`${import.meta.env.BASE_URL}AbhinavGonthinaLogo.png`}
+            src={`${import.meta.env.BASE_URL}AbhinavGonthinaLogo.webp`}
             alt="Abhinav Gonthina Logo"
             onClick={scrollToTop}
             sx={{

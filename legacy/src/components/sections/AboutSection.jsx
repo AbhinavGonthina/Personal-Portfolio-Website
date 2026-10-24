@@ -608,7 +608,7 @@ function AboutSection() {
                   ref={videoRef}
                   src={`${import.meta.env.BASE_URL}videos/AbhinavGonthinaPortfolioVid.mp4`}
                   preload="metadata"
-                  poster={`${import.meta.env.BASE_URL}IntroVideoThumbnail.png`}
+                  poster={`${import.meta.env.BASE_URL}IntroVideoThumbnail.webp`}
                   onEnded={handleVideoEnd}
                   sx={{
                     width: {
