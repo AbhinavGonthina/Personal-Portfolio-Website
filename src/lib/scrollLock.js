@@ -88,6 +88,23 @@ let jumpDest = null;
  * before arming either the pause or the pin.
  */
 export function beginJump(ms = 2500, to = null) {
+  // Whatever is already moving, stop it here.
+  //
+  // A second link clicked while the first one's smooth scroll is
+  // still travelling is somebody changing their mind, and the new
+  // destination has to win. Issuing another smooth scroll is not
+  // enough to make that happen reliably: the browser is already
+  // animating this box, and which of the two it honours depends on
+  // how busy the main thread is - during the walk it is busy
+  // enough that the first one routinely finished first, so the
+  // page arrived where you had stopped wanting to go and only then
+  // set off for where you did.
+  //
+  // An instant scroll to where the page already is cancels the
+  // animation without moving anything, so the caller's own scroll,
+  // one line later, starts from a standstill and is the only one
+  // running.
+  window.scrollTo({ top: window.scrollY, behavior: "instant" });
   jumpUntil = performance.now() + ms;
   jumpMoved = false;
   jumpDest = to;
