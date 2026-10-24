@@ -8,7 +8,6 @@ import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
-import Flux from "../components/rich/Flux";
 import Glow from "../components/rich/Glow";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
@@ -188,12 +187,11 @@ export default function Connect({ ref }) {
           the only one left on flat black; lines drawn between two
           poles are the one backdrop whose subject is a connection
           between two things. */}
-      {rich && (
-        <>
-          <Dots className="opacity-40" />
-          <Flux />
-        </>
-      )}
+      {/* The dot field only. The field lines that were here
+          have gone up to Experience: a contour map under
+          Projects and curving lines under the invitation made
+          the last two sections read as one. */}
+      {rich && <Dots className="opacity-40" />}
       {/* No `max-w-2xl` on this one. Every other section is held to
           the column because it is reading matter; this is the one
           thing on the page addressed to somebody, so it takes the
