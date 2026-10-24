@@ -4,6 +4,7 @@ import { cn } from "../lib/cn";
 import { usePlain } from "../lib/plain";
 import { useLevel } from "../lib/readLevel";
 import { Dots } from "../components/rich/Backdrop";
+import Scan from "../components/rich/Scan";
 import Ticker from "../components/rich/Ticker";
 import Glow from "../components/rich/Glow";
 import { setFocused, useFocused } from "../lib/stage";
@@ -295,11 +296,12 @@ export default function Experience({ ref }) {
       >
         {rich && (
           <>
-            {/* The dot field, and nothing else. Five things
-                have been behind this section and come back out:
-                a ruled grid, a scanning perspective grid, a
-                flickering grid, drawing lines and beams. */}
             <Dots />
+            {/* A fixed field of bands with a sweep travelling
+                down through it. See `rich/Scan` for how it
+                covers a section this tall without costing six
+                million pixels. */}
+            <Scan />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">

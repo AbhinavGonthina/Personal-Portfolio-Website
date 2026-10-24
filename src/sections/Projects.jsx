@@ -7,7 +7,7 @@ import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
 import BorderBeam from "../components/rich/BorderBeam";
 import Glow from "../components/rich/Glow";
-import Scan from "../components/rich/Scan";
+import Topo from "../components/rich/Topo";
 import { projects } from "../data/projects";
 
 /** One click of an arrow, and the width the cards are cut to. */
@@ -342,9 +342,11 @@ export default function Projects({ ref }) {
       {rich && (
         <>
           <Dots />
-          {/* A fixed field of bands with a sweep travelling
-              down through it. See `rich/Scan`. */}
-          <Scan />
+          {/* Contour lines. A rail of screenshots wants a
+              landscape behind it rather than a ruled sheet, and
+              this is the one background on the page made of
+              neither squares nor blur. */}
+          <Topo />
         </>
       )}
 

@@ -17,9 +17,29 @@ import { useBudget, useSwap, worthIt } from "./webgl";
  * and that a rail of screenshots reads better over rules than
  * over topography.
  *
- * Sized to its section like everything else here, which is
- * affordable because Projects is a screenful and a bit. The
- * same component under Experience would be six million pixels.
+ * One screenful, stuck to the window, and that is the whole of
+ * why it can be in this section at all. Experience is four and
+ * a half thousand pixels tall; a canvas sized to it is six and
+ * a half million pixels of shader, measured at 600 ms a frame
+ * against 170 for a screen. Stuck to the top it draws a screen
+ * and rides down as you read, which for a sweep that travels
+ * top to bottom anyway is also the better picture.
+ *
+ * Two details that are not preferences, both learned the hard
+ * way by a component that was here before:
+ *
+ * No `overflow-hidden` on the wrapper. A box with hidden
+ * overflow is a scroll container, and a `sticky` child sticks
+ * to that box rather than to the window - which pins the canvas
+ * to the top of the section and lets the rest scroll past
+ * underneath it.
+ *
+ * And `top-0 h-screen` exactly, with no overhang. The previous
+ * attempt hung the box an eighth of a screen above the window
+ * so its own top edge was never visible; what that actually did
+ * was put the canvas above the section's own top, so scrolled
+ * to the landing you could see a band of it over the hero. The
+ * fade below handles the edges instead.
  */
 const Field = lazy(() => import("./Scanner"));
 
@@ -34,14 +54,19 @@ export default function Scan() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-      style={edges()}
+      className="pointer-events-none absolute inset-0 -z-10"
     >
       {!off && (
         <div
-          className="size-full transition-opacity duration-200"
+          className="sticky top-0 h-screen w-full transition-opacity duration-200"
           style={{
             opacity: holds === "going" || hidden ? 0 : light ? 0.4 : 0.5,
+            // The fade goes on the sticky box, not the wrapper.
+            // It is the canvas's own top and bottom that need
+            // softening - they sit at the top and bottom of the
+            // window - and the wrapper is the section, whose
+            // edges the canvas never reaches.
+            ...edges(),
           }}
         >
           <Field
