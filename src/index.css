@@ -161,16 +161,21 @@
   }
 }
 
-/* The colour drifting behind Experience's grid. A transform,
-   not a background position: the first is composited and the
-   second repaints, and the element it is on is the height of
-   the tallest section on the page. */
+/* The colour drifting behind Experience's grid.
+
+   Sideways only. The ramp's vertical placement is what puts
+   each role's colour against that role, so it must not travel
+   up or down the section.
+
+   A transform rather than a background position: the first is
+   composited and the second repaints, and the element it is on
+   is the height of the tallest section on the page. */
 @keyframes wander {
   from {
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(14%, 10%, 0);
+    transform: translate3d(12%, 0, 0);
   }
 }
 

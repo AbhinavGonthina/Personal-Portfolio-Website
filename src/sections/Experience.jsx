@@ -262,6 +262,17 @@ function RoleNav({ selected, onSelect, className }) {
   );
 }
 
+/**
+ * Every role's colour, in the order the roles are laid out
+ * down the page: the groups in their own order, and the roles
+ * within each group in theirs. Read from the data rather than
+ * written out, so adding a job puts its colour in the mesh
+ * without anybody remembering to.
+ */
+const ROLE_HUES = EXPERIENCE_GROUPS.flatMap((g) =>
+  experience.filter((r) => r.category === g.id).map((r) => r.accent),
+);
+
 export default function Experience({ ref }) {
   const plain = usePlain();
   // The skyline is drawn by a canvas that lives above this component, so
@@ -297,9 +308,12 @@ export default function Experience({ ref }) {
         {rich && (
           <>
             <Dots />
-            {/* A fixed grid with colour drifting through the
-                lines. See `rich/Mesh`. */}
-            <Mesh />
+            {/* A fixed grid carrying the role colours, in the
+                order the roles appear below it - so the mesh is
+                athenahealth's purple at the top of the section
+                and Northeastern's red by the bottom. See
+                `rich/Mesh`. */}
+            <Mesh hues={ROLE_HUES} />
           </>
         )}
         <div className="relative mx-auto w-full max-w-6xl px-6">
