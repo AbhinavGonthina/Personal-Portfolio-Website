@@ -68,6 +68,12 @@ function release() {
   }
 }
 
+/** Drops the pause now, rather than letting it run out. */
+export function endHold() {
+  holdUntil = 0;
+  release();
+}
+
 let jumpUntil = 0;
 let jumpMoved = false;
 let jumpDest = null;
@@ -85,6 +91,21 @@ export function beginJump(ms = 2500, to = null) {
   jumpUntil = performance.now() + ms;
   jumpMoved = false;
   jumpDest = to;
+  // And the pause goes with it.
+  //
+  // `holdScroll` pins the page for a second after every arrival, to
+  // stop the momentum behind a flick carrying you through the
+  // section you have just reached. A link clicked inside that
+  // second is not momentum - it is somebody asking to be somewhere
+  // else - and the pin does not know the difference: it reads the
+  // new position as an overshoot and drags the page back to where
+  // you were, which looks like the link firing and then being
+  // undone.
+  //
+  // The stage checks `isJumping()` before *arming* a pin, so a link
+  // never creates one. This is the other half: a link also clears
+  // whichever one is already standing.
+  endHold();
 }
 
 export const isJumping = () => performance.now() < jumpUntil;

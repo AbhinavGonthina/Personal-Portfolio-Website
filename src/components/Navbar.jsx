@@ -263,6 +263,19 @@ export default function Navbar() {
         <button
           onClick={() => {
             setFocused(null);
+            // The same announcement every other link on this page
+            // makes, and the one control that was not making it.
+            //
+            // `beginJump` is how a deliberate move tells the stage
+            // to stand aside: without it this scroll was treated as
+            // if the reader had flicked the page, so the arrival
+            // pin dragged it back to the stop it had just left and
+            // the trip to the top only happened once the pin ran
+            // out. The landing is stop zero, which is a real
+            // destination and not `null` - the camera wants to know
+            // where it is being sent before the scroll gets
+            // anywhere near it.
+            beginJump(2500, 0);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="tap group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
