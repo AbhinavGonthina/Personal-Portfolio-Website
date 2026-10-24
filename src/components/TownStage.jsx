@@ -1,5 +1,10 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { setFocused, setJourney, useFocused } from "../lib/stage";
+import {
+  setFocused,
+  setJourney,
+  useFocused,
+  useJourneyNear,
+} from "../lib/stage";
 import { usePlain } from "../lib/plain";
 import { isHolding, useSwitching } from "../lib/switchView";
 import { useArriving } from "../lib/arrival";
@@ -92,7 +97,29 @@ export default function TownStage({ refs }) {
   // lazy chunk; this is here because the scroll reader closes it
   // when the camera walks away from the desk.
   const [opened, setOpened] = useState(null);
-  const stills = useStills(off);
+
+  // Not until the walk has set off.
+  //
+  // These twelve screenshots are about 600KB and none of them is
+  // looked at before the fourth stop. `useStills` already deferred
+  // them to `requestIdleCallback`, which sounds like the right
+  // answer and is not: idle fires as soon as the main thread has a
+  // gap, and on a cold load that gap is at 109ms - before the
+  // 1.1MB scene chunk has finished arriving. So the stills were
+  // not competing for the processor, they were competing for the
+  // connection, during the one window where the wait is on screen.
+  //
+  // Half a stop down the page is the signal instead. By then the
+  // town has been built and drawn, the reader is moving, and there
+  // are three and a half sections of scrolling left before the
+  // desk - far longer than 600KB takes. Latched, because walking
+  // back to the top should not cancel a download that is already
+  // running, and because a nav link to Projects jumps the number
+  // straight past this.
+  const walking = useJourneyNear(0.4, Infinity);
+  const begun = useRef(false);
+  if (walking) begun.current = true;
+  const stills = useStills(off || !begun.current);
 
   // Opening or closing a repository puts the new page at its top.
   const open = (id) => {
