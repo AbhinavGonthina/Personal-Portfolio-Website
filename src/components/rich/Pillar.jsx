@@ -71,7 +71,7 @@ export default function Pillar() {
             // the page. Daylight does not have the problem,
             // because `multiply` cannot go brighter than the
             // paper.
-            intensity={light ? 1 : 0.82}
+            intensity={light ? 0.9 : 0.7}
             // Half the stock speed. This sits directly under the
             // one sentence on the page addressed to somebody.
             rotationSpeed={0.15}
@@ -88,10 +88,32 @@ export default function Pillar() {
             // a column of light needs a little of it or it is a
             // shape rather than a light - but only a little.
             bloom={0.12}
-            glowAmount={0.002}
-            pillarWidth={3.2}
+            // A third of stock.
+            //
+            // This is how much light the ray picks up away from
+            // the filament itself, and at 0.002 it filled the
+            // whole section: a flat teal block on the left and
+            // a flat violet one on the right, with the thing
+            // they were supposed to be coming off lost in the
+            // middle of them. Turned down, what is left is the
+            // ribbon.
+            glowAmount={0.0006}
+            pillarWidth={2.4}
             pillarHeight={0.4}
-            pillarRotation={18}
+            // Laid over, not stood up.
+            //
+            // A column is the component's own posture and it is
+            // the wrong one here: this section is twice as wide
+            // as it is tall, so a vertical pillar is cropped at
+            // both ends and runs straight down the middle of
+            // the one sentence on the page addressed to
+            // somebody. Past ninety it lies down and sweeps,
+            // and the fifteen degrees over is what keeps it
+            // from being a horizontal bar - it enters at the
+            // top left in cyan and leaves at the bottom right
+            // in violet, which also puts the brightest part of
+            // it below the reading and behind the buttons.
+            pillarRotation={105}
             twist={0.35}
             // Three turns of the noise loop rather than four.
             // This is a raymarch - eighty steps a pixel, each
