@@ -594,9 +594,24 @@ const LightPillar = ({
       }
     });
     intersection.observe(container);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
-    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    // Only when something is actually listening.
+    //
+    // Upstream registers these unconditionally and lets the
+    // handlers decide. That is cheap for a demo page with one of
+    // these on it and not cheap here: `interactive` is false on
+    // this site - every cursor-reactive background was taken off
+    // the page deliberately - so each of these was a global
+    // `pointermove` that ran `getBoundingClientRect()` on the
+    // container and then woke the render loop, on every mouse
+    // move anywhere in the document, to redraw a frame identical
+    // to the one before it. Two components doing it meant two
+    // forced layouts and two spurious canvas repaints per move.
+    const listening = settingsRef.current.interactive || settingsRef.current.clickPulse;
+    if (listening) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerdown', onPointerDown, { passive: true });
+      document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    }
     document.addEventListener('visibilitychange', onVisibility);
     resize();
 
@@ -612,9 +627,11 @@ const LightPillar = ({
       canvas.removeEventListener('webglcontextrestored', onContextRestored);
       resizeObserver.disconnect();
       intersection.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
-      document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      if (listening) {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerdown', onPointerDown);
+        document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      }
       document.removeEventListener('visibilitychange', onVisibility);
       if (texture) gl.deleteTexture(texture);
       gl.deleteFramebuffer(framebuffer);

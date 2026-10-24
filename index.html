@@ -40,12 +40,24 @@
       content="https://abhinavgonthina.dev/og-image.jpg"
     />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- No Google Fonts link here.
+
+         There was one, asking for Fraunces and Inter, and it was
+         left over from the version of this site that used them.
+         Nothing on the page has referred to either since: the type
+         is Geist and Geist Mono, which are installed as packages
+         and served from this origin.
+
+         It was not free to leave there. A stylesheet in the head
+         blocks the first paint until it arrives, and this one went
+         to a third-party host - so every visit opened a connection
+         to fonts.googleapis.com, waited for a 15KB sheet, and then
+         ignored every rule in it. Measured cold it was the single
+         slowest thing on the page.
+
+         The two Geist files are preloaded instead, injected into
+         this head at build time with their hashed names. See
+         `preloadFonts` in vite.config.js. -->
   </head>
   <body>
     <div id="root"></div>

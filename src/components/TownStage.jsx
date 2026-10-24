@@ -299,9 +299,13 @@ export default function TownStage({ refs }) {
         });
       }
 
-      const last = els[els.length - 1];
-      setLive(last.getBoundingClientRect().bottom > 40);
-      setReady((r) => r || last.getBoundingClientRect().bottom > -200);
+      // One rect, read once. These were two separate
+      // `getBoundingClientRect()` calls on the same element on the
+      // next line down, which is two forced layouts a frame for a
+      // number that cannot have changed between them.
+      const bottom = els[els.length - 1].getBoundingClientRect().bottom;
+      setLive(bottom > 40);
+      setReady((r) => r || bottom > -200);
       // Only clickable where there is something to click. The towers
       // and the mailboxes do their own finer-grained gating; this just
       // stops the page swallowing pointer events everywhere else.

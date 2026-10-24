@@ -40,8 +40,83 @@ function serveArchives() {
   };
 }
 
+/**
+ * Preload the two font files the page actually uses.
+ *
+ * Both are pulled in by `@fontsource-variable/...` imports in the
+ * stylesheet, which means the browser cannot know they exist until
+ * it has downloaded and parsed a 50KB sheet - and the text it needs
+ * them for is the first thing on the page. Preloading moves the
+ * request to the top of the document, so the fonts travel alongside
+ * the CSS rather than behind it.
+ *
+ * Only `latin`, and only `normal`. Fontsource ships five subsets per
+ * family - latin, latin-ext, cyrillic, cyrillic-ext, vietnamese -
+ * each behind its own `unicode-range`, so a browser rendering
+ * English never asks for the other four. Preloading one it will not
+ * use is worse than not preloading at all: the file is fetched,
+ * occupies the connection, and is thrown away.
+ *
+ * The names are hashed at build time, which is why this is a plugin
+ * and not two lines of HTML.
+ */
+function preloadFonts() {
+  return {
+    name: "preload-fonts",
+    apply: "build",
+    enforce: "post",
+    transformIndexHtml(html, ctx) {
+      const want = /geist(-mono)?-latin-wght-normal-[^/]+\.woff2$/;
+      return Object.keys(ctx.bundle ?? {})
+        .filter((f) => want.test(f))
+        .map((f) => ({
+          tag: "link",
+          attrs: {
+            rel: "preload",
+            as: "font",
+            type: "font/woff2",
+            href: "/" + f,
+            crossorigin: "",
+          },
+          injectTo: "head-prepend",
+        }));
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), serveArchives()],
+  plugins: [react(), tailwindcss(), serveArchives(), preloadFonts()],
   base: "/",
+  build: {
+    // three.js is 729KB of the town chunk on its own and there is
+    // no splitting that away from a 3D scene. The warning has
+    // nothing left to tell us.
+    chunkSizeWarningLimit: 1400,
+    rollupOptions: {
+      output: {
+        /**
+         * React and Motion get their own chunks.
+         *
+         * Not to make the first visit smaller - it is the same
+         * bytes either way, fetched in parallel - but to make
+         * every visit after a deploy smaller. These two are 290
+         * of the entry's 457 kilobytes and they change only when
+         * a dependency is upgraded, while the other 167 change
+         * every time a word on the page does. Left in one chunk,
+         * fixing a typo re-downloads React.
+         *
+         * Everything else is left to Rollup. Hand-splitting
+         * further is how you end up loading a chunk's chunk.
+         */
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (/[\/]node_modules[\/](react|react-dom|scheduler)[\/]/.test(id))
+            return "react";
+          if (/[\/]node_modules[\/](motion|motion-dom|motion-utils|framer-motion)[\/]/.test(id))
+            return "motion";
+        },
+      },
+    },
+  },
 });

@@ -45,7 +45,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jun 2026",
     end: "Aug 2026",
-    logo: "/logos/badges/athenahealth.png",
+    logo: "/logos/badges/athenahealth.webp",
     // Matches the logo art's own background, so the banner is seamless.
     brand: "#FFFFFF",
     branch: { side: "right", t: 0.94 },
@@ -90,7 +90,7 @@ export const experience = [
     location: "Cambridge, MA",
     start: "Jan 2026",
     end: "May 2026",
-    logo: "/logos/badges/philips.png",
+    logo: "/logos/badges/philips.webp",
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.8 },
     blurb:
@@ -115,7 +115,7 @@ export const experience = [
     location: "Remote",
     start: "Mar 2025",
     end: "Jan 2026",
-    logo: "/logos/badges/quak.png",
+    logo: "/logos/badges/quak.webp",
     brand: "#FC3600",
     branch: { side: "right", t: 0.66 },
     blurb:
@@ -148,7 +148,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jan 2025",
     end: "Apr 2026",
-    logo: "/logos/badges/ner.png",
+    logo: "/logos/badges/ner.webp",
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.52 },
     blurb:
@@ -170,7 +170,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Jun 2025",
     end: "Aug 2025",
-    logo: "/logos/badges/rainfall.png",
+    logo: "/logos/badges/rainfall.webp",
     brand: "#17319C",
     branch: { side: "right", t: 0.38 },
     blurb: "A student-run platform that connects tutees with tutors.",
@@ -195,7 +195,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Aug 2025",
     end: "Dec 2025",
-    logo: "/logos/badges/khoury.png",
+    logo: "/logos/badges/khoury.webp",
     brand: "#FFFFFF",
     branch: { side: "left", t: 0.24 },
     blurb:
@@ -222,7 +222,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Sep 2026",
     end: "Present",
-    logo: "/logos/badges/oasis.png",
+    logo: "/logos/badges/oasis.webp",
     brand: "#FFFFFF",
     blurb:
       "Northeastern's student-run product incubator. The Project Series takes an idea to a demo in a semester; the Accelerator Series is for the teams that keep building after it.",
@@ -244,7 +244,7 @@ export const experience = [
     location: "Boston, MA",
     start: "Sep 2026",
     end: "Present",
-    logo: "/logos/badges/pawtograder.png",
+    logo: "/logos/badges/pawtograder.webp",
     brand: "#FFFFFF",
     blurb:
       "The open-source platform Northeastern CS courses use to submit assignments, run autograders and manage grades.",

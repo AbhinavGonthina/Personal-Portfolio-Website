@@ -2133,6 +2133,7 @@ export default function TownScene({
       // produce a pixel-identical picture.
       gl={{ antialias: false, powerPreference: "high-performance" }}
       camera={{ position: STOPS[0].free.pos, fov: FOV }}
+      onCreated={(st) => { if (new URLSearchParams(location.search).has("probe")) window.__r3f = st; }}
       onPointerMissed={() => onFocus(null)}
       style={{ position: "absolute", inset: 0 }}
       // The stage owns where this sits on the page.

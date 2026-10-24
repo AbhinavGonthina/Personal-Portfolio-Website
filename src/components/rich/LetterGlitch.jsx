@@ -907,11 +907,24 @@ const LetterGlitch = ({
       }
     });
     intersection.observe(container);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
-    window.addEventListener('pointerup', onPointerUp, { passive: true });
-    window.addEventListener('pointercancel', onPointerUp, { passive: true });
-    document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    // Only when something is actually listening.
+    //
+    // Upstream registers these unconditionally and lets the
+    // handlers decide. That is cheap for a demo page with one of
+    // these on it and not cheap here: `interactive` is false on
+    // this site - every cursor-reactive background came off the
+    // page deliberately - so this was a global `pointermove` that
+    // ran `getBoundingClientRect()` and then woke the render loop,
+    // on every mouse move anywhere in the document, to redraw a
+    // frame identical to the one before it.
+    const listening = !!settingsRef.current?.interactive;
+    if (listening) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerdown', onPointerDown, { passive: true });
+      window.addEventListener('pointerup', onPointerUp, { passive: true });
+      window.addEventListener('pointercancel', onPointerUp, { passive: true });
+      document.documentElement.addEventListener('pointerleave', onPointerLeave);
+    }
     document.addEventListener('visibilitychange', onVisibility);
     document.fonts?.addEventListener?.('loadingdone', onFonts);
     resize();
@@ -923,11 +936,13 @@ const LetterGlitch = ({
       wakeRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
-      document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      if (listening) {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
+        document.documentElement.removeEventListener('pointerleave', onPointerLeave);
+      }
       document.removeEventListener('visibilitychange', onVisibility);
       document.fonts?.removeEventListener?.('loadingdone', onFonts);
       gl.deleteTexture(atlasTexture);
