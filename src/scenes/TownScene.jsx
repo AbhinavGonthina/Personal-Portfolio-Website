@@ -1283,6 +1283,29 @@ function Rig({ target, narrow, clock }) {
       // there until the scroll is on the same side of the house,
       // with a ceiling so it can never stick.
       const dest = jumpTo();
+      // A second link supersedes the first.
+      //
+      // The latch below holds the camera at wherever a link sent it
+      // until the scroll catches up, with a four second ceiling.
+      // Changing your mind mid-flight turns the scroll round at
+      // once, and the latch did not turn with it: it went on
+      // waiting for a destination nobody was travelling to any
+      // more, so the page arrived home while the view sat at
+      // Contact for the rest of those four seconds and only then
+      // followed. From the chair that is clicking the name,
+      // watching nothing happen, and then watching it happen.
+      //
+      // Dropping it here lets the clause underneath re-latch on
+      // the new destination in the same frame, so the view leaves
+      // for where you have just asked to go rather than finishing
+      // a journey you cancelled.
+      if (
+        dest !== null &&
+        skipTo.current !== null &&
+        dest !== skipTo.current
+      ) {
+        skipTo.current = null;
+      }
       if (
         dest !== null &&
         skipTo.current === null &&
