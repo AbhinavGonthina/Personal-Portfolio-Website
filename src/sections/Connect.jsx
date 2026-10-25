@@ -10,6 +10,8 @@ import { useTheme } from "../lib/theme";
 import { Dots } from "../components/rich/Backdrop";
 import Glow from "../components/rich/Glow";
 import Pillar from "../components/rich/Pillar";
+import Feedback from "../components/Feedback";
+import TownFeedback from "../components/TownFeedback";
 import BorderBeam from "../components/rich/BorderBeam";
 import { profile, socials } from "../data/profile";
 
@@ -161,23 +163,33 @@ export default function Connect({ ref }) {
 
   if (!plain) {
     return (
-      <Stop id="connect" title="Contact" n={4} plain={false} refEl={ref}>
-        <ul className="space-y-2.5">
-          {socials.map((s) => (
-            <li key={s.name}>
-              <a
-                href={s.href}
-                {...(s.icon === "email"
-                  ? {}
-                  : { target: "_blank", rel: "noopener noreferrer" })}
-              >
-                <span>{s.name}</span>
-                <span>{s.value}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </Stop>
+      <>
+        <Stop id="connect" title="Contact" n={4} plain={false} refEl={ref}>
+          <ul className="space-y-2.5">
+            {socials.map((s) => (
+              <li key={s.name}>
+                <a
+                  href={s.href}
+                  {...(s.icon === "email"
+                    ? {}
+                    : { target: "_blank", rel: "noopener noreferrer" })}
+                >
+                  <span>{s.name}</span>
+                  <span>{s.value}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Stop>
+        {/* Outside the `Stop`, not inside it.
+            In the town a stop wraps its children in `sr-only`, so
+            the list above is the screen reader's copy of what the
+            mailboxes say. `sr-only` clips with `clip-path`, which
+            takes fixed descendants with it - put in there, this
+            button was in the document, focusable, reported visible
+            by every API that asks, and drawn nowhere. */}
+        <TownFeedback />
+      </>
     );
   }
 
@@ -292,12 +304,17 @@ export default function Connect({ ref }) {
         <p>
           &copy; {new Date().getFullYear()} {profile.name}
         </p>
-        <a
-          href="/legacy/"
-          className="tap-y transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          Legacy website &rarr;
-        </a>
+        {/* Two things that are true of the site rather than part
+            of it, at the end where those belong. */}
+        <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+          <Feedback />
+          <a
+            href="/legacy/"
+            className="tap-y transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            Legacy website &rarr;
+          </a>
+        </div>
       </div>
     </Stop>
   );

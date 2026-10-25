@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { setLevel } from "../lib/readLevel";
+import Feedback from "../components/Feedback";
 import { profile, socials } from "../data/profile";
 import { bio, education } from "../data/about";
 import { experience, EXPERIENCE_GROUPS } from "../data/experience";
@@ -180,6 +181,12 @@ export default function RawRead() {
       <hr />
       <p>
         <button onClick={() => setLevel("rich")}>Put the design back</button>
+      </p>
+      {/* `bare`, so it carries no class either - see the note at the
+          top of this file. A `<dialog>` with the stylesheets off is
+          still a dialog; the browser draws it. */}
+      <p>
+        <Feedback bare />
       </p>
       <p>
         <small>

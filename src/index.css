@@ -548,3 +548,45 @@ header.sw-pane {
     width: 100%;
   }
 }
+
+/**
+ * The feedback sheet arriving.
+ *
+ * Two keyframes rather than a motion component, because this is a
+ * one-shot entrance on an element that is not in the document the
+ * rest of the time - there is no state to spring and nothing to
+ * interrupt it. Opacity and a transform only, so it runs on the
+ * compositor and never touches layout.
+ *
+ * Leaving is not animated. A dialog closing wants to be gone, and
+ * animating it out means `allow-discrete` plus holding the element
+ * in the top layer while it fades - a good deal of machinery for a
+ * frame nobody waits to see.
+ */
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.sheet[open] {
+  animation: sheet-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sheet[open]::backdrop {
+  animation: scrim-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet[open],
+  .sheet[open]::backdrop {
+    animation: none;
+  }
+}
