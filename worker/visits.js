@@ -1,5 +1,5 @@
 /**
- * One push notification per new visitor, and nothing kept.
+ * One Telegram message per new visitor, and nothing kept.
  *
  * GoatCounter does the dashboard - history, referrers, countries -
  * and has no way to tell you something happened. This does only
@@ -46,7 +46,7 @@ async function fingerprint(ip, agent, salt) {
     .join("");
 }
 
-/** Phone-sized: a line you can read from the lock screen. */
+/** Phone-sized: a couple of lines you can read from the lock screen. */
 function compose(url, request) {
   const page = url.searchParams.get("p") || "/";
   const from = url.searchParams.get("r") || "";
@@ -81,7 +81,7 @@ export default {
       },
     });
 
-    if (!env.NTFY_TOPIC || !env.SALT || !env.SEEN) return blank;
+    if (!env.TG_TOKEN || !env.TG_CHAT || !env.SALT || !env.SEEN) return blank;
 
     const ip = request.headers.get("cf-connecting-ip") ?? "";
     const agent = request.headers.get("user-agent") ?? "";
@@ -94,24 +94,50 @@ export default {
     const key = await fingerprint(ip, agent, env.SALT);
 
     // The notification is sent after the response, so the page
-    // never waits on ntfy being up or slow.
+    // never waits on Telegram being up or slow.
     ctx.waitUntil(
       (async () => {
         if (await env.SEEN.get(key)) return;
         await env.SEEN.put(key, "1", { expirationTtl: WINDOW });
-        await fetch(`https://ntfy.sh/${env.NTFY_TOPIC}`, {
-          method: "POST",
-          body: compose(url, request),
-          headers: {
-            Title: "Someone is on your site",
-            Tags: "wave",
-            Priority: "default",
-            Click: "https://abhinavgonthina.dev",
+        // Telegram rather than ntfy, and the reason is worth
+        // keeping. ntfy.sh meters anonymous publishing by the
+        // address it comes from, and the address this comes from
+        // is Cloudflare's - a pool shared with every other Worker
+        // in the world, whose daily allowance strangers had spent
+        // before the first test ran. Authenticating did not help
+        // either: a free ntfy account's own allowance is zero, so
+        // the 429 just moved from the pool to the account. Their
+        // cheapest plan that works is five dollars a month.
+        //
+        // A Telegram bot has no shared quota, because the message
+        // goes to a bot you own rather than through a public
+        // service everybody shares.
+        const sent = await fetch(
+          `https://api.telegram.org/bot${env.TG_TOKEN}/sendMessage`,
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              chat_id: env.TG_CHAT,
+              text: compose(url, request),
+              disable_web_page_preview: true,
+            }),
           },
-        });
-      })().catch(() => {
+        );
+        // Said out loud, because the alternative is a notification
+        // that silently never arrives and no way to find out why.
+        // `wrangler tail` shows this, nothing here reaches the
+        // visitor, and no secret is printed.
+        if (!sent.ok) {
+          console.log(`telegram refused: ${sent.status} ${await sent.text()}`);
+        } else {
+          console.log("telegram accepted it");
+        }
+      })().catch((err) => {
         // A notification that did not arrive is not worth a 500 to
-        // a browser that is only being polite.
+        // a browser that is only being polite - but it is worth
+        // saying so in the log.
+        console.log(`telegram threw: ${err}`);
       }),
     );
 

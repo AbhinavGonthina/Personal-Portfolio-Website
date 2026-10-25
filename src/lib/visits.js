@@ -41,9 +41,9 @@ const SITE = "abhinavgonthina";
  * cannot know whether the person at this address came by an hour
  * ago in a different window - see `worker/README.md`.
  *
- * Empty means no second request, same as `SITE`.
+ * Empty would mean no second request, same as `SITE`.
  */
-const PING = "";
+const PING = "https://visits.agonthina.workers.dev/";
 
 /** Where the pixel lives, once there is a site to send it to. */
 const endpoint = () => `https://${SITE}.goatcounter.com/count`;

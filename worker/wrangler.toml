@@ -10,7 +10,7 @@ compatibility_date = "2026-10-01"
 # and paste the id it prints over the placeholder below.
 [[kv_namespaces]]
 binding = "SEEN"
-id = "PUT_THE_KV_NAMESPACE_ID_HERE"
+id = "3a44464cb85b4da9be168eb51fdfc7c1"
 
 # NTFY_TOPIC and SALT are secrets, not settings, and are not in
 # this file. See README.md.

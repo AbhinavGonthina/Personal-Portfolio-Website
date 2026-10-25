@@ -1,6 +1,6 @@
 # Visit notifications
 
-A Cloudflare Worker that sends one phone notification the first
+A Cloudflare Worker that sends one Telegram message the first
 time a visitor appears, and nothing for the next eight hours.
 
 It is separate from the site's build. Nothing in `npm run build`
@@ -22,15 +22,30 @@ notification. See the comment at the top of `visits.js`.
 
 ## Setting it up
 
-**1. Pick an ntfy topic and install the app.**
+**1. Make a bot.**
 
-Install [ntfy](https://ntfy.sh) on your phone and subscribe to a
-topic. Treat the name like a password: ntfy topics are a shared
-public namespace, so anyone who guesses yours can read your
-notifications. Something like `abhi-site-8f3a91c2` rather than
-`abhi-visits`.
+Message [@BotFather](https://t.me/BotFather) on Telegram, send
+`/newbot`, and answer its two questions. It replies with a token
+that looks like `8123456789:AAG...`. That token is the bot.
 
-**2. Create the store.**
+**2. Start a chat with your own bot.**
+
+Open the link BotFather gives you and press Start, or just send it
+any message. A bot cannot message you first, so without this step
+everything else works and nothing arrives.
+
+**3. Find your chat id.**
+
+Open this in a browser, with your token in place of `TOKEN`:
+
+```
+https://api.telegram.org/botTOKEN/getUpdates
+```
+
+Look for `"chat":{"id":123456789`. That number is the chat id. If
+the response is empty, step 2 did not happen.
+
+**4. Create the store.**
 
 ```sh
 cd worker
@@ -39,17 +54,18 @@ npx wrangler kv namespace create SEEN
 
 Paste the id it prints into `wrangler.toml`.
 
-**3. Set the two secrets.**
+**5. Set the three secrets.**
 
 ```sh
-npx wrangler secret put NTFY_TOPIC     # the topic from step 1
-npx wrangler secret put SALT           # any long random string
+npx wrangler secret put TG_TOKEN   # from step 1
+npx wrangler secret put TG_CHAT    # from step 3
+npx wrangler secret put SALT       # any long random string
 ```
 
-Neither is in this repository, and the salt is what stops a hash
+None are in this repository, and the salt is what stops a hash
 being walked back to an address.
 
-**4. Deploy.**
+**6. Deploy.**
 
 ```sh
 npx wrangler deploy
@@ -57,10 +73,24 @@ npx wrangler deploy
 
 It prints a URL like `https://visits.<you>.workers.dev`.
 
-**5. Point the site at it.**
+**7. Point the site at it.**
 
 Put that URL in `PING` at the top of `src/lib/visits.js`, then
 build and deploy the site as usual.
+
+## Why not ntfy
+
+It was ntfy first, and it does not work from here. ntfy.sh meters
+anonymous publishing by the address it comes from, and a Worker
+comes from Cloudflare's shared pool - the day's allowance was
+already spent by strangers before the first test ran, and the
+reply was a 429 that had nothing to do with this site.
+
+Authenticating did not help: with a token the message is counted
+against the account instead of the pool, and a free ntfy
+account's allowance is zero. The cheapest plan that works is five
+dollars a month. A Telegram bot has no shared quota, because the
+message goes to a bot you own.
 
 ## Turning it off
 
@@ -70,4 +100,4 @@ Clear `PING` in `src/lib/visits.js` and redeploy the site, or
 ## What it costs
 
 Nothing. Cloudflare's free tier is 100,000 Worker requests and
-100,000 KV reads a day, and ntfy is free.
+100,000 KV reads a day, and Telegram bots are free.
