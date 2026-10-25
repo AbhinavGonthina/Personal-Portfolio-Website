@@ -1,0 +1,16 @@
+name = "visits"
+main = "visits.js"
+compatibility_date = "2026-10-01"
+
+# Where the eight-hour window lives. One key per visitor, holding
+# the single character "1", expiring on its own. Create it with:
+#
+#   npx wrangler kv namespace create SEEN
+#
+# and paste the id it prints over the placeholder below.
+[[kv_namespaces]]
+binding = "SEEN"
+id = "PUT_THE_KV_NAMESPACE_ID_HERE"
+
+# NTFY_TOPIC and SALT are secrets, not settings, and are not in
+# this file. See README.md.

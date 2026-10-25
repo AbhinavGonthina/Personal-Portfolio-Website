@@ -138,6 +138,11 @@ empty it makes no request at all.
 Visits from `localhost` are not counted, and neither are visitors
 who have asked not to be tracked.
 
+For a push notification the first time somebody appears, there is
+a small Cloudflare Worker in [`worker/`](worker/) with its own
+setup notes. It is optional, separate from the build, and the site
+works without it.
+
 ## A note on how it was built
 
 The redesign was built with

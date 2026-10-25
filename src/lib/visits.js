@@ -31,6 +31,20 @@
  */
 const SITE = "abhinavgonthina";
 
+/**
+ * The notifier, which is a different job from the counter.
+ *
+ * GoatCounter keeps the history and has no way to tell you
+ * anything happened. This is a Worker that does only the telling:
+ * one push the first time somebody appears and nothing for the
+ * next eight hours. It cannot be done here, because the browser
+ * cannot know whether the person at this address came by an hour
+ * ago in a different window - see `worker/README.md`.
+ *
+ * Empty means no second request, same as `SITE`.
+ */
+const PING = "";
+
 /** Where the pixel lives, once there is a site to send it to. */
 const endpoint = () => `https://${SITE}.goatcounter.com/count`;
 
@@ -43,7 +57,7 @@ const endpoint = () => `https://${SITE}.goatcounter.com/count`;
  * it costs nothing.
  */
 function wanted() {
-  if (!SITE) return false;
+  if (!SITE && !PING) return false;
   if (typeof window === "undefined") return false;
   const host = window.location.hostname;
   if (!host || host === "localhost" || host === "127.0.0.1" || host === "[::1]")
@@ -76,7 +90,8 @@ export function countVisit() {
     // An `Image` rather than `fetch`: no CORS preflight to satisfy,
     // no promise to leave unhandled, and a failure is silent, which
     // is the right outcome for something nobody is waiting on.
-    new Image().src = `${endpoint()}?${q}`;
+    if (SITE) new Image().src = `${endpoint()}?${q}`;
+    if (PING) new Image().src = `${PING}?${q}`;
   };
 
   if (document.readyState === "complete") send();
