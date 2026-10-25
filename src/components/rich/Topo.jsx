@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useBudget, useSwap, worthIt } from "./webgl";
+import { useBudget, worthIt } from "./webgl";
+import { useTheme } from "../../lib/theme";
 import { edges } from "./edges";
 
 /**
@@ -39,7 +40,7 @@ export default function Topo() {
   // loop while it is off screen either way, so nothing is
   // running down here until it is looked at.
   const holds = useBudget();
-  const { theme, hidden } = useSwap();
+  const theme = useTheme();
   const light = theme === "light";
   const still = useReducedMotion();
 
@@ -64,7 +65,7 @@ export default function Topo() {
           <div
             className="size-full transition-opacity duration-200"
             style={{
-              opacity: holds === "going" || hidden ? 0 : light ? 0.5 : 0.65,
+              opacity: holds === "going" ? 0 : light ? 0.5 : 0.65,
             }}
           >
             <Map

@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useBudget, useSwap, worthIt } from "./webgl";
+import { useBudget, worthIt } from "./webgl";
+import { useTheme } from "../../lib/theme";
 import { edges } from "./edges";
 
 /**
@@ -26,7 +27,7 @@ const Column = lazy(() => import("./LightPillar"));
 
 export default function Pillar() {
   const holds = useBudget();
-  const { theme, hidden } = useSwap();
+  const theme = useTheme();
   const light = theme === "light";
   const still = useReducedMotion();
 
@@ -46,7 +47,7 @@ export default function Pillar() {
         <div
           className="size-full transition-opacity duration-200"
           style={{
-            opacity: holds === "going" || hidden ? 0 : light ? 0.55 : 0.62,
+            opacity: holds === "going" ? 0 : light ? 0.55 : 0.62,
             // Screen on the dark read, so the light adds to the
             // page the way light does. Multiply on the light
             // one, because in daylight the shader paints white

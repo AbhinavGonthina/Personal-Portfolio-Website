@@ -169,7 +169,15 @@ export default function Feedback({ bare = false, className = "" }) {
           // and a form you are asked to type into wants to be a
           // surface rather than a tint - the page was legible
           // straight through the middle of it.
-          "sheet m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-ink-700 bg-ink-950 p-0 text-base font-sans normal-case tracking-normal text-fg shadow-2xl shadow-black/50 backdrop:bg-black/70",
+          // `pointer-events-auto` for the same reason as the type
+          // reset above, and it caught me the same way. In the town
+          // this sits inside a `pointer-events-none` layer - the
+          // pavement under it is draggable, so the layer has to let
+          // clicks through - and `pointer-events` inherits. The
+          // dialog opened, painted in the top layer, and ignored
+          // the cursor completely: you could read the form and not
+          // type in it.
+          "sheet pointer-events-auto m-auto w-[min(32rem,calc(100vw-2rem))] rounded-2xl border border-ink-700 bg-ink-950 p-0 text-base font-sans normal-case tracking-normal text-fg shadow-2xl shadow-black/50 backdrop:bg-black/70",
         )}
       >
         {/* Not in the document at all until it is wanted. */}

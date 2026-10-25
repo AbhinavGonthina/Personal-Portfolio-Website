@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useBudget, useSwap, worthIt } from "./webgl";
+import { useBudget, worthIt } from "./webgl";
+import { useTheme } from "../../lib/theme";
 import { edges } from "./edges";
 
 /**
@@ -56,7 +57,7 @@ export default function Glitch() {
   // loop while it is off screen either way, so nothing is
   // running down here until it is looked at.
   const holds = useBudget();
-  const { theme, hidden } = useSwap();
+  const theme = useTheme();
   const light = theme === "light";
   const still = useReducedMotion();
 
@@ -82,7 +83,7 @@ export default function Glitch() {
             // the letters start to read as content - the eye goes
             // looking for words in them instead of past them.
             style={{
-              opacity: holds === "going" || hidden ? 0 : light ? 0.5 : 0.58,
+              opacity: holds === "going" ? 0 : light ? 0.5 : 0.58,
             }}
           >
             <Field

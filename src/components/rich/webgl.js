@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useTheme } from "../../lib/theme";
+import { useSyncExternalStore } from "react";
 
 /**
  * What the written read is allowed to spend on a GPU, shared by
@@ -141,72 +140,36 @@ export function useBudget() {
 }
 
 /**
- * The theme, handed over late and behind a curtain.
+ * There used to be a `useSwap` here, and it is worth saying why
+ * there is not.
  *
- * Every one of these backgrounds takes a `lightMode` flag and a
- * set of colours, and changing either tears the shader down and
- * builds it again. Four of them doing that in the same frame is
- * what made the day/night toggle lurch: measured at 400 to 1170
- * milliseconds for the worst frame of a switch, against 150 to
- * 220 with the backgrounds turned off.
+ * It faded every WebGL backdrop to nothing, waited 260ms, changed
+ * the colours while they were invisible, and brought them back
+ * 420ms after that - on the grounds that "every one of these
+ * backgrounds takes a `lightMode` flag and a set of colours, and
+ * changing either tears the shader down and builds it again".
  *
- * None of that can be made free - the shaders genuinely have to
- * be rebuilt - but it can be moved out from under the one
- * moment somebody is watching. The layer fades out first, the
- * colours change while it is invisible and the page's own
- * transition is doing the work the eye is following, and it
- * comes back when the rebuild is over.
+ * That is not true of any of them. All four run their setup
+ * effect on `[]` or `[generation]`, and `generation` is bumped in
+ * exactly one place: `webglcontextrestored`. The colours never go
+ * near it. They live in a ref the render loop reads every frame
+ * and pushes as uniforms, so changing one changes what an
+ * already-running `gl.uniform3fv` uploads on its next pass.
+ * Nothing is recompiled, relinked or reallocated.
  *
- * `hidden` is the opacity to apply; `theme` is the one to build
- * with. The wait is a little longer than the 250ms the page's
- * own colour transition takes, so the rebuild lands after it
- * rather than during it.
+ * What a theme change actually costs, measured on a real GPU with
+ * all five backdrops up: one frame of 33 to 50ms, with the median
+ * unmoved at 17. The curtain was hiding two dropped frames behind
+ * two thirds of a second of no backgrounds at all - and because
+ * the effect driving it depended on a value it set itself, it
+ * also had a way of getting stuck open and taking the backdrops
+ * out for the rest of the visit.
+ *
+ * The 400-1170ms the old note quoted came from the software
+ * renderer, which runs this site about 27 times slower than the
+ * machine it was written on.
+ *
+ * So: no curtain. Each backdrop reads `useTheme()` directly and
+ * the colours change under your eyes, which is what they were
+ * always able to do.
  */
-const BLIND = 260;
-
-export function useSwap() {
-  const live = useTheme();
-  const [theme, setTheme] = useState(live);
-  const [hidden, setHidden] = useState(false);
-  const first = useRef(true);
-
-  // Keyed on `live` alone, and that is the whole of it.
-  //
-  // This used to depend on `[live, theme]`, and `theme` is a
-  // value this effect sets itself. So the sequence ate its own
-  // tail: hide, wait 260ms, `setTheme(live)` - which changes
-  // `theme`, which re-runs the effect, whose cleanup clears the
-  // timer that was going to unhide, and whose body then returns
-  // at the first line because `theme === live` by now. The
-  // backgrounds were hidden and nothing was left running to show
-  // them again.
-  //
-  // It needed two toggles to see, because the first one takes the
-  // `first.current` path and never hides anything. From the
-  // second onwards the rich read lost all four of its WebGL
-  // backdrops for the rest of the visit and looked like the bare
-  // read with the switch still saying rich.
-  //
-  // `live` is the only genuine input: it changes when somebody
-  // presses the switch and at no other time, so the effect now
-  // tears down only when there is a new theme to move to.
-  useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      setTheme(live);
-      return;
-    }
-    setHidden(true);
-    const swap = setTimeout(() => setTheme(live), BLIND);
-    // Long enough after the swap for the rebuild to have
-    // finished; coming back while it is still compiling would
-    // show the hitch it is there to hide.
-    const show = setTimeout(() => setHidden(false), BLIND + 420);
-    return () => {
-      clearTimeout(swap);
-      clearTimeout(show);
-    };
-  }, [live]);
-
-  return { theme, hidden };
-}
