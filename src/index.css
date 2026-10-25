@@ -517,6 +517,12 @@ header.sw-pane {
  * `.tap` grows both ways, for controls with room around them.
  * `.tap-y` grows only downward and upward, for the ones in a row
  * where a wider box would overlap the next control along.
+ *
+ * `--tap-w` caps the width where a control has some room but not
+ * the full 44. The bar's two icon buttons are 32 wide with 8
+ * between them, so at 44 each they overlapped by four pixels -
+ * and since the later one wins, a thumb aimed at the right edge
+ * of the first got the second. 40 tiles them exactly.
  */
 @media (pointer: coarse) {
   .tap,
@@ -535,7 +541,7 @@ header.sw-pane {
   }
 
   .tap::after {
-    width: max(100%, 44px);
+    width: max(100%, var(--tap-w, 44px));
   }
 
   .tap-y::after {

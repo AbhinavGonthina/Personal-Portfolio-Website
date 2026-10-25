@@ -170,8 +170,27 @@ export function useSwap() {
   const [hidden, setHidden] = useState(false);
   const first = useRef(true);
 
+  // Keyed on `live` alone, and that is the whole of it.
+  //
+  // This used to depend on `[live, theme]`, and `theme` is a
+  // value this effect sets itself. So the sequence ate its own
+  // tail: hide, wait 260ms, `setTheme(live)` - which changes
+  // `theme`, which re-runs the effect, whose cleanup clears the
+  // timer that was going to unhide, and whose body then returns
+  // at the first line because `theme === live` by now. The
+  // backgrounds were hidden and nothing was left running to show
+  // them again.
+  //
+  // It needed two toggles to see, because the first one takes the
+  // `first.current` path and never hides anything. From the
+  // second onwards the rich read lost all four of its WebGL
+  // backdrops for the rest of the visit and looked like the bare
+  // read with the switch still saying rich.
+  //
+  // `live` is the only genuine input: it changes when somebody
+  // presses the switch and at no other time, so the effect now
+  // tears down only when there is a new theme to move to.
   useEffect(() => {
-    if (theme === live) return;
     if (first.current) {
       first.current = false;
       setTheme(live);
@@ -187,7 +206,7 @@ export function useSwap() {
       clearTimeout(swap);
       clearTimeout(show);
     };
-  }, [live, theme]);
+  }, [live]);
 
   return { theme, hidden };
 }

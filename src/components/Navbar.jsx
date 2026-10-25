@@ -381,7 +381,7 @@ export default function Navbar() {
                     : "Strip it down to the bare minimum"
                 }
                 className={cn(
-                  "tap grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+                  "tap [--tap-w:40px] grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
                   "hover:border-(--lift-line-strong) hover:text-fg",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 )}
@@ -408,7 +408,7 @@ export default function Navbar() {
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
             className={cn(
-              "tap grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+              "tap [--tap-w:40px] grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
               "hover:border-(--lift-line-strong) hover:text-fg",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             )}
