@@ -1,15 +1,72 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <link rel="preload" as="font" type="font/woff2" href="/assets/geist-latin-wght-normal-BgDaEnEv.woff2" crossorigin="">
+    <link rel="preload" as="font" type="font/woff2" href="/assets/geist-mono-latin-wght-normal-XN7g48iV.woff2" crossorigin="">
+
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/AbhinavGonthinaLogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <title>Abhinav Gonthina - Website</title>
-    <script type="module" crossorigin src="/assets/index-BJ7d3VkP.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Cj6WCcXl.css">
+    <!-- ?v=2 so a browser holding the old brown serif mark in its
+         cache fetches this one instead of showing that for a beat
+         and then swapping. Bump it whenever the icon changes. -->
+    <link rel="icon" type="image/png" href="/favicon.png?v=3" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
+
+    <title>Abhinav Gonthina's Website</title>
+    <meta
+      name="description"
+      content="Abhinav Gonthina is a software engineer and CS student at Northeastern University. Previously at athenahealth, Philips, and Quak Travel. Building OnTrack."
+    />
+    <link rel="canonical" href="https://abhinavgonthina.dev/" />
+    <meta name="theme-color" content="#FBF8F3" />
+
+    <!-- Open Graph / social previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abhinavgonthina.dev/" />
+    <meta property="og:title" content="Abhinav Gonthina — Software Engineer" />
+    <meta
+      property="og:description"
+      content="Software engineer and CS student at Northeastern. Previously at athenahealth, Philips, and Quak Travel."
+    />
+    <meta
+      property="og:image"
+      content="https://abhinavgonthina.dev/og-image.jpg"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Abhinav Gonthina — Software Engineer" />
+    <meta
+      name="twitter:description"
+      content="Software engineer and CS student at Northeastern. Previously at athenahealth, Philips, and Quak Travel."
+    />
+    <meta
+      name="twitter:image"
+      content="https://abhinavgonthina.dev/og-image.jpg"
+    />
+
+    <!-- No Google Fonts link here.
+
+         There was one, asking for Fraunces and Inter, and it was
+         left over from the version of this site that used them.
+         Nothing on the page has referred to either since: the type
+         is Geist and Geist Mono, which are installed as packages
+         and served from this origin.
+
+         It was not free to leave there. A stylesheet in the head
+         blocks the first paint until it arrives, and this one went
+         to a third-party host - so every visit opened a connection
+         to fonts.googleapis.com, waited for a 15KB sheet, and then
+         ignored every rule in it. Measured cold it was the single
+         slowest thing on the page.
+
+         The two Geist files are preloaded instead, injected into
+         this head at build time with their hashed names. See
+         `preloadFonts` in vite.config.js. -->
+    <script type="module" crossorigin src="/assets/index-Cd61NwOf.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/react-CJWZEPwJ.js">
+    <link rel="modulepreload" crossorigin href="/assets/motion-cIu141iq.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-cPeUlVYA.css">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
   </body>
 </html>
