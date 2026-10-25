@@ -13,13 +13,13 @@ The site has one set of content and two ways through it.
 down a street rather than scrolling a page: each section of the site is
 a stop on the walk, and where the scroll sits between two section tops
 is where the camera sits between two stops. The places you arrive at
-are real objects — a hoarding you read, a skyline whose towers are the
+are real objects: a hoarding you read, a skyline whose towers are the
 jobs, a desk with a monitor you can open projects on, a row of
 mailboxes you can post to.
 
 **The written read** is the same material as a page. Hit _Simplify_ in
 the bar, or arrive on anything narrower than 1024px, and the canvas is
-never mounted at all — the town is removed, not dimmed.
+never mounted at all. The town is removed, not dimmed.
 
 The written read has three levels, because "simpler" turned out to mean
 three different things:
@@ -39,8 +39,8 @@ config file. [Motion](https://motion.dev) for everything that moves on
 the page, and [React Three Fiber](https://r3f.docs.pmnd.rs) over
 three.js for the town.
 
-The components that are not mine are vendored rather than installed —
-copied out of the registries of
+The components that are not mine are vendored rather than installed.
+They are copied out of the registries of
 [Aceternity](https://ui.aceternity.com),
 [Magic UI](https://magicui.design) and
 [React Bits](https://reactbits.dev), stripped of TypeScript, and
@@ -85,10 +85,10 @@ hard to reach can be linked to and photographed.
 Kept buildable and online, and linked only from one line in the
 footer.
 
-- **[/legacy](https://abhinavgonthina.dev/legacy/)** — the first
+- **[/legacy](https://abhinavgonthina.dev/legacy/)**: the first
   version, Material UI and a terminal-style project explorer.
-- **[/prototype](https://abhinavgonthina.dev/prototype/)** — an
-  unfinished botanical direction: line-art brick, falling leaves,
+- **[/prototype](https://abhinavgonthina.dev/prototype/)**: an
+  unfinished botanical direction of line-art brick, falling leaves,
   cream and camel. Abandoned part-way in favour of this one, and kept
   because a screenshot in a commit message is not the same as being
   able to click the thing.
@@ -108,7 +108,7 @@ src/
     rich/        backdrops and effects, mostly vendored
   scenes/        the town: the R3F tree, the arrival, the street
   lib/           stores, geometry, and the canvas painters the town is dressed with
-  data/          the actual content — roles, projects, skills, profile
+  data/          the actual content: roles, projects, skills, profile
 public/          images, video, favicons, the CNAME
 scripts/         build helpers and the badge generator
 legacy/          archived build, served at /legacy
@@ -118,3 +118,10 @@ prototype/       archived build, served at /prototype
 Most of the interesting decisions are written down next to the code
 that makes them, usually with the thing that was tried first and why it
 did not work.
+
+## A note on how it was built
+
+The redesign was built with
+[Claude Code](https://claude.com/claude-code), section by section, which
+is also why so much of the reasoning survives in the comments rather
+than only in my head.
