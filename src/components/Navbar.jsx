@@ -300,7 +300,7 @@ export default function Navbar() {
         // `auto` column and sized itself to its content - 449
         // pixels of links on a 390 pixel screen - and the two
         // buttons went into the `1fr` beside it, on top of it.
-        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center px-6 sm:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_auto_1fr]"
+        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 px-6 sm:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_auto_1fr]"
         // The bar itself runs to the edge of the window. Its contents
         // stand off the gap the scroll lock leaves where the scrollbar
         // was, so opening a building does not nudge everything in here
