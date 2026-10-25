@@ -200,6 +200,40 @@ export default function Navbar() {
   // no-op vertically, which matters because this fires while the
   // page is scrolling and must not fight it.
   const rail = useRef(null);
+
+  // Fade an end only when that end has something behind it.
+  //
+  // Measured on a phone, the row at rest had fourteen pixels of
+  // fade sitting over "About" - the link the page lands on and
+  // lights - with nothing scrolled off to its left for the fade to
+  // be about. A gradient that says "there is more this way" when
+  // there is not is just a dimmed word.
+  //
+  // Reads two numbers off an element that is already being
+  // scrolled, so there is no measuring here that the browser was
+  // not doing anyway, and it only runs while the row is moving.
+  useEffect(() => {
+    const row = rail.current;
+    if (!row) return;
+    const FADE = "0.9rem";
+    const look = () => {
+      const more = row.scrollWidth - row.clientWidth;
+      row.style.setProperty("--nav-fade-l", row.scrollLeft > 2 ? FADE : "0px");
+      row.style.setProperty(
+        "--nav-fade-r",
+        row.scrollLeft < more - 2 ? FADE : "0px",
+      );
+    };
+    look();
+    row.addEventListener("scroll", look, { passive: true });
+    const ro = new ResizeObserver(look);
+    ro.observe(row);
+    return () => {
+      row.removeEventListener("scroll", look);
+      ro.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     const row = rail.current;
     if (!row || row.scrollWidth <= row.clientWidth) return;
@@ -324,7 +358,12 @@ export default function Navbar() {
             cap along with the word at the edge, so the bar looked
             like a box with two sides missing. */}
         <div
-          className="relative min-w-0 rounded-full border border-(--lift-line) bg-(--lift-fill) p-1 md:justify-self-center"
+          // `px-2`, not `p-1`. Four pixels put the lit lozenge all but
+          // touching the pill's own border, which reads as a
+          // rendering fault rather than a nested shape. Eight gives
+          // it somewhere to sit; the vertical stays at four so the
+          // bar does not grow.
+          className="relative min-w-0 rounded-full border border-(--lift-line) bg-(--lift-fill) px-2 py-1 md:justify-self-center"
           onMouseLeave={() => setHovered(null)}
         >
           <div

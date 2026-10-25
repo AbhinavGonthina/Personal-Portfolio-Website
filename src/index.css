@@ -487,21 +487,51 @@ header.sw-pane {
   overflow-y: hidden;
   touch-action: pan-x;
   overscroll-behavior: contain;
-  --nav-feather: 0.9rem;
+
+  /* Each end fades only when that end has something hidden behind
+   * it. Both start at zero, which makes the gradient go from black
+   * at 0 to black at 100% - no mask at all.
+   *
+   * It used to feather both ends unconditionally, and at rest that
+   * put 14 pixels of fade over the first link, which is the one
+   * the page lands on and lights. Nothing was scrolled off to the
+   * left of it, so the fade was not saying "there is more this
+   * way", it was just dimming a word. The component sets these
+   * from the row's own scroll position. */
+  --nav-fade-l: 0px;
+  --nav-fade-r: 0px;
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0,
-    black var(--nav-feather),
-    black calc(100% - var(--nav-feather)),
+    black var(--nav-fade-l),
+    black calc(100% - var(--nav-fade-r)),
     transparent 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0,
-    black var(--nav-feather),
-    black calc(100% - var(--nav-feather)),
+    black var(--nav-fade-l),
+    black calc(100% - var(--nav-fade-r)),
     transparent 100%
   );
+  transition:
+    --nav-fade-l 0.15s linear,
+    --nav-fade-r 0.15s linear;
+}
+
+/* Registered, because a transition on a bare custom property does
+   nothing - the browser has no idea a string is a length until it
+   is told. Without these the fade would snap on and off. */
+@property --nav-fade-l {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --nav-fade-r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
 }
 
 /* Above `md` every link fits, so there is nothing to feather and

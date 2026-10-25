@@ -25,12 +25,11 @@
 /**
  * The GoatCounter site code, as in `https://CODE.goatcounter.com`.
  *
- * Empty until the account exists, and empty means this does
- * nothing at all - no request, no error, no console noise. Sign up
- * at goatcounter.com, which is free for a personal site, and put
- * the code you chose here.
+ * Empty would mean this does nothing at all - no request, no
+ * error, no console noise - which is what it was until the
+ * account existed.
  */
-const SITE = "";
+const SITE = "abhinavgonthina";
 
 /** Where the pixel lives, once there is a site to send it to. */
 const endpoint = () => `https://${SITE}.goatcounter.com/count`;
