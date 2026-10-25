@@ -119,6 +119,25 @@ Most of the interesting decisions are written down next to the code
 that makes them, usually with the thing that was tried first and why it
 did not work.
 
+## Knowing whether anybody came
+
+GitHub Pages reports nothing about traffic, so there is a counter
+in `src/lib/visits.js`. It is off until you give it a site code.
+
+1. Make a free account at [goatcounter.com](https://www.goatcounter.com)
+   and pick a code, which becomes `https://CODE.goatcounter.com`.
+2. Put that code in `SITE` at the top of `src/lib/visits.js`.
+3. Build and deploy.
+
+It is one image request to GoatCounter's documented `/count` pixel,
+fired once after the page has loaded. No third-party script is
+downloaded or parsed, no cookie is set, so no consent banner is
+needed, and nothing in the request identifies anybody. With `SITE`
+empty it makes no request at all.
+
+Visits from `localhost` are not counted, and neither are visitors
+who have asked not to be tracked.
+
 ## A note on how it was built
 
 The redesign was built with

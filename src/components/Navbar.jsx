@@ -68,11 +68,15 @@ let seenOffer = false;
 const OFFER_FOR = 5000;
 
 const LINK =
-  // `tap-y` only: these sit shoulder to shoulder in the pill, so a
-  // hit area wider than the link would start catching presses meant
-  // for the one next door. Tall enough for a thumb is the half that
-  // was missing - they are 29 pixels high and 70 to 112 wide.
-  "tap-y relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
+  // No hit-area expansion here, and that is deliberate rather than
+  // an oversight. These carried `tap-y`, which made them 44 tall
+  // inside a 29 tall row - and a row that scrolls sideways cannot
+  // have anything sticking out of it vertically without becoming
+  // scrollable vertically too. The row now clips that axis, so an
+  // expanded target would only be clipped back. At 29 by 70-to-112
+  // they are well over the 24 pixels WCAG asks for and the
+  // generous dimension is the one your thumb is moving along.
+  "relative rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] transition-colors duration-200";
 
 export default function Navbar() {
   const plain = usePlain();
@@ -253,13 +257,29 @@ export default function Navbar() {
         // centre of the page whatever is beside them - but the centre
         // column has to be allowed to shrink below its content on a
         // phone, or it pushes the bar wider than the window.
-        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto] items-center px-6 md:grid-cols-[1fr_auto_1fr]"
+        // Two columns below `sm`, three above it.
+        //
+        // The back-to-top dot is `hidden` on a phone, and `hidden`
+        // is `display: none`, which takes an element out of the
+        // grid rather than emptying its cell. With three columns
+        // declared and two items left, the pill fell into the
+        // `auto` column and sized itself to its content - 449
+        // pixels of links on a 390 pixel screen - and the two
+        // buttons went into the `1fr` beside it, on top of it.
+        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center px-6 sm:grid-cols-[auto_minmax(0,1fr)_auto] md:grid-cols-[1fr_auto_1fr]"
         // The bar itself runs to the edge of the window. Its contents
         // stand off the gap the scroll lock leaves where the scrollbar
         // was, so opening a building does not nudge everything in here
         // half a scrollbar to the right.
         style={{ paddingRight: "calc(1.5rem + var(--lock-gap, 0px))" }}
       >
+        {/* Gone below `sm`, not just the name.
+            The name was already hidden there, which left a six
+            pixel dot taking a column of its own and about fourteen
+            pixels of bar - on a 390 screen those pixels are worth
+            more to the links, which do not fit. Everything this
+            did is still reachable: About is the first link in the
+            row and lands a hair below the top. */}
         <button
           onClick={() => {
             setFocused(null);
@@ -278,7 +298,7 @@ export default function Navbar() {
             beginJump(2500, 0);
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
-          className="tap group flex w-fit items-center gap-2 text-sm font-semibold tracking-tight"
+          className="tap group hidden w-fit items-center gap-2 text-sm font-semibold tracking-tight sm:flex"
           aria-label="Back to top"
         >
           <span className="size-1.5 rounded-full bg-fg transition-transform duration-300 group-hover:scale-150" />
@@ -381,7 +401,7 @@ export default function Navbar() {
                     : "Strip it down to the bare minimum"
                 }
                 className={cn(
-                  "tap [--tap-w:40px] grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+                  "tap [--tap-w:36px] sm:[--tap-w:40px] grid size-7 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors sm:size-8",
                   "hover:border-(--lift-line-strong) hover:text-fg",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 )}
@@ -408,7 +428,7 @@ export default function Navbar() {
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light" : "Switch to dark"}
             className={cn(
-              "tap [--tap-w:40px] grid size-8 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors",
+              "tap [--tap-w:36px] sm:[--tap-w:40px] grid size-7 shrink-0 place-items-center rounded-full border border-(--lift-line) text-fg-subtle transition-colors sm:size-8",
               "hover:border-(--lift-line-strong) hover:text-fg",
               "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
             )}

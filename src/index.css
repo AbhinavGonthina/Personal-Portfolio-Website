@@ -467,6 +467,26 @@ header.sw-pane {
  * enough to dim a link that is fully in view.
  */
 .nav-rail {
+  /* Sideways only.
+   *
+   * `overflow-x: auto` does not leave the other axis alone: a box
+   * that scrolls on one axis computes `visible` on the other to
+   * `auto`, so the row was scrollable up and down as well. There
+   * was something to scroll, too - the finger-sized hit areas are
+   * 44 tall inside a 29 tall row, which overflows it by seven
+   * pixels at each end. On a phone that was seven pixels of slop
+   * you could drag the whole bar out of alignment with and not
+   * get back.
+   *
+   * `touch-action` as well as the overflow, so a vertical drag
+   * that starts on the row is handed to the page rather than
+   * being eaten here, and `overscroll-behavior` so reaching the
+   * end of the row does not start scrolling whatever is behind
+   * it.
+   */
+  overflow-y: hidden;
+  touch-action: pan-x;
+  overscroll-behavior: contain;
   --nav-feather: 0.9rem;
   -webkit-mask-image: linear-gradient(
     to right,

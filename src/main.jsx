@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import { countVisit } from "./lib/visits";
 
 // Every visit starts at the top of the town.
 //
@@ -12,6 +13,11 @@ import App from "./App";
 // there is no progress to persist or reconcile.
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 window.scrollTo(0, 0);
+
+// One pixel to say somebody was here, after the page has loaded
+// and never in front of anything. Does nothing until the site code
+// in `lib/visits` is filled in.
+countVisit();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
