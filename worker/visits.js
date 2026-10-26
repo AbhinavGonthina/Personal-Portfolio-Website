@@ -36,6 +36,44 @@
 /** Eight hours, which is how long a visitor stays the same person. */
 const WINDOW = 8 * 60 * 60;
 
+/**
+ * How long a visitor is remembered well enough to be recognised.
+ *
+ * Longer than the window above, which exists only to stop one
+ * person being announced twice in a morning. This one is so the
+ * message can say whether somebody has been before, and it is the
+ * same hash either way - no new fact about anyone is written down
+ * to make it work, only the one already being written is kept for
+ * longer.
+ */
+const MEMORY = 90 * 24 * 60 * 60;
+
+/** 1st, 2nd, 3rd, 4th. */
+const nth = (n) => {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return n + (["th", "st", "nd", "rd"][n % 10] ?? "th");
+};
+
+/**
+ * Networks nobody reads a portfolio from.
+ *
+ * Clouds, hosts and the companies that scan the internet for a
+ * living. Matched against the network name Cloudflare attaches to
+ * the request, so it does not care what the browser calls itself.
+ *
+ * Add to it freely - `wrangler tail` prints the name of anything
+ * this turns away, and the name of anything it lets through, so a
+ * new source of noise takes one line to silence.
+ *
+ * One known cost: somebody browsing through Cloudflare WARP, or
+ * any VPN that exits from a data centre, looks like a machine from
+ * here and will not be reported. That is the price of not being
+ * woken by crawlers, and it is the right way round.
+ */
+const MACHINES =
+  /amazon|aws|google|microsoft|azure|digitalocean|linode|akamai|fastly|cloudflare|oracle|alibaba|tencent|baidu|huawei|bytedance|ovh|hetzner|scaleway|vultr|contabo|leaseweb|choopa|m247|datacamp|gcore|stackpath|cdn77|hostinger|namecheap|godaddy|ionos|rackspace|equinix|censys|shodan|netcraft|zscaler|palo alto|internet measurement|digital ocean|host|server|cloud|data ?cent|colo|vpn|proxy/i;
+
 /** Hex of SHA-256, first 32 characters. Plenty to not collide. */
 async function fingerprint(ip, agent, salt) {
   const bytes = new TextEncoder().encode(`${salt}|${ip}|${agent}`);
@@ -46,7 +84,10 @@ async function fingerprint(ip, agent, salt) {
     .join("");
 }
 
-/** Phone-sized: a couple of lines you can read from the lock screen. */
+/**
+ * Phone-sized: a few lines you can read from the lock screen. The
+ * visitor's tag and count are appended by the caller.
+ */
 function compose(url, request) {
   const page = url.searchParams.get("p") || "/";
   const from = url.searchParams.get("r") || "";
@@ -88,8 +129,32 @@ export default {
     if (!ip) return blank;
 
     // Bots are most of the internet and none of them are news.
-    if (/bot|crawl|spider|slurp|preview|headless|curl|wget/i.test(agent))
+    //
+    // Two tests, because one was not enough. The user agent catches
+    // the ones that say what they are, and plenty do not: the first
+    // night this ran live it reported visitors from Ashburn,
+    // Council Bluffs, Moses Lake and Amsterdam, every one of them
+    // with no referrer and every one of them on `/`. Those are not
+    // towns people live in, they are towns data centres live in -
+    // Council Bluffs has sixty thousand residents and one very
+    // large Google building - and the traffic was crawlers,
+    // scanners and link previewers wearing an ordinary Chrome
+    // string. They run JavaScript too, which is why the beacon
+    // fired at all.
+    //
+    // So the second test asks who owns the address rather than
+    // what the browser claims to be. Cloudflare hands the Worker
+    // the network's name, and a visit from Amazon or Google or
+    // Hetzner is a machine - people read websites from their phone
+    // network or their home provider, not from a rack.
+    if (/bot|crawl|spider|slurp|preview|headless|curl|wget|python|axios|http-client|monitor|uptime|scan/i.test(agent))
       return blank;
+
+    const net = request.cf?.asOrganization ?? "";
+    if (MACHINES.test(net)) {
+      console.log(`skipped a machine on ${net}`);
+      return blank;
+    }
 
     const key = await fingerprint(ip, agent, env.SALT);
 
@@ -99,6 +164,17 @@ export default {
       (async () => {
         if (await env.SEEN.get(key)) return;
         await env.SEEN.put(key, "1", { expirationTtl: WINDOW });
+
+        // How many times this one has turned up, ever - or at
+        // least within the ninety days the count is kept for. The
+        // tag is the first six characters of the same hash, which
+        // is a name for a visitor that means nothing to anybody
+        // but you and cannot be turned back into an address.
+        const been = Number((await env.SEEN.get(`n:${key}`)) ?? 0) + 1;
+        await env.SEEN.put(`n:${key}`, String(been), {
+          expirationTtl: MEMORY,
+        });
+        const who = `#${key.slice(0, 6)} · ${been === 1 ? "first time" : nth(been) + " visit"}`;
         // Telegram rather than ntfy, and the reason is worth
         // keeping. ntfy.sh meters anonymous publishing by the
         // address it comes from, and the address this comes from
@@ -119,7 +195,8 @@ export default {
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               chat_id: env.TG_CHAT,
-              text: compose(url, request),
+              text: `${compose(url, request)}
+${who}`,
               disable_web_page_preview: true,
             }),
           },
@@ -131,7 +208,7 @@ export default {
         if (!sent.ok) {
           console.log(`telegram refused: ${sent.status} ${await sent.text()}`);
         } else {
-          console.log("telegram accepted it");
+          console.log(`telegram accepted it (${net || "unknown network"})`);
         }
       })().catch((err) => {
         // A notification that did not arrive is not worth a 500 to
