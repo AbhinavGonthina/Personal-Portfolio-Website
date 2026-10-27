@@ -236,7 +236,22 @@ export default function Navbar() {
 
   useEffect(() => {
     const row = rail.current;
-    if (!row || row.scrollWidth <= row.clientWidth) return;
+    if (!row) return;
+    if (row.scrollWidth <= row.clientWidth) {
+      // A row with nothing to scroll should not be scrolled, and
+      // this used to just return. Anything that made the row
+      // briefly wider than itself - the lit lozenge overshooting
+      // its spring past the last link - opened a few pixels of
+      // travel, and a sideways trackpad flick arriving in that
+      // window put the row into them. `overscroll-behavior:
+      // contain` meant the page never took the rest of the
+      // gesture back, so the offset stayed, and the only code
+      // that touches `scrollLeft` is right here and had already
+      // given up. Below `md` the row is a real scroller and this
+      // branch is not taken.
+      if (row.scrollLeft !== 0) row.scrollLeft = 0;
+      return;
+    }
     const lit = row.querySelector('[data-nav-active="true"]');
     lit?.scrollIntoView({
       block: "nearest",
@@ -378,7 +393,14 @@ export default function Navbar() {
             // is more of this" instead. See index.css; the mask is
             // dropped above `md`, where everything fits and a
             // composited layer buys nothing.
-            className="nav-rail flex items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] md:overflow-x-visible [&::-webkit-scrollbar]:hidden"
+            // No `md:overflow-x-visible` here. It read as "stop
+            // scrolling above md" and did the opposite of nothing:
+            // `overflow-y` is hidden, and one axis hidden forces
+            // the other from `visible` to `auto`, so the row stayed
+            // a scroll container on a laptop. Above `md` the whole
+            // overflow pair is set in index.css, where the rest of
+            // this row's overflow story already lives.
+            className="nav-rail flex items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {NAV_ITEMS.map((item) => (
               <button

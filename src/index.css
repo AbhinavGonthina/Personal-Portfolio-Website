@@ -540,6 +540,33 @@ header.sw-pane {
   .nav-rail {
     -webkit-mask-image: none;
     mask-image: none;
+
+    /* And nothing to scroll, so the row stops being a scroller.
+     *
+     * Both axes, together, because naming one is how this went
+     * wrong. The row used to carry `md:overflow-x-visible` beside
+     * the `overflow-y: hidden` above, which looks like it says
+     * "sideways scrolling off above md" and does not: a box with
+     * one axis `hidden` computes `visible` on the other to `auto`,
+     * the same rule that made the row scroll vertically when only
+     * `overflow-x` was set. So on a laptop the computed pair was
+     * still `auto` / `hidden` - a horizontal scroll container with
+     * `overscroll-behavior: contain`, sitting across the top of
+     * the page, with no scrollbar to show for it.
+     *
+     * At rest it has nothing to scroll and holds still, which is
+     * why this survived every width it was measured at. It only
+     * matters where something briefly makes the row wider than
+     * itself and a sideways gesture arrives while it is: a
+     * trackpad swipe is never purely vertical, `contain` stops
+     * the leftover travel being handed back to the page, and the
+     * row keeps it. Nothing then puts it back - the one thing
+     * that would, the scroll-the-lit-link-into-view effect in
+     * Navbar.jsx, returns early when the row fits.
+     *
+     * `visible` on both is the honest statement of what this row
+     * is above `md`: a flex row of five links that fit. */
+    overflow: visible;
   }
 }
 
