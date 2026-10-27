@@ -72,7 +72,33 @@ const nth = (n) => {
  * woken by crawlers, and it is the right way round.
  */
 const MACHINES =
-  /amazon|aws|google|microsoft|azure|digitalocean|linode|akamai|fastly|cloudflare|oracle|alibaba|tencent|baidu|huawei|bytedance|ovh|hetzner|scaleway|vultr|contabo|leaseweb|choopa|m247|datacamp|gcore|stackpath|cdn77|hostinger|namecheap|godaddy|ionos|rackspace|equinix|censys|shodan|netcraft|zscaler|palo alto|internet measurement|digital ocean|host|server|cloud|data ?cent|colo|vpn|proxy/i;
+  /amazon|aws|google|microsoft|azure|digitalocean|linode|oracle|alibaba|tencent|baidu|huawei|bytedance|ovh|hetzner|scaleway|vultr|contabo|leaseweb|choopa|m247|datacamp|gcore|stackpath|cdn77|hostinger|namecheap|godaddy|ionos|rackspace|equinix|censys|shodan|netcraft|zscaler|palo alto|internet measurement|digital ocean|host|server|cloud|data ?cent|colo|vpn|proxy/i;
+
+/**
+ * The three networks a Mac or an iPhone comes out of, and why they
+ * are not in the list above.
+ *
+ * Akamai, Cloudflare and Fastly were in it, and that was a bug with
+ * a very specific victim: everybody browsing from Safari with iCloud
+ * Private Relay on. Private Relay is two hops - Apple takes the
+ * first and hands the second to one of exactly these three, so the
+ * address the Worker sees belongs to Cloudflare or Akamai or Fastly
+ * and the person it belongs to is sitting on a sofa. Anyone with
+ * iCloud+ has it, Safari turns it on by default, and it is the
+ * single most likely way a real reader arrives here. They were being
+ * dropped in silence, which is the worst way to be wrong: the log
+ * said "skipped a machine on Cloudflare" and it was a friend.
+ *
+ * So these three are let through, and the cost is the other thing
+ * they are: CDNs, which a crawler can also rent. The arithmetic is
+ * not close. A crawler that slips past is one notification nobody
+ * needed; a reader who does not is the entire point of this file,
+ * and there is no second place to go and check. The notification
+ * says `via relay` so the two can be told apart by eye.
+ *
+ *   https://blog.apnic.net/2023/01/25/an-investigation-into-apples-new-relay-network/
+ */
+const RELAYS = /akamai|cloudflare|fastly/i;
 
 /** Hex of SHA-256, first 32 characters. Plenty to not collide. */
 async function fingerprint(ip, agent, salt) {
@@ -151,7 +177,12 @@ export default {
       return blank;
 
     const net = request.cf?.asOrganization ?? "";
-    if (MACHINES.test(net)) {
+    // Checked before the blocklist, not after, so a relay keeps its
+    // pass even if its name happens to contain one of the loose
+    // words up there - "cloud", "host" and "server" all match more
+    // company names than they were meant to.
+    const relayed = RELAYS.test(net);
+    if (!relayed && MACHINES.test(net)) {
       console.log(`skipped a machine on ${net}`);
       return blank;
     }
@@ -174,7 +205,16 @@ export default {
         await env.SEEN.put(`n:${key}`, String(been), {
           expirationTtl: MEMORY,
         });
-        const who = `#${key.slice(0, 6)} · ${been === 1 ? "first time" : nth(been) + " visit"}`;
+        // `via relay` is the honest caveat on the two lines above
+        // it. Private Relay gives the exit's city rather than the
+        // reader's, so "Los Angeles" may mean nothing more than
+        // which Cloudflare door Apple opened, and the tag is per
+        // exit rather than per person. Worth saying on the message
+        // itself, because the alternative is reading a location
+        // off a lock screen and believing it.
+        const who =
+          `#${key.slice(0, 6)} · ${been === 1 ? "first time" : nth(been) + " visit"}` +
+          (relayed ? " · via relay" : "");
         // Telegram rather than ntfy, and the reason is worth
         // keeping. ntfy.sh meters anonymous publishing by the
         // address it comes from, and the address this comes from

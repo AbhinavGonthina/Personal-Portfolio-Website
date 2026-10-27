@@ -12,5 +12,16 @@ compatibility_date = "2026-10-01"
 binding = "SEEN"
 id = "3a44464cb85b4da9be168eb51fdfc7c1"
 
-# NTFY_TOPIC and SALT are secrets, not settings, and are not in
-# this file. See README.md.
+# TG_TOKEN, TG_CHAT and SALT are secrets, not settings, and are not
+# in this file. See README.md.
+
+# Keep the logs.
+#
+# Without this, `console.log` goes only to whoever happens to be
+# running `wrangler tail` at that second - so the one question worth
+# asking after a visitor does not arrive, "what network did it come
+# from and why was it turned away", has no answer unless you were
+# already watching. A week of logs is on the free plan and the
+# Worker prints a network name per request and nothing else.
+[observability]
+enabled = true

@@ -78,6 +78,34 @@ It prints a URL like `https://visits.<you>.workers.dev`.
 Put that URL in `PING` at the top of `src/lib/visits.js`, then
 build and deploy the site as usual.
 
+## Who gets filtered out
+
+Crawlers are most of the traffic and none of it is news, so two
+tests run before anything is sent: the user agent, and the name of
+the network the address belongs to. A visit from Amazon or Hetzner
+is a machine.
+
+Three networks are deliberately exempt from that: Akamai,
+Cloudflare and Fastly. They are CDNs, so by the rule above they
+look like machines, and they are also the three companies Apple
+hands the second hop of iCloud Private Relay to. Anybody reading
+this from Safari with iCloud+ comes out of one of them. They were
+in the blocklist at first, which meant the most likely kind of real
+reader was the one kind guaranteed to be dropped, and dropped in
+silence. Those visits now arrive marked `via relay`.
+
+The marker matters for reading the message, not just for counting
+it. A relayed visit reports the exit's city and not the reader's,
+so the location on one of those is Apple's choice of door.
+
+The cost of the exemption is that a crawler renting a CDN gets
+through. That is one notification too many, against a reader who
+would otherwise never have been mentioned at all.
+
+Still turned away, and worth knowing: anything coming out of a VPN
+or a corporate network that exits from a data centre. That is the
+price of not being woken by scanners.
+
 ## Why not ntfy
 
 It was ntfy first, and it does not work from here. ntfy.sh meters
