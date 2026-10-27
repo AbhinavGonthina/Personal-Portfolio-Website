@@ -260,6 +260,56 @@ export default function Navbar() {
     });
   }, [active]);
 
+  // Coming back by the browser's own back, rather than by anything
+  // on this page.
+  //
+  // Safari keeps a whole document alive when you leave it and hands
+  // it back on a swipe exactly as it was frozen - no reload, no
+  // mount, no effect re-run. That is the fast path and it is the
+  // one a trackpad takes. Everything in this bar that was true at
+  // the moment of freezing is still sitting here claiming to be
+  // true now, and two things in particular can be wrong:
+  //
+  // The row's sideways offset. Below `md` the effect above scrolls
+  // the lit link into view, so leaving from Connect freezes the row
+  // pushed to its right-hand end. On the way back `active` has not
+  // changed, so that effect does not run, and nothing else touches
+  // `scrollLeft` - the bar comes back with its links shifted and
+  // stays that way until you happen to move between sections.
+  //
+  // And the bar's dress. `scrolled` is a boolean set from a scroll
+  // event; `main.jsx` asks for manual scroll restoration, so the
+  // page can be handed back at the top while the boolean still says
+  // you are deep in the document, which is a bordered, blurred bar
+  // over a landing that has nothing behind it.
+  //
+  // `persisted` is the whole point: a normal load re-runs every
+  // effect here and needs none of this.
+  useEffect(() => {
+    const restored = (e) => {
+      if (!e.persisted) return;
+      setScrolled(window.scrollY > 24);
+      const row = rail.current;
+      if (!row) return;
+      const lit = row.querySelector('[data-nav-active="true"]');
+      // Nothing lit, or nothing to scroll: the row belongs at its
+      // start. The landing lights no link at all, which is exactly
+      // the state a page handed back at the top is in - so leaving
+      // this to `scrollIntoView` alone fixed nothing, because there
+      // was no element to call it on and the row stayed where it
+      // had been pushed.
+      if (!lit || row.scrollWidth <= row.clientWidth) {
+        row.scrollLeft = 0;
+        return;
+      }
+      // No `smooth` here. This is a correction to something the
+      // reader never saw happen, not a move worth animating.
+      lit.scrollIntoView({ block: "nearest", inline: "nearest" });
+    };
+    window.addEventListener("pageshow", restored);
+    return () => window.removeEventListener("pageshow", restored);
+  }, []);
+
   // The bar keeps its scrolled dress through a run.
   //
   // It was taken off for the length of one, on the theory that the
