@@ -13,19 +13,24 @@ export const profile = {
   // One line on the landing page saying what is happening right now.
   // Short enough to read at a glance; update it when it stops being true.
   //
-  // This used to say "Summer 2027 internships", which cannot be true
-  // alongside a graduation date of April 2027 - the summer after it is
-  // the first summer there is no degree left to go back to.
+  // Both halves of the ask, because the graduation date now has two
+  // halves. This said full-time only for a while, on the reasoning
+  // that the summer after April 2027 is the first summer with no
+  // degree left to go back to - true of a spring finish and not of a
+  // Fall 2027 one, where the summer before it is still a summer as a
+  // student. With the date reading "Spring/Fall 2027" the internship
+  // half is live again, and it is named second because full-time is
+  // the larger ask.
   // The ask, and only the ask. It used to lead with the project he
   // happens to be building, which buried the one line on the page
   // that is asking the reader for something.
   // No full stop: it is set as a line on its own in both reads, and
   // a sentence that ends a line does not need one to say so.
   currently:
-    "I'm looking for full-time software engineer roles or internships after April 2027",
+    "I'm looking for full-time software engineer roles after Spring/Fall 2027, or summer internships",
   // The same ask in the fewest words that still carry it, for the
   // hoarding, where there is no room for a sentence.
-  seeking: "Post-grad SWE roles",
+  seeking: "Post-grad SWE roles, or summer internships",
   photo: "/headshot.webp",
   // Four headline technologies, all of them on the résumé.
   focus: ["AWS", "Terraform", "Spring Boot", "React"],

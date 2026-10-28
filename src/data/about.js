@@ -3,13 +3,13 @@ export const education = {
   logo: "/logos/northeastern.webp",
   degree: "B.S. in Computer Science",
   location: "Boston, MA",
-  graduation: "April 2027",
+  graduation: "Spring/Fall 2027",
   gpa: "4.0 / 4.0",
   honors: "John Martinson Honors Program",
 };
 
 export const bio = [
-  "I'm a Computer Science student at Northeastern University in Boston, graduating in April 2027. Most of what I enjoy sits where backend systems meet the interfaces built on top of them, designing an API and then making the thing that consumes it feel good to use.",
+  "I'm a Computer Science student at Northeastern University in Boston, graduating in Spring/Fall 2027. Most of what I enjoy sits where backend systems meet the interfaces built on top of them, designing an API and then making the thing that consumes it feel good to use.",
   "Over the last two years I've worked across healthcare technology, travel, and education; AWS infrastructure and observability at athenahealth, patient monitoring systems at Philips, and mobile and payments work at Quak Travel. On the side I'm building OnTrack, a job application tracker.",
 ];
 

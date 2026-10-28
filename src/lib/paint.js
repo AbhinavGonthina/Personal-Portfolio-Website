@@ -1237,15 +1237,39 @@ export function paintBoard(profile, education, theme) {
   }
 
   // Three standing facts across the foot of the board, a label over
-  // a value each. The columns are set rather than measured: the
-  // widths are known and fixed, and a layout that cannot reflow
-  // cannot reflow into something nobody looked at.
+  // a value each. The columns are still set rather than measured -
+  // the widths are known, and a layout that cannot reflow cannot
+  // reflow into something nobody looked at - but they are set at
+  // what the three values actually need now rather than at even
+  // thirds.
+  //
+  // Even thirds were 290 apart and worked for as long as every value
+  // was short. "April 2027" became "Spring/Fall 2027", which wants
+  // 309 and so ran into the column beside it, and "Post-grad SWE
+  // roles" gained ", or summer internships", which wants 804 against
+  // the 388 the last column had and ran clean off the end of the
+  // sign. Both were drawn with a single `fillText` that will not
+  // wrap and will not complain.
+  //
+  // So the three widths are set from what the three values measure
+  // at this size: 158 for the GPA, 309 for the date, 410 for the
+  // longer of the two lines the ask wraps to. That is 877 of the 968
+  // there are, and the 91 left over are spent on the gaps between
+  // them.
+  //
+  // The date is the reason the split is uneven rather than tidy. It
+  // has to stay on one line - "Spring/Fall" over "2027" is not a
+  // date, it is a date that has come apart - so its column is sized
+  // to hold it whole, and the GPA, which is nine characters and will
+  // not grow, gives up the room to pay for it.
   const stats = [
     ["GPA", education.gpa, C.boardInk],
     ["GRADUATING", education.graduation, C.boardInk],
     ["SEEKING", profile.seeking, ACC],
   ];
-  const COL = [0, 290, 580];
+  const COL = [0, 190, 525];
+  /** Breathing room between a column and the one after it. */
+  const GAP = 16;
   g.fillStyle = RULE;
   g.fillRect(pad, pad + 672 * S, right - pad, 2 * S);
   stats.forEach(([label, value, ink], i) => {
@@ -1255,7 +1279,14 @@ export function paintBoard(profile, education, theme) {
     g.fillText(label, cx, pad + 724 * S);
     g.fillStyle = ink;
     sans(40);
-    g.fillText(value, cx, pad + 786 * S);
+    // Wrapped inside its own column, and two lines at most. There
+    // are 138 units between this baseline and the bottom edge of
+    // the sign, so a second line at 54 below clears it and a third
+    // would be painted off the board.
+    const room = ((COL[i + 1] ?? 968) - COL[i] - GAP) * S;
+    wrap(g, value, room)
+      .slice(0, 2)
+      .forEach((line, n) => g.fillText(line, cx, pad + (786 + n * 54) * S));
   });
 
   return finish(c);
