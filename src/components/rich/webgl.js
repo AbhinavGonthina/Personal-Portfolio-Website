@@ -1,4 +1,5 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { useSwitching } from "../../lib/switchView";
 
 /**
  * What the written read is allowed to spend on a GPU, shared by
@@ -137,6 +138,66 @@ export function useBudget() {
     () => state,
     () => "on",
   );
+}
+
+/**
+ * When a background is allowed to open its context, which is not
+ * the same question as whether it is allowed to exist.
+ *
+ * Opening one is the most expensive thing the written read does.
+ * Profiled on the way out of the town: 528ms inside `getContext`
+ * and 1464ms inside `getProgramParameter`, which is the call that
+ * asks a driver whether a shader finished linking and will not
+ * return until it has. Four backgrounds, about half a second each,
+ * and all four mounted in the same frame - because the switch
+ * flips to the written read half way through its run, so every
+ * section of the page appears at once, in the middle of a two
+ * second animation somebody is watching.
+ *
+ * The note on `Topo` is right that a compile is better paid at
+ * load than as a hitch mid-scroll. It just is not load here. The
+ * reader is looking at the crane.
+ *
+ * So two rules, and they only ever delay:
+ *
+ *   1. Not while a run is in flight. The animation keeps the
+ *      thread to itself.
+ *   2. One at a time afterwards, `STAGGER` apart, in the order
+ *      they appear down the page.
+ *
+ * The page is at its top when a run ends, so the only background
+ * on screen is the first one, and the three below the fold open
+ * over the next second while nobody is looking at where they go.
+ * By the time the reader has scrolled to any of them it is long
+ * since up - which is the mid-scroll hitch avoided too, rather
+ * than traded for.
+ *
+ * A direct load of the written read never had a run, so rule one
+ * is already satisfied and the first background opens immediately,
+ * exactly as before.
+ *
+ * `order` is passed rather than counted. A module-level counter
+ * would have to be reset when the page unmounts and would be
+ * double-counted by React's development double-render; the four
+ * call sites know where they sit on the page and saying so is
+ * shorter than either fix.
+ */
+const STAGGER = 260;
+
+export function useTurn(order) {
+  const switching = useSwitching();
+  const [turn, setTurn] = useState(false);
+  useEffect(() => {
+    if (switching) {
+      // Back to waiting, so a second run does not find three
+      // contexts opening inside it.
+      setTurn(false);
+      return;
+    }
+    const t = setTimeout(() => setTurn(true), order * STAGGER);
+    return () => clearTimeout(t);
+  }, [switching, order]);
+  return turn;
 }
 
 /**

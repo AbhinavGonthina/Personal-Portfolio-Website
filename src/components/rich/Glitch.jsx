@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useBudget, worthIt } from "./webgl";
+import { useBudget, useTurn, worthIt } from "./webgl";
 import { useTheme } from "../../lib/theme";
 import { edges } from "./edges";
 
@@ -57,11 +57,14 @@ export default function Glitch() {
   // loop while it is off screen either way, so nothing is
   // running down here until it is looked at.
   const holds = useBudget();
+  // 2: Skills, counting the backgrounds down the page. See
+  // `useTurn` - this only ever delays one, never refuses it.
+  const turn = useTurn(2);
   const theme = useTheme();
   const light = theme === "light";
   const still = useReducedMotion();
 
-  const off = still || holds === "off" || !worthIt();
+  const off = still || holds === "off" || !worthIt() || !turn;
 
   return (
     <div

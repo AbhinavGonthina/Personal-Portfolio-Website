@@ -1550,10 +1550,30 @@ const CLOSE = 0.42;
 /**
  * Tells the switch when the town is actually ready to be looked at.
  *
- * `gl.compile` on the first frame rather than letting three compile
+ * Compiled on the first frame rather than letting three compile
  * each material the first time it happens to draw it: the cost is
  * the same either way, and the question is only whether it is paid
  * while the page is sitting still or while the camera is moving.
+ *
+ * `compileAsync` rather than `compile`, which is the same work
+ * without the main thread standing still for it. Linking a shader
+ * is the driver's job and it will do it on its own thread, but
+ * asking anything about a program - its link status, its uniform
+ * count, where a uniform lives - forces the answer, so the first
+ * question blocks until every link is finished. Profiled on the
+ * way home from the written read, that was 497ms inside
+ * `getProgramInfoLog` and 401ms inside `getExtension`: the town
+ * was built, and the page was a photograph while the driver caught
+ * up.
+ *
+ * `compileAsync` starts the links the same way and then waits on
+ * `KHR_parallel_shader_compile`, which answers "is it done yet"
+ * without forcing it. The thread stays free, the frames in the
+ * middle are real frames, and the town is reported ready when it
+ * is ready rather than when the questions have been answered.
+ *
+ * The extension is not everywhere, so `compile` stays as the
+ * fallback and the behaviour there is exactly what it was.
  */
 const WARM_FAST = 60;
 const WARM_SETTLED = 2;
@@ -1563,11 +1583,20 @@ function Warmup() {
   const frames = useRef(0);
   const calm = useRef(0);
   const done = useRef(false);
+  // Three states, not two: the compile has not been asked for, it
+  // is in flight, or it is finished. Without the middle one the
+  // first frame asks again every frame.
+  const built = useRef(false);
   useFrame((state, delta) => {
     if (done.current) return;
     frames.current += 1;
     if (frames.current === 1) {
-      state.gl.compile(state.scene, state.camera);
+      const job = state.gl.compileAsync?.(state.scene, state.camera);
+      if (job) job.then(() => (built.current = true));
+      else {
+        state.gl.compile(state.scene, state.camera);
+        built.current = true;
+      }
       return;
     }
     // Settled, not counted. A fixed number of frames was wrong in
@@ -1577,7 +1606,20 @@ function Warmup() {
     // Cheap frames in a row are the actual signal that the building
     // is over, whatever it took to get there.
     calm.current = delta * 1000 < WARM_FAST ? calm.current + 1 : 0;
-    if (calm.current >= WARM_SETTLED || frames.current >= WARM_FRAMES) {
+    // Calm frames are no longer enough on their own. They were,
+    // when the compile was synchronous and so already over by the
+    // time the second frame ran - now they can be calm precisely
+    // because the links are still happening somewhere else, and
+    // reporting ready there hands the crane a town whose first
+    // real draw is the thing that blocks.
+    //
+    // The frame ceiling still overrides it, for the machine where
+    // the promise never settles. That path is the old behaviour:
+    // the first draws compile what they need, as they always did.
+    if (
+      (built.current && calm.current >= WARM_SETTLED) ||
+      frames.current >= WARM_FRAMES
+    ) {
       done.current = true;
       sceneReady();
       markReady();

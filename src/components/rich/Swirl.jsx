@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
 import { useTheme } from "../../lib/theme";
+import { useTurn } from "./webgl";
 import { edges } from "./edges";
 
 /**
@@ -31,10 +32,16 @@ const Field = lazy(() => import("./Vortex").then((m) => ({ default: m.Vortex }))
 export default function Swirl() {
   const light = useTheme() === "light";
   const still = useReducedMotion();
+  // 1: Experience. Canvas 2D rather than WebGL, so it opens no
+  // context and never asked `worthIt` - but it was the most
+  // expensive single thing left in the run out of the town at
+  // 679ms, because three hundred particles have to be placed
+  // before the first of them can be drawn. Same queue.
+  const turn = useTurn(1);
 
   // Nothing to fall back to and nothing lost: the section keeps
   // its dot field and its rail either way.
-  if (still) return null;
+  if (still || !turn) return null;
 
   return (
     <div

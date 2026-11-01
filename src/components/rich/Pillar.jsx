@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useBudget, worthIt } from "./webgl";
+import { useBudget, useTurn, worthIt } from "./webgl";
 import { useTheme } from "../../lib/theme";
 import { edges } from "./edges";
 
@@ -27,11 +27,14 @@ const Column = lazy(() => import("./LightPillar"));
 
 export default function Pillar() {
   const holds = useBudget();
+  // 4: Connect, counting the backgrounds down the page. See
+  // `useTurn` - this only ever delays one, never refuses it.
+  const turn = useTurn(4);
   const theme = useTheme();
   const light = theme === "light";
   const still = useReducedMotion();
 
-  const off = still || holds === "off" || !worthIt();
+  const off = still || holds === "off" || !worthIt() || !turn;
   if (off) return null;
 
   return (

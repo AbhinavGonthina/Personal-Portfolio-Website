@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { useReducedMotion } from "motion/react";
-import { useBudget, worthIt } from "./webgl";
+import { useBudget, useTurn, worthIt } from "./webgl";
 import { useTheme } from "../../lib/theme";
 
 /**
@@ -43,6 +43,9 @@ const DAY = ["#0e7f94", "#3b55b8", "#6a3fbd"];
 export default function Ether() {
   const still = useReducedMotion();
   const holds = useBudget();
+  // 0: the landing, counting the backgrounds down the page. See
+  // `useTurn` - this only ever delays one, never refuses it.
+  const turn = useTurn(0);
   const theme = useTheme();
   const light = theme === "light";
 
@@ -50,7 +53,7 @@ export default function Ether() {
   // still frame and stopping. That is a WebGL context and a fluid
   // solve to produce a picture that could have been a gradient, so
   // somebody who asked for less motion gets none of it instead.
-  if (still || holds === "off" || !worthIt()) return null;
+  if (still || holds === "off" || !worthIt() || !turn) return null;
 
   return (
     <Suspense fallback={null}>
