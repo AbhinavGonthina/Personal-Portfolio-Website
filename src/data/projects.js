@@ -8,6 +8,27 @@ export const categories = [
 
 export const projects = [
   {
+    id: "gitinside",
+    title: "GitInside",
+    blurb:
+      "Interactive architecture diagrams for any codebase, drawn by reading the code rather than guessing at it.",
+    description:
+      "Paste a GitHub repo and it draws how the thing actually works: services, routes, database models and outside APIs, with each frontend request matched to the backend route it hits. The graph comes from parsing with the TypeScript compiler and never from a model, so the same commit always gives the same answer and a request it cannot resolve is drawn as unresolved rather than invented. A GitHub App comments the architecture diff on every pull request.",
+    category: "personal",
+    period: "Oct 2026 – Present",
+    tech: [
+      "Next.js",
+      "TypeScript",
+      "Prisma",
+      "PostgreSQL",
+      "Google Cloud Tasks",
+      "GitHub Apps",
+    ],
+    image: "/projects/gitinside.webp",
+    live: "https://gitinside.abhinavgonthina.dev",
+    github: "https://github.com/AbhinavGonthina/gitinside",
+  },
+  {
     id: "ontrack",
     title: "OnTrack",
     blurb:
