@@ -81,6 +81,9 @@ export function countVisit() {
       p: window.location.pathname,
       t: document.title,
       r: document.referrer,
+      // Which of the three sites this is. The notifier reads it;
+      // GoatCounter ignores anything it does not know.
+      site: "p",
       s: [screen.width, screen.height, window.devicePixelRatio || 1].join(","),
       // Documented as ignored, and there to stop a proxy or a
       // browser serving the same pixel out of cache instead of

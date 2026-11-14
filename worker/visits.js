@@ -111,10 +111,40 @@ async function fingerprint(ip, agent, salt) {
 }
 
 /**
- * Phone-sized: a few lines you can read from the lock screen. The
- * visitor's tag and count are appended by the caller.
+ * Which site is being visited, as a label rather than as whatever
+ * the caller typed.
+ *
+ * `site`, spelled out, because `s` was taken. The portfolio's
+ * beacon shares one query string between this and GoatCounter,
+ * and `s` there is the screen size - so a one-letter name would
+ * have read "1920,1080,2" as a site code and fallen back to the
+ * portfolio on every call, which is the right answer arrived at
+ * by accident and only for one of the three.
+ *
+ * A map, not a passthrough, and that is the whole point. This URL
+ * is public - it has to be, the page calls it from a browser - so
+ * every query string that reaches here is a stranger's text that
+ * ends up on a lock screen. A code that is not one of these three
+ * is the portfolio, because an unknown code is far more likely to
+ * be an old page than an interesting one.
+ *
+ * Worth knowing that `p` and `r` below are not held to this and
+ * never were: somebody who finds this URL can already put sixty
+ * characters of their choosing into a notification. It is a small
+ * surface - your own bot, text only, previews off, and the eight
+ * hour window caps one address at one message - but it is not
+ * zero, and the site label should not widen it.
  */
-function compose(url, request) {
+const SITES = { p: "portfolio", o: "OnTrack", g: "GitInside" };
+export const siteOf = (code) => SITES[code] ?? SITES.p;
+
+/**
+ * Phone-sized: a few lines you can read from the lock screen. The
+ * site leads, because it is the thing worth knowing before the
+ * phone is unlocked. The visitor's tag and count are appended by
+ * the caller.
+ */
+function compose(url, request, site) {
   const page = url.searchParams.get("p") || "/";
   const from = url.searchParams.get("r") || "";
   const country = request.cf?.country ?? "??";
@@ -129,7 +159,7 @@ function compose(url, request) {
       how = `came from ${from.slice(0, 60)}`;
     }
   }
-  return `${where} — ${how}\n${page}`;
+  return `${site}\n${where} — ${how}\n${page}`;
 }
 
 export default {
@@ -187,7 +217,18 @@ export default {
       return blank;
     }
 
-    const key = await fingerprint(ip, agent, env.SALT);
+    const site = siteOf(url.searchParams.get("site"));
+    // Per site, not per person.
+    //
+    // One key for everything would mean somebody who opens the
+    // portfolio and then OnTrack in the same hour is announced
+    // once and the second site is never mentioned - which is the
+    // one thing worth knowing, because it is the same person
+    // following a link between two of your things. The tag below
+    // still comes from the bare hash, so that person wears the
+    // same name on both messages and you can see it was them.
+    const hash = await fingerprint(ip, agent, env.SALT);
+    const key = `${site}:${hash}`;
 
     // The notification is sent after the response, so the page
     // never waits on Telegram being up or slow.
@@ -213,7 +254,7 @@ export default {
         // itself, because the alternative is reading a location
         // off a lock screen and believing it.
         const who =
-          `#${key.slice(0, 6)} · ${been === 1 ? "first time" : nth(been) + " visit"}` +
+          `#${hash.slice(0, 6)} · ${been === 1 ? "first time" : nth(been) + " visit"}` +
           (relayed ? " · via relay" : "");
         // Telegram rather than ntfy, and the reason is worth
         // keeping. ntfy.sh meters anonymous publishing by the
@@ -235,7 +276,7 @@ export default {
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               chat_id: env.TG_CHAT,
-              text: `${compose(url, request)}
+              text: `${compose(url, request, site)}
 ${who}`,
               disable_web_page_preview: true,
             }),
