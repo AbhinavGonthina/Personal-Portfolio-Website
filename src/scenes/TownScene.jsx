@@ -18,10 +18,10 @@ import { box, cyl } from "../lib/geo";
 import { makeTextTexture } from "../lib/canvasText";
 import { ExtrudedText, Ground } from "./street";
 import Motes from "./motes";
-import Car from "./arrival";
+import Car, { CabinLights } from "./arrival";
 import { ARRIVAL_END, arrivalShot, ride } from "../lib/arrivalPath";
 import { jumpTo } from "../lib/scrollLock";
-import { clearReady, markReady } from "../lib/ready";
+import { clearReady, isReady, markReady } from "../lib/ready";
 import { endArrival, frozenAt, isArriving, useArriving } from "../lib/arrival";
 import { markLanded } from "../lib/welcome";
 import {
@@ -1199,9 +1199,38 @@ function Rig({ target, narrow, clock }) {
       // stretches to several times its length. Taking the baseline
       // on the first frame of the sequence costs nothing and is
       // right at any frame rate.
-      if (!clock.current.start) clock.current.start = performance.now();
+      // The car does not set off until the town is built.
+      //
+      // The sequence runs on wall time - deliberately, because a sum
+      // of deltas stretches on a slow machine and a clamped one
+      // skips when a tab comes back. The cost of wall time is that a
+      // blocked frame is not a slow frame, it is a missing second:
+      // the clock keeps running while the thread does not, and the
+      // next frame draws wherever the clock has got to. Nine hundred
+      // milliseconds of shader linking at t=3.3 lands you past the
+      // door opening and halfway out of the car, having watched
+      // neither.
+      //
+      // Everything upstream of here is about making sure there is
+      // nothing left to link by now. This is the belt: the baseline
+      // is not taken, and so the sequence does not begin, until the
+      // scene has reported that it has compiled and drawn. Until
+      // then `t` is zero, which is the opening shot - sitting in the
+      // back seat with the headrest saying it is loading, which is
+      // exactly what is happening. The spinner is up over it.
+      //
+      // `markReady` is guaranteed by the ceiling in `Warmup`, so a
+      // driver that never answers delays this by six seconds rather
+      // than forever. A frozen frame is let through untouched;
+      // `?at=5` is asking to see one beat, not to watch a load.
+      if (!clock.current.start && (HELD !== null || isReady())) {
+        clock.current.start = performance.now();
+      }
       clock.current.t =
-        HELD ?? (performance.now() - clock.current.start) / 1000;
+        HELD ??
+        (clock.current.start
+          ? (performance.now() - clock.current.start) / 1000
+          : 0);
       arrivalShot(clock.current.t, SHOT);
       // Sitting in a car that is still moving. The eye takes the
       // body's vertical movement and not its pitch or roll, which
@@ -1299,11 +1328,7 @@ function Rig({ target, narrow, clock }) {
       // the new destination in the same frame, so the view leaves
       // for where you have just asked to go rather than finishing
       // a journey you cancelled.
-      if (
-        dest !== null &&
-        skipTo.current !== null &&
-        dest !== skipTo.current
-      ) {
+      if (dest !== null && skipTo.current !== null && dest !== skipTo.current) {
         skipTo.current = null;
       }
       if (
@@ -1577,25 +1602,83 @@ const CLOSE = 0.42;
  */
 const WARM_FAST = 60;
 const WARM_SETTLED = 2;
-const WARM_FRAMES = 30;
+/**
+ * The ceiling, in milliseconds rather than in frames.
+ *
+ * Thirty frames was the old one and it was the wrong unit. The
+ * arrival now waits on this report before it sets off, so what the
+ * ceiling has to bound is how long somebody can be kept sitting in
+ * a car - and thirty frames is half a second on a machine that does
+ * not need the ceiling at all, and twelve seconds on one drawing at
+ * two and a half. It fired long before `compileAsync` had settled on
+ * every cold load, which is the whole reason the first draws were
+ * still linking shaders.
+ *
+ * Six seconds is a long time to look at a spinner and a short time
+ * to spend not knowing whether a driver is ever going to answer.
+ * Past it the old behaviour returns: the sequence plays, and the
+ * first draws compile whatever is left as they always did.
+ */
+const WARM_CEILING = 6000;
 
 function Warmup() {
   const frames = useRef(0);
   const calm = useRef(0);
   const done = useRef(false);
+  const began = useRef(0);
   // Three states, not two: the compile has not been asked for, it
   // is in flight, or it is finished. Without the middle one the
   // first frame asks again every frame.
   const built = useRef(false);
+  // One pixel, and it is never drawn into. See below.
+  const scratch = useMemo(() => new THREE.WebGLRenderTarget(1, 1), []);
+  useEffect(() => () => scratch.dispose(), [scratch]);
   useFrame((state, delta) => {
     if (done.current) return;
     frames.current += 1;
     if (frames.current === 1) {
-      const job = state.gl.compileAsync?.(state.scene, state.camera);
-      if (job) job.then(() => (built.current = true));
-      else {
-        state.gl.compile(state.scene, state.camera);
-        built.current = true;
+      began.current = performance.now();
+      // Compiled with a render target bound, which is the whole
+      // point of the one-pixel buffer above.
+      //
+      // A program's cache key carries the colour space it writes
+      // in, and three works that out from whether a render target
+      // is bound at the moment it is asked:
+      //
+      //   outputColorSpace = currentRenderTarget === null
+      //     ? renderer.outputColorSpace        // srgb
+      //     : ColorManagement.workingColorSpace // srgb-linear
+      //
+      // `compile()` is called from here, with nothing bound, so it
+      // built every program for `srgb`. The composer then renders
+      // the scene into its own buffer, where the answer is
+      // `srgb-linear` - a different key, a cache miss, and a fresh
+      // link for every lit material in the town. Confirmed by
+      // diffing the keys three had actually cached: one field, and
+      // it was this one.
+      //
+      // So the whole warmup was being thrown away, and not quietly:
+      // the relinks came back one per frame through the car ride,
+      // seven hundred to a thousand milliseconds each, which is
+      // where the arrival went.
+      //
+      // Binding anything at all is enough, because the branch above
+      // does not look at what. A one by one buffer is the cheapest
+      // thing that is not null; it is bound, compiled against, and
+      // unbound inside this one call, and nothing is ever rendered
+      // into it.
+      const gl = state.gl;
+      const was = gl.getRenderTarget();
+      gl.setRenderTarget(scratch);
+      try {
+        const job = gl.compileAsync?.(state.scene, state.camera);
+        if (job) job.then(() => (built.current = true));
+        else {
+          gl.compile(state.scene, state.camera);
+          built.current = true;
+        }
+      } finally {
+        gl.setRenderTarget(was);
       }
       return;
     }
@@ -1618,7 +1701,7 @@ function Warmup() {
     // the first draws compile what they need, as they always did.
     if (
       (built.current && calm.current >= WARM_SETTLED) ||
-      frames.current >= WARM_FRAMES
+      performance.now() - began.current >= WARM_CEILING
     ) {
       done.current = true;
       sceneReady();
@@ -2189,6 +2272,32 @@ export default function TownScene({
       // blank anything, and 1.25 keeps most of what the measuring
       // was buying on a high-density screen anyway.
       dpr={[1, 1.25]}
+      // No tone mapping, said out loud, because something else was
+      // going to say it a moment later anyway.
+      //
+      // `EffectComposer` sets `gl.toneMapping = NoToneMapping` in a
+      // mount effect, on the grounds that tone mapping belongs in a
+      // pass rather than in every material. It is right, and the
+      // town has rendered untone-mapped the whole time. The problem
+      // is the word "later": the warmup compile had already run, so
+      // every program it built carried `#define TONE_MAPPING` and
+      // not one of them was ever used. Six ninety-kilobyte fragment
+      // shaders compiled for nothing, and then the same six built
+      // again without it - one per frame, seven hundred to nine
+      // hundred milliseconds each, from one and a half seconds to
+      // five and a half. Which is the car ride.
+      //
+      // That is why the arrival used to skip: the sequence runs on
+      // wall time, so a blocked frame does not stretch it, it jumps
+      // it. Three seconds of relinking spread across the ride is
+      // three seconds of the ride nobody sees, and what you get is
+      // a cut to halfway out of the car.
+      //
+      // Setting it here puts the renderer in its final state before
+      // the first frame, so the warmup compiles what will be drawn.
+      // Nothing about the picture changes; this is the value it has
+      // been rendering with all along.
+      flat
       // No antialias on the canvas itself. The composer renders the
       // scene into its own buffer and the canvas only ever receives
       // one full-screen quad off the back of it - a quad with no
@@ -2226,6 +2335,8 @@ export default function TownScene({
       {WATCH && <Perf />}
       <Rig target={target} narrow={narrow} clock={clock} />
       {arriving && <Car clock={clock} />}
+      {/* Always mounted, lit only while the car is. See CabinLights. */}
+      <CabinLights on={arriving} />
       <Distant />
       {motes && <Motes />}
       <Lamps />

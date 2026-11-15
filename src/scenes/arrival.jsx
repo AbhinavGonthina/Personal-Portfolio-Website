@@ -203,26 +203,62 @@ export default function Car({ clock }) {
             </mesh>
           </group>
         </group>
-
-        {/* A reading light, so the inside of the car is not a black box.
-          Two of them: one over the back seat and one over the front,
-          because a single lamp at the camera's own position lights
-          nothing it can see. */}
-        <pointLight
-          position={[0, CAR.roof - 0.08, 1.15]}
-          color={ACCENT.amber}
-          intensity={1.4}
-          distance={3.2}
-          decay={2}
-        />
-        <pointLight
-          position={[0, CAR.roof - 0.12, -1.0]}
-          color={ACCENT.amber}
-          intensity={0.7}
-          distance={3}
-          decay={2}
-        />
       </group>
+    </group>
+  );
+}
+
+/**
+ * The two reading lights in the cabin, and why they are not in the
+ * car.
+ *
+ * They were, and unmounting the car took them with it - which cost
+ * three and a half seconds of frozen tab at the exact moment you
+ * stepped out onto the street.
+ *
+ * three.js writes the number of lights in the scene into the shader
+ * source as a literal and unrolls a loop over it, so the light count
+ * is part of a program's cache key. Take two lights away and every
+ * lit material in the town needs a different program: a fresh GLSL
+ * compile and link for each, and at this scene's size those are
+ * ninety kilobyte fragment shaders that take the best part of a
+ * second each. Measured on a real GPU, the car leaving relinked four
+ * of them in one 3717ms block.
+ *
+ * So the lights stay for the life of the scene and go to zero
+ * instead. A point light at zero intensity still costs its loop
+ * iteration in every fragment, which is the price, and it is a
+ * rounding error beside what it buys. The car's own meshes still
+ * unmount; nothing is kept but the two numbers in the light list.
+ *
+ * They do not ride the suspension any more, because the group they
+ * used to hang off is the one that bobs. The bob is seven
+ * thousandths of a unit and these are area lights in all but name -
+ * nothing in the cabin can tell.
+ */
+export function CabinLights({ on }) {
+  return (
+    <group
+      position={[CAR_PARK.x, 0, CAR_PARK.z]}
+      rotation={[0, CAR_PARK.yaw, 0]}
+    >
+      {/* One over the back seat and one over the front, because a
+          single lamp at the camera's own position lights nothing it
+          can see. */}
+      <pointLight
+        position={[0, CAR.roof - 0.08, 1.15]}
+        color={ACCENT.amber}
+        intensity={on ? 1.4 : 0}
+        distance={3.2}
+        decay={2}
+      />
+      <pointLight
+        position={[0, CAR.roof - 0.12, -1.0]}
+        color={ACCENT.amber}
+        intensity={on ? 0.7 : 0}
+        distance={3}
+        decay={2}
+      />
     </group>
   );
 }

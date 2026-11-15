@@ -636,6 +636,71 @@ function Monitor({ screen, chrome, hint, onOpen, live }) {
   );
 }
 
+/**
+ * The three lights in the room, in their own group, outside the one
+ * that is hidden when you are not in it.
+ *
+ * The lamp is what makes the desk a place to work; the rim behind
+ * the racks lifts the skills board off the wall it is hanging on;
+ * and the floor lamp to the right of the desk is there because
+ * without it that whole side of the monitor ran into the dark and
+ * the thing had no shape to it - you could see the picture but not
+ * what the picture was in. Its light hangs off the lamp's own
+ * position rather than a point picked to look right, because the
+ * first version was a light with nothing making it: a wall lit in a
+ * dark room and no lamp anywhere to have lit it.
+ *
+ * The intensities already went to zero when you were outside, which
+ * was the right idea and did not work, because the group above them
+ * went `visible={false}` - and three.js gathers the lights for a
+ * frame with `traverseVisible`. A light inside a hidden group is not
+ * dim, it is absent. The number of lights in the scene is written
+ * into every lit shader as a literal and is part of the program
+ * cache key, so three lights appearing at the door meant a fresh
+ * compile and link for every lit material in the town, measured at
+ * 3674ms of frozen tab in one block - the lag spike walking into
+ * Skills, once per session, gone on the second visit because the
+ * programs are cached by then.
+ *
+ * Out here the count never moves. The intensity gate does the work
+ * it was always meant to do: the lights are in the list from the
+ * first frame, at zero, and the room is still as dark from outside
+ * as it ever was. What it costs is three loop iterations per lit
+ * fragment the whole way round the town, which is nothing beside
+ * four seconds.
+ */
+function RoomLights({ on }) {
+  return (
+    <group position={posOf(TOWN.house)} rotation={yawOf(TOWN.house)}>
+      <pointLight
+        position={[DESK.x - 0.24, 1.18, DESK.z - 1.5]}
+        color={ACCENT.amber}
+        intensity={on ? 5 : 0}
+        distance={4.5}
+        decay={2}
+      />
+      <pointLight
+        position={[RACKS.x + 0.5, 1.5, -0.4]}
+        color={ACCENT.cyan}
+        intensity={on ? 3.4 : 0}
+        distance={5}
+        decay={2}
+      />
+      <pointLight
+        position={[FLOOR_LAMP.x, FLOOR_LAMP.y, FLOOR_LAMP.z]}
+        // Warm, because the diffuser is. The interior's lit buffer
+        // is one warm material with no per-piece colour on it, so a
+        // cool light here was a warm lamp throwing blue on the wall
+        // behind itself.
+        color="#ffd3a1"
+        intensity={on ? 4.2 : 0}
+        distance={5.6}
+        decay={2}
+      />
+    </group>
+  );
+}
+
 export function Interior({
   mats,
   visible,
@@ -660,100 +725,65 @@ export function Interior({
   });
 
   return (
-    <group
-      visible={visible}
-      position={posOf(TOWN.house)}
-      rotation={yawOf(TOWN.house)}
-    >
-      <Shell geo={built.base} mat={mats.room} />
-      <Shell geo={built.floor} mat={mats.boards} />
-      <Shell geo={built.lit} mat={mats.warm} />
-      {built.led && (
-        <mesh geometry={built.led}>
-          <meshBasicMaterial
-            ref={leds}
-            color={ACCENT.cyan}
-            transparent
-            opacity={0.7}
-            toneMapped={false}
-          />
-        </mesh>
-      )}
+    <>
+      <RoomLights on={visible} />
+      <group
+        visible={visible}
+        position={posOf(TOWN.house)}
+        rotation={yawOf(TOWN.house)}
+      >
+        <Shell geo={built.base} mat={mats.room} />
+        <Shell geo={built.floor} mat={mats.boards} />
+        <Shell geo={built.lit} mat={mats.warm} />
+        {built.led && (
+          <mesh geometry={built.led}>
+            <meshBasicMaterial
+              ref={leds}
+              color={ACCENT.cyan}
+              transparent
+              opacity={0.7}
+              toneMapped={false}
+            />
+          </mesh>
+        )}
 
-      {/* The three lights in the room. The lamp is what makes the
-          desk a place to work; the rim behind the racks lifts the
-          skills board off the wall it is hanging on; and the floor
-          lamp to the right of the desk is there because without it
-          that whole side of the monitor ran into the dark and the
-          thing had no shape to it - you could see the picture but
-          not what the picture was in.
-          
-          Its light hangs off the lamp's own position rather than a
-          point picked to look right, because the first version was
-          a light with nothing making it: a wall lit in a dark room
-          and no lamp anywhere to have lit it. */}
-      <pointLight
-        position={[DESK.x - 0.24, 1.18, DESK.z - 1.5]}
-        color={ACCENT.amber}
-        intensity={visible ? 5 : 0}
-        distance={4.5}
-        decay={2}
-      />
-      <pointLight
-        position={[RACKS.x + 0.5, 1.5, -0.4]}
-        color={ACCENT.cyan}
-        intensity={visible ? 3.4 : 0}
-        distance={5}
-        decay={2}
-      />
-      <pointLight
-        position={[FLOOR_LAMP.x, FLOOR_LAMP.y, FLOOR_LAMP.z]}
-        // Warm, because the diffuser is. The interior's lit buffer
-        // is one warm material with no per-piece colour on it, so a
-        // cool light here was a warm lamp throwing blue on the wall
-        // behind itself.
-        color="#ffd3a1"
-        intensity={visible ? 4.2 : 0}
-        distance={5.6}
-        decay={2}
-      />
-
-      {/* The skills board, on the back wall.
+        {/* The skills board, on the back wall.
           
           Pointer events read a UV off the plane and the painter says
           which tag is where, so the whole grid is one mesh and one
           draw call rather than forty little ones. */}
-      <mesh
-        position={[WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]}
-        onPointerMove={(e) => {
-          if (!live || !e.uv) return;
-          e.stopPropagation();
-          // UV runs from the bottom, the hit boxes from the top.
-          const u = e.uv.x;
-          const v = 1 - e.uv.y;
-          const found = skills?.hits?.find(
-            (h) => u >= h.x0 && u <= h.x1 && v >= h.y0 && v <= h.y1,
-          );
-          skillHover.hit = found ?? null;
-        }}
-        onPointerOut={() => {
-          skillHover.hit = null;
-        }}
-      >
-        <planeGeometry args={[WALL_PANEL.w, WALL_PANEL.h]} />
-        <meshBasicMaterial map={skills?.tex} toneMapped={false} />
-      </mesh>
+        <mesh
+          position={[WALL_PANEL.x, WALL_PANEL.y, -HOUSE.d / 2 + 0.2]}
+          onPointerMove={(e) => {
+            if (!live || !e.uv) return;
+            e.stopPropagation();
+            // UV runs from the bottom, the hit boxes from the top.
+            const u = e.uv.x;
+            const v = 1 - e.uv.y;
+            const found = skills?.hits?.find(
+              (h) => u >= h.x0 && u <= h.x1 && v >= h.y0 && v <= h.y1,
+            );
+            skillHover.hit = found ?? null;
+          }}
+          onPointerOut={() => {
+            skillHover.hit = null;
+          }}
+        >
+          <planeGeometry args={[WALL_PANEL.w, WALL_PANEL.h]} />
+          <meshBasicMaterial map={skills?.tex} toneMapped={false} />
+        </mesh>
 
-      <SkillScreen live={live} />
+        <SkillScreen live={live} />
 
-      <Monitor
-        screen={screen}
-        chrome={chrome}
-        hint={hint}
-        onOpen={onOpen}
-        live={live}
-      />
-    </group>
+        <Monitor
+          screen={screen}
+          chrome={chrome}
+          hint={hint}
+          onOpen={onOpen}
+          live={live}
+        />
+      </group>
+    </>
   );
 }
 
@@ -983,30 +1013,27 @@ function GroundLink({ text, href, at, width, live }) {
   // Tracked tighter than the signage. The stretch below buys the
   // height back, and spacing wide enough to read square on turns
   // into a line too long to fit in frame once it is laid down.
-  const made = useMemo(
-    () => {
-      const t = makeTextTexture(text, { theme, tracking: 16, weight: 800 });
-      // The plane is almost edge on, so every row of pixels in the
-      // texture is squeezed into a fraction of one on screen and
-      // the sampler reaches for a mip level coarse enough to turn
-      // the strokes into a grey smear - measured at five per cent
-      // contrast against the daylight pavement, which is invisible.
-      //
-      // Anisotropic filtering is the usual answer and it is asked
-      // for, but how much of it a machine will actually give is up
-      // to the machine. Dropping the mips is the answer that does
-      // not depend on that: there is no coarse level to fall back
-      // to, so the strokes stay strokes. The cost of no mips is
-      // shimmer when the surface moves, and this one is read from
-      // a stop, where nothing is moving.
-      t.tex.anisotropy = 16;
-      t.tex.generateMipmaps = false;
-      t.tex.minFilter = THREE.LinearFilter;
-      t.tex.needsUpdate = true;
-      return t;
-    },
-    [text, theme],
-  );
+  const made = useMemo(() => {
+    const t = makeTextTexture(text, { theme, tracking: 16, weight: 800 });
+    // The plane is almost edge on, so every row of pixels in the
+    // texture is squeezed into a fraction of one on screen and
+    // the sampler reaches for a mip level coarse enough to turn
+    // the strokes into a grey smear - measured at five per cent
+    // contrast against the daylight pavement, which is invisible.
+    //
+    // Anisotropic filtering is the usual answer and it is asked
+    // for, but how much of it a machine will actually give is up
+    // to the machine. Dropping the mips is the answer that does
+    // not depend on that: there is no coarse level to fall back
+    // to, so the strokes stay strokes. The cost of no mips is
+    // shimmer when the surface moves, and this one is read from
+    // a stop, where nothing is moving.
+    t.tex.anisotropy = 16;
+    t.tex.generateMipmaps = false;
+    t.tex.minFilter = THREE.LinearFilter;
+    t.tex.needsUpdate = true;
+    return t;
+  }, [text, theme]);
   useEffect(() => () => made.tex.dispose(), [made]);
 
   const matRef = useRef();

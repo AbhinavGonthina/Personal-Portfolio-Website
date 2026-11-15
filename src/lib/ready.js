@@ -30,6 +30,13 @@ export function clearReady() {
   tell();
 }
 
+/**
+ * The same answer, for the frame loops. The rig asks it sixty times
+ * a second to decide whether the car may set off yet, and a hook
+ * would be a subscription and a render for a value that flips once.
+ */
+export const isReady = () => ready;
+
 export const useReady = () =>
   useSyncExternalStore(
     (fn) => {
